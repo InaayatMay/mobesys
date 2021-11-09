@@ -1,0 +1,30 @@
+logs
+target
+/.idea
+/.idea_modules
+/.classpath
+/.project
+/.settings
+/RUNNING_PID
+
+### PlayFramework ###
+# Ignore Play! working directory #
+bin/
+/db
+/conf/dev.conf
+/conf/application-dev.conf
+/conf/evolutions
+.eclipse
+/lib/
+/logs/
+/modules
+/project/project
+/project/target
+/target
+tmp/
+test-result
+server.pid
+*.eml
+/dist/
+.cache
+.idea
