@@ -1,0 +1,11 @@
+@(elements: helper.FieldElements)
+
+<div class="form-group @if(elements.args.get('_required)){ required } @if(elements.errors){ has-error }">
+    @if(elements.label != null && !elements.label.toString.isEmpty) {
+    <label class="text-my">@elements.label</label>
+    }
+
+    @elements.input
+
+    <div class="text-danger"><strong>@elements.errors.mkString(", ")</strong></div>
+</div>

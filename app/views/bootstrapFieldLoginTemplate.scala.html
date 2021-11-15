@@ -1,0 +1,7 @@
+@(elements: helper.FieldElements)
+
+@if(elements.label != null && !elements.label.toString.isEmpty) {
+<label class="text-my">@elements.label</label>
+}
+
+@elements.input
