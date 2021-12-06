@@ -9,6 +9,13 @@
     <div class="card">
         <div class="card-body login-card-body">
             <p class="login-box-msg">Please Sign In</p>
+            @if(myform.hasGlobalErrors){
+                <div class="alert alert-warning">
+                    @for(error <- myform.globalErrors){
+                    <span>@error.message</span>
+                    }
+                </div>
+            }
 
             <form method="post">
                 <div class="input-group mb-3">
@@ -37,7 +44,7 @@
             </form>
 
             <p class="mb-2 text-center">
-                <a href=/resetPassword class="text-muted">Forgot password?</a>
+                <a href="/resetPassword" class="text-muted">Forgot password?</a>
             </p>
         </div>
         <!-- /.login-card-body -->

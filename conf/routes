@@ -2,13 +2,6 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# An example controller showing a sample home page
-GET     /home                           controllers.HomeController.index
-# An example controller showing how to use dependency injection
-GET     /count                      controllers.CountController.count
-# An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
-
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(file)
 
@@ -19,3 +12,13 @@ GET     /logout                                                      controllers
 GET     /resetPassword                                               controllers.AuthController.resetPassword(request: Request)
 +nocsrf
 POST    /resetPassword                                               controllers.AuthController.handleResetPassword(request: Request)
+
+GET     /index                                                       controllers.CourseInformationController.index(request: Request)
+
+GET     /lecturer/:id/courseInformation                              controllers.CourseInformationController.showCourseInformationForm(request: Request, id: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation                              controllers.CourseInformationController.handleCourseInformationForm(request: Request, id: Long)
+
+GET     /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.showCourseInformationDetails(request: Request, id: Long, courseId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.handleCourseInformationDetails(request: Request, id: Long, courseId: Long)

@@ -1,0 +1,167 @@
+@(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.CloToPloMapFormData])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Course Plan
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <p>PROGRAMME</p>
+                </div>
+                <div class="col">
+                    <p>@info.programme</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>COURSE CODE</p>
+                </div>
+                <div class="col">
+                    <p>@info.courseCode</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>COURSE NAME</p>
+                </div>
+                <div class="col">
+                    <p>@info.courseName</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>SEMESTER</p>
+                </div>
+                <div class="col">
+                    <p>@info.semester</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>INTAKE BATCH</p>
+                </div>
+                <div class="col">
+                    <p>@info.intakeBatch</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>LECTURER</p>
+                </div>
+                <div class="col">
+                    <p>@info.lecturerName</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <p>COURSE TYPE</p>
+                </div>
+                <div class="col">
+                    <p>@info.courseType</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <div class="col">
+                    CLO to PLO mapping
+                </div>
+                <div class="col text-right">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                        Create New Map
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
+                    <th scope="col">Course Learning Outcome</th>
+                </tr>
+                </thead>
+                <tbody>
+                @if(info.cloToPloMapperList.size() > 0) {
+                    @for(clo <- info.cloToPloMapperList) {
+                        <tr>
+                            <td>
+                                @clo.ploTitle
+                            </td>
+                            <td>
+                                @clo.ploCode
+                            </td>
+                            <td>
+                                @clo.cloTitle
+                            </td>
+                        </tr>
+                    }
+                } else {
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            <div class="alert alert-secondary" role="alert">
+                                There is no CLO to PLO mapping yet. <br><br>
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                                    Create New Map
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- The Modal -->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Modal Heading</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form method="post">
+                    <label>Plo</label>
+                    <select class="form-control" name="ploCode">
+                        <option value="PLO1">PLO1</option>
+                        <option value="PLO2">PLO2</option>
+                        <option value="PLO3">PLO3</option>
+                    </select>
+
+                    <label>Clo</label>
+                    <input type="text" name="cloTitle" class="form-control" required>
+
+                    <button type="submit" class="btn btn-primary mt-3">Save Map</button>
+                </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

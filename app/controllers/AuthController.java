@@ -5,13 +5,14 @@ import models.Lecturer;
 import play.data.DynamicForm;
 import play.data.Form;
 import play.data.FormFactory;
-import play.i18n.Messages;
 import play.mvc.Controller;
 import play.mvc.Http;
 import play.mvc.Result;
 import services.LecturerService;
 
 import javax.inject.Inject;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AuthController extends Controller {
     private FormFactory formFactory;
@@ -37,16 +38,20 @@ public class AuthController extends Controller {
         if(lecturer != null) {
             boolean isAuthentic = lecturerService.authenticate(email, password);
             if(isAuthentic) {
-                return redirect(routes.HomeController.index());
+                Map<String, String> sessionValuesMap = new HashMap<>();
+                sessionValuesMap.put("id", String.valueOf(lecturer.id));
+                sessionValuesMap.put("username", lecturer.firstName + " " + lecturer.lastName);
+                return redirect(routes.CourseInformationController.showCourseInformationForm(lecturer.id)).addingToSession(request, sessionValuesMap);
             }
         }
 
-        Form<AuthFormData> loginFormWithError = formFactory.form(AuthFormData.class).withGlobalError("ERROR");
+        Form<AuthFormData> loginFormWithError = formFactory.form(AuthFormData.class).withGlobalError("Something went wrong. Please try again.");
+
         return ok(views.html.login.render(loginFormWithError));
     }
 
     public Result logout(){
-        return redirect(routes.AuthController.showLoginForm());
+        return redirect(routes.AuthController.showLoginForm()).withNewSession();
     }
 
     public Result resetPassword(Http.Request request) {
@@ -65,7 +70,7 @@ public class AuthController extends Controller {
             return redirect(routes.AuthController.showLoginForm());
         }
 
-        Form<AuthFormData> loginFormWithError = formFactory.form(AuthFormData.class).withGlobalError("ERROR");
+        Form<AuthFormData> loginFormWithError = formFactory.form(AuthFormData.class).withGlobalError("Invalid email address!");
         return ok(views.html.resetPassword.render(loginFormWithError));
     }
 }

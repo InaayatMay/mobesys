@@ -27,3 +27,4 @@ CREATE TABLE lecturer_student_subject(
     lecturer_id INT REFERENCES lecturer(id),
     student_id INT REFERENCES student(id)
 );
+
