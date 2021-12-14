@@ -1,56 +1,100 @@
 package services;
 
 import io.ebean.Ebean;
-import models.CourseInformation;
-import models.CourseLearningOutcome;
-import models.ProgrammeLearningOutcome;
+import models.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class CourseInformationService {
+    private final Logger logger = LoggerFactory.getLogger("application");
 
-    public CourseInformation saveCourseInformation(String programme, String courseCode, String courseName, String semester, String intakeBatch,
-                       Long lecturerId, String courseType) {
+    public LecturerCourseMap saveLecturerCourseMap(Long lecturerId, Long courseId, Long departmentId, Long schoolId) {
+        LecturerCourseMap lecturerCourseMap = new LecturerCourseMap();
+        lecturerCourseMap.lecturerId = lecturerId;
+        lecturerCourseMap.courseInformationId = courseId;
+        lecturerCourseMap.departmentId = departmentId;
+        lecturerCourseMap.schoolId = schoolId;
 
-        CourseInformation courseInformation = new CourseInformation();
-        courseInformation.programme = programme;
-        courseInformation.courseCode = courseCode;
-        courseInformation.courseName = courseName;
-        courseInformation.semester = semester;
-        courseInformation.intakeBatch = intakeBatch;
-        courseInformation.lecturerId = lecturerId;
-        courseInformation.courseType = courseType;
+        Ebean.save(lecturerCourseMap);
 
-        Ebean.save(courseInformation);
+        return lecturerCourseMap;
+    }
 
-        savePlosByCourse(courseInformation);
+    public List<School> getSchoolList() {
+        return Ebean.find(School.class).findList();
+    }
 
-        return courseInformation;
+    public List<Department> getDepartmentListBySchool(Long schoolId) {
+        return Ebean.find(Department.class).where().eq("school_id", schoolId).findList();
+    }
+
+    public List<CourseInformation> getCourseInformationByDept(Long departmentId) {
+        return Ebean.find(CourseInformation.class).where().eq("department_id", departmentId).findList();
     }
 
     public CourseInformation getCourseInformationById(Long courseInformationId) {
         return Ebean.find(CourseInformation.class).where().eq("id", courseInformationId).findOne();
     }
 
-    public List<ProgrammeLearningOutcome> getProgrammeLearningOutcomeList(Long courseInformationId, Long lecturerId) {
-        return Ebean.find(ProgrammeLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
-                .eq("courseInformationId", courseInformationId)
-                .endAnd().findList();
+    public List<ProgrammeLearningOutcome> getProgrammeLearningOutcomeList() {
+        return Ebean.find(ProgrammeLearningOutcome.class).findList();
     }
 
-    private void savePlosByCourse(CourseInformation courseInformation) {
-        List<String> plos = getPlosAccordingToCourseCode(courseInformation.courseCode);
+    public List<ProgrammeLearningOutcome> getUnlinkedPloList(Long courseInformationId) {
+        String sql = "SELECT plo.*\n" +
+                "FROM programme_learning_outcome AS plo\n" +
+                "LEFT JOIN course_learning_outcome AS clo ON clo.plo_code = plo.code AND clo.course_information_id = :courseInformationId\n" +
+                "WHERE clo.id IS NULL";
 
-        for(int i=0; i<plos.size(); i++) {
-            ProgrammeLearningOutcome programmeLearningOutcome = new ProgrammeLearningOutcome();
-            programmeLearningOutcome.title = plos.get(i);
-            programmeLearningOutcome.courseInformationId = courseInformation.id;
-            programmeLearningOutcome.lecturerId = courseInformation.lecturerId;
-            programmeLearningOutcome.code = "PLO" + (i+1);
-            Ebean.save(programmeLearningOutcome);
+        List<ProgrammeLearningOutcome> programmeLearningOutcomeList = Ebean.findNative(ProgrammeLearningOutcome.class, sql)
+                .setParameter("courseInformationId", courseInformationId)
+                .findList();
+
+        if(programmeLearningOutcomeList.size() > 0) {
+            logger.debug("List size : " + programmeLearningOutcomeList.size());
+            return programmeLearningOutcomeList;
         }
+        else {
+            return new ArrayList<>();
+        }
+    }
+
+    public boolean hasCloToPloMap(String cloTitle, String ploCode, Long lecturerId, Long courseInformationId) {
+        int count = Ebean.find(CourseLearningOutcome.class).where().and()
+                .eq("title", cloTitle)
+                .eq("ploCode", ploCode)
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseInformationId)
+                .endAnd().findCount();
+
+        if(count == 0) {
+            count = Ebean.find(CourseLearningOutcome.class).where().and()
+                    .eq("title", cloTitle)
+                    .eq("lecturerId", lecturerId)
+                    .eq("courseInformationId", courseInformationId)
+                    .endAnd().findCount();
+        }
+
+        if(count == 0) {
+            count = Ebean.find(CourseLearningOutcome.class).where().and()
+                    .eq("ploCode", ploCode)
+                    .eq("lecturerId", lecturerId)
+                    .eq("courseInformationId", courseInformationId)
+                    .endAnd().findCount();
+        }
+
+        return count > 0;
+    }
+
+    public int countCloToPloMaps(Long lecturerId, Long courseInformationId) {
+
+        return Ebean.find(CourseLearningOutcome.class).where().and()
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseInformationId)
+                .endAnd().findCount();
     }
 
     public void saveCloToPloMap(String cloTitle, String ploCode, Long lecturerId, Long courseInformationId) {
@@ -62,31 +106,24 @@ public class CourseInformationService {
         Ebean.save(courseLearningOutcome);
     }
 
-    private List<String> getPlosAccordingToCourseCode(String courseCode) {
-        if(courseCode.equals("ECB 1001")) {
-            return Stream.of("[WA1]Engineering Knowledge",
-                    "[WA2]Problem Analysis",
-                    "[WA3]Design / Development of Solutions",
-                    "[WA4]Investigation",
-                    "[WA5]Modern Tool Usage",
-                    "[WA6]The Engineer and Society",
-                    "[WA7]Environment and Sustainability",
-                    "[WA8]Ethics",
-                    "[WA9]Individual & Team Work",
-                    "[WA10]Communication",
-                    "[WA11]Project Management & Finance",
-                    "[WA12]Life-Long Learning").collect(Collectors.toList());
-        }
-        else if(courseCode.equals("test")) {
-            return Stream.of("plo_test1", "plo_test2").collect(Collectors.toList());
-        }
+    public void deleteCloToPloMap(Long cloToPloMapId) {
 
-        return null;
+        int delete = Ebean.delete(CourseLearningOutcome.class, cloToPloMapId);
+        logger.debug("Deleted : " + delete);
     }
 
     public List<CourseLearningOutcome> getCourseLearningOutcomeList(Long courseInformationId, Long lecturerId) {
-        return Ebean.find(CourseLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
+        List<CourseLearningOutcome> courseLearningOutcomes = Ebean.find(CourseLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseInformationId)
-                .endAnd().findList();
+                .endAnd().orderBy().asc("ploCode").findList();
+
+        if(courseLearningOutcomes.size() > 0) {
+            return courseLearningOutcomes;
+        }
+        else {
+            return new ArrayList<>();
+        }
     }
+
+
 }

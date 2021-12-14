@@ -1,17 +1,17 @@
 package models;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "programme_learning_outcome")
-public class ProgrammeLearningOutcome {
+@Table(name="school")
+public class School {
 
     @Id
     public Long id;
 
-    public String title;
-
-    public String code;
+    @Column(name = "school_name")
+    public String schoolName;
 }

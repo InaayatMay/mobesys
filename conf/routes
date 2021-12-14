@@ -22,3 +22,9 @@ POST    /lecturer/:id/courseInformation                              controllers
 GET     /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.showCourseInformationDetails(request: Request, id: Long, courseId: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.handleCourseInformationDetails(request: Request, id: Long, courseId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/deleteMap     controllers.CourseInformationController.deleteCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
+
+GET     /schools/:id/departments                                     controllers.CourseInformationController.showDepartmentsBySchool(request: Request, id: Long)
+
+GET     /schools/:schoolId/departments/:departmentId/courses         controllers.CourseInformationController.showCoursesByDeptAndSchool(request: Request, schoolId: Long, departmentId: Long)

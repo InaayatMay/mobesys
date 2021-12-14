@@ -25,9 +25,9 @@ public class CourseInformation {
     @Column(name = "intake_batch")
     public String intakeBatch;
 
-    @Column(name = "lecturer_id")
-    public Long lecturerId;
-
     @Column(name = "course_type")
     public String courseType;
+
+    @Column(name = "department_id")
+    public Long departmentId;
 }

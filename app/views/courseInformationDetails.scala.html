@@ -1,4 +1,6 @@
-@(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.CloToPloMapFormData])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+@(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.CloToPloMapFormData],
+unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -79,9 +81,12 @@
                     CLO to PLO mapping
                 </div>
                 <div class="col text-right">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                        Create New Map
-                    </button>
+                    @if(numberOfCloToPloMaps < 8) {
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                            Create New Map
+                        </button>
+                    }
+
                 </div>
             </div>
         </div>
@@ -91,6 +96,7 @@
                 <tr>
                     <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
                     <th scope="col">Course Learning Outcome</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -105,6 +111,16 @@
                             </td>
                             <td>
                                 @clo.cloTitle
+                            </td>
+                            <td>
+                                <form method="post" action="/lecturer/@userId/courseInformation/@info.courseId/details/@clo.cloId/deleteMap">
+                                    <button type="submit" class="btn btn-link">
+                                        <span class="text-secondary">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </span>
+
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                     }
@@ -142,13 +158,15 @@
                 <form method="post">
                     <label>Plo</label>
                     <select class="form-control" name="ploCode">
-                        <option value="PLO1">PLO1</option>
-                        <option value="PLO2">PLO2</option>
-                        <option value="PLO3">PLO3</option>
+                        @if(unlinkedPloList.size() > 0) {
+                            @for(plo <- unlinkedPloList) {
+                                <option value="@plo.code">@plo.code _ @plo.title</option>
+                            }
+                        }
                     </select>
 
                     <label>Clo</label>
-                    <input type="text" name="cloTitle" class="form-control" required>
+                    <input type="text" class="form-control" name="cloTitle" required>
 
                     <button type="submit" class="btn btn-primary mt-3">Save Map</button>
                 </form>

@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 public class CoursePlanViewModel {
 
+    public Long courseId;
     public String programme;
     public String courseCode;
     public String courseName;
@@ -27,6 +28,7 @@ public class CoursePlanViewModel {
         String lecturerName = lecturer.firstName + " " + lecturer.lastName;
 
         CoursePlanViewModel coursePlanViewModel = new CoursePlanViewModel();
+        coursePlanViewModel.courseId = courseInformation.id;
         coursePlanViewModel.programme = courseInformation.programme;
         coursePlanViewModel.courseCode = courseInformation.courseCode;
         coursePlanViewModel.courseName = courseInformation.courseName;
@@ -39,18 +41,13 @@ public class CoursePlanViewModel {
                 .collect(Collectors.toList());
 
         coursePlanViewModel.cloToPloMapperList = courseLearningOutcomes.stream().map(item -> {
-            ProgrammeLearningOutcome plo = programmeLearningOutcomeList.stream()
-                    .filter(ploListItem -> item.ploCode.equals(ploListItem.code))
-                    .findAny()
-                    .orElse(null);
-
-            if(plo != null) {
-                return new CloToPloMapper(plo.title, plo.code, item.title);
+            CloToPloMapper cloToPloMapper = new CloToPloMapper(item.id, "plo title", item.ploCode, item.title);
+            for(ProgrammeLearningOutcome plo: programmeLearningOutcomeList) {
+                if(plo.code.equals(item.ploCode)) {
+                    cloToPloMapper = new CloToPloMapper(item.id, plo.title, plo.code, item.title);
+                }
             }
-            else {
-                return null;
-            }
-
+            return cloToPloMapper;
         }).collect(Collectors.toList());
 
         return coursePlanViewModel;
@@ -67,11 +64,13 @@ public class CoursePlanViewModel {
     }
 
     public static class CloToPloMapper {
+        public Long cloId;
         public String ploTitle;
         public String ploCode;
         public String cloTitle;
 
-        public CloToPloMapper(String ploTitle, String ploCode, String cloTitle) {
+        public CloToPloMapper(Long cloId, String ploTitle, String ploCode, String cloTitle) {
+            this.cloId = cloId;
             this.ploTitle = ploTitle;
             this.ploCode = ploCode;
             this.cloTitle = cloTitle;
