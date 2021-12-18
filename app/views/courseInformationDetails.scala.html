@@ -86,7 +86,6 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                             Create New Map
                         </button>
                     }
-
                 </div>
             </div>
         </div>
@@ -118,7 +117,6 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                                         <span class="text-secondary">
                                             <i class="fas fa-trash-alt"></i>
                                         </span>
-
                                     </button>
                                 </form>
                             </td>
@@ -140,6 +138,11 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
             </table>
         </div>
     </div>
+    @if(info.cloToPloMapperList.size() > 0) {
+        <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation" type="button" class="btn btn-sm btn-secondary float-right mb-5">
+           Continue to Fill Up Assessments Information
+        </a>
+    }
 </div>
 
 <!-- The Modal -->
@@ -149,7 +152,7 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
 
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 class="modal-title">Modal Heading</h4>
+                <h4 class="modal-title">Map CLO to PLO</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 

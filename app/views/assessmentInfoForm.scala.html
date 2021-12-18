@@ -1,0 +1,219 @@
+@(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
+assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Course Plan
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col">
+                    <div class="row">
+                        <div class="col">
+                            <p>PROGRAMME</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.programme</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>COURSE CODE</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.courseCode</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>COURSE NAME</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.courseName</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>SEMESTER</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.semester</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>INTAKE BATCH</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.intakeBatch</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>LECTURER</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.lecturerName</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <p>COURSE TYPE</p>
+                        </div>
+                        <div class="col">
+                            <p>@info.courseType</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <table class="table">
+                        <thead>
+                        <tr>
+                            <th scope="col" colspan="3" class="text-center">CLO to PLO Mapping</th>
+                        </tr>
+                        <tr>
+                            <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
+                            <th scope="col">Course Learning Outcome</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @if(info.cloToPloMapperList.size() > 0) {
+                            @for(clo <- info.cloToPloMapperList) {
+                                <tr>
+                                    <td>
+                                        @clo.ploTitle
+                                    </td>
+                                    <td>
+                                        @clo.ploCode
+                                    </td>
+                                    <td>
+                                        @clo.cloTitle
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <div class="col">
+                    Assessment To CLO Mapping
+                </div>
+                <div class="col text-right">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                        Add Assignment
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Assessments</th>
+                    <th>Assessment Type</th>
+                    <th>Full Marks</th>
+                    <th>Weightage(%)</th>
+                    <th>CLOs</th>
+                </tr>
+                </thead>
+                <tbody>
+                    @for((assessment, index) <- assessmentInfoList.view.zipWithIndex) {
+                        <tr>
+                            <td>@{index+1}</td>
+                            <td>@assessment.assessment</td>
+                            <td>@assessment.assessmentType</td>
+                            <td>@assessment.fullMarks</td>
+                            <td>@assessment.weightage</td>
+                            <td>@assessment.cloTitle</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    @if(totalAssessmentWeights == 100) {
+        <a href="#" type="button" class="btn btn-sm btn-secondary float-right mb-5">
+            Continue to Fill Up Students Information
+        </a>
+    }
+</div>
+
+<!-- The Modal -->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">New Assignment</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form method="post">
+                    <label>Assessments</label>
+                    <input type="text" class="form-control" name="assessment" required>
+
+                    <label>Assessment Type</label>
+                    <select class="form-control" name="assessmentType">
+                        <option value="Assignment">Assignment</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Test-1">Test-1</option>
+                        <option value="Test-2">Test-2</option>
+                        <option value="Mini project">Mini project</option>
+                        <option value="Final Exam">Final Exam</option>
+                        @if(info.courseType.equals("Theory with Lab")) {
+                            <option value="Lab Coursework">Lab Coursework</option>
+                            <option value="Lab Test/Exam">Lab Test/Exam</option>
+                        }
+                    </select>
+
+                    <label>Full Marks</label>
+                    <input type="number" class="form-control" name="fullMarks" required>
+
+                    <label>Weightage</label>
+                    <input type="number" class="form-control" name="weightage" required>
+
+                    <label>CLO</label>
+                    <select class="form-control" name="cloTitle">
+                        @for(clo <- info.cloToPloMapperList) {
+                            <option value="@clo.cloTitle">@clo.cloTitle</option>
+                        }
+                    </select>
+
+
+                    <button type="submit" class="btn btn-primary mt-3">Save Assignment</button>
+                </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

@@ -2,6 +2,7 @@ package controllers;
 
 import dtos.CourseInformationDto;
 import dtos.DepartmentDto;
+import forms.AssessmentInfoFormData;
 import forms.CloToPloMapFormData;
 import forms.LecturerCourseMapFormData;
 import models.*;
@@ -116,9 +117,9 @@ public class CourseInformationController extends Controller {
                 CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
                         courseLearningOutcomes);
                 int numberOfCloToPloMaps = courseInformationService.countCloToPloMaps(lecturerId, courseId);
+                Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
 
                 Messages messages = messagesApi.preferred(request);
-                Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
                 return ok(views.html.courseInformationDetails.render(lecturerId, name, viewModel, form, unlinkedPloList,
                         numberOfCloToPloMaps, request, messages));
             }
@@ -185,5 +186,57 @@ public class CourseInformationController extends Controller {
         return ok(Json.toJson(dtos));
     }
 
+    public Result showAssessmentInformationForm(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
 
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                String name = lecturer.firstName + " " + lecturer.lastName;
+
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
+                List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
+                List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
+
+                Long totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
+
+                CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
+                        courseLearningOutcomes);
+
+                Form<AssessmentInfoFormData> form = formFactory.form(AssessmentInfoFormData.class);
+
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfos,
+                        totalAssessmentWeights, request, messages));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleAssessmentInformationForm(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Form<AssessmentInfoFormData> fromRequest = formFactory.form(AssessmentInfoFormData.class).bindFromRequest(request);
+                if(fromRequest.hasGlobalErrors()) {
+                    return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+                }
+                else {
+                    AssessmentInfoFormData formData = fromRequest.get();
+                    courseInformationService.saveAssessmentInfo(formData.getAssessment(), formData.getAssessmentType(),
+                            formData.getFullMarks(), formData.getWeightage(), formData.getCloTitle(), lecturerId,
+                            courseId);
+
+                    return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+                }
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
 }

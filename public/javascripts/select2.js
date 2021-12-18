@@ -25,6 +25,7 @@ var schoolId;
                     data: departmentOptions
                 });*/
 
+                $('#departmentId').empty();
                 for(var i=0; i < data.length; i++)
                 {
                     $('#departmentId').append(new Option(data[i].name, data[i].id));
@@ -56,6 +57,7 @@ var schoolId;
                         data: courseOptions
                     });*/
 
+                    $('#courseId').empty();
                     for(var i=0; i < data.length; i++)
                     {
                         $('#courseId').append(new Option(data[i].code + " " + data[i].name, data[i].id));
