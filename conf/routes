@@ -34,9 +34,18 @@ GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation 
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation         controllers.CourseInformationController.handleAssessmentInformationForm(request: Request, id: Long, courseId: Long)
 
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/deleteAssessment   controllers.CourseInformationController.deleteAssessment(request: Request, id: Long, courseId: Long, assessmentId: Long)
 
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment   controllers.CourseInformationController.showEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment   controllers.CourseInformationController.handleEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/deleteMap      controllers.CourseInformationController.deleteCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
+
+GET     /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/editMap        controllers.CourseInformationController.showEditCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/editMap        controllers.CourseInformationController.handleEditCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
 
 
 GET     /schools/:id/departments                                     controllers.CourseInformationController.showDepartmentsBySchool(request: Request, id: Long)

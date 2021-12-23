@@ -8,7 +8,6 @@ import forms.LecturerCourseMapFormData;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import play.data.DynamicForm;
 import play.i18n.Messages;
 import play.i18n.MessagesApi;
 import play.data.Form;
@@ -22,7 +21,9 @@ import services.LecturerService;
 import viewModels.CoursePlanViewModel;
 
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -172,6 +173,54 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
+    public Result showEditCloToPloMap(Http.Request request, Long lecturerId, Long courseId, Long cloToPloMapId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                CourseLearningOutcome courseLearningOutcome = courseInformationService.getCourseLearningOutcome(cloToPloMapId);
+                List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
+                ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
+
+                Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
+                return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
+                        courseLearningOutcome, selectedPlo));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleEditCloToPloMap(Http.Request request, Long lecturerId, Long courseId, Long cloToPloMapId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Form<CloToPloMapFormData> formData = formFactory.form(CloToPloMapFormData.class).bindFromRequest(request);
+                if(formData.hasGlobalErrors()) {
+                    return redirect(routes.CourseInformationController.showEditCloToPloMap(lecturerId, courseId, cloToPloMapId));
+                }
+                else {
+                    CloToPloMapFormData cloToPloMapFormData = formData.get();
+                    String cloTitle = cloToPloMapFormData.getCloTitle();
+                    String ploCode = cloToPloMapFormData.getPloCode();
+
+                    boolean hasDuplicate = courseInformationService.hasCloToPloMap(cloTitle, ploCode, lecturerId, courseId);
+
+                    if(!hasDuplicate) {
+                        courseInformationService.updateCloToPloMap(cloTitle, ploCode, cloToPloMapId);
+                    }
+
+                    return redirect(routes.CourseInformationController.showCourseInformationDetails(lecturerId, courseId));
+                }
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
     public Result showDepartmentsBySchool(Http.Request request, Long schoolId) {
         List<Department> departments = courseInformationService.getDepartmentListBySchool(schoolId);
         List<DepartmentDto> departmentDtos = departments.stream().map(DepartmentDto::to).collect(Collectors.toList());
@@ -198,8 +247,28 @@ public class CourseInformationController extends Controller {
 
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
+                logger.debug("plo List : " + programmeLearningOutcomeList.size());
+
                 List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
+                logger.debug("assessment infos : " + assessmentInfos.size());
+
                 List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
+                logger.debug("clo list : " + courseLearningOutcomes.size());
+
+                List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
+                Map<String, Integer> cloWithTotalWeightMap = new HashMap<>();
+                Map<String, Integer> ploWithTotalWeightMap = new HashMap<>();
+                for(int i=1; i<=12; i++) {
+                    if(i<=8) {
+                        cloWithTotalWeightMap.put("CLO"+i, 0);
+                    }
+                    ploWithTotalWeightMap.put("PLO"+i, 0);
+                }
+
+                for(CloWithTotalWeightage clo: cloWithTotalWeightageList) {
+                    cloWithTotalWeightMap.replace(clo.cloTitle, clo.totalWeightage);
+                    ploWithTotalWeightMap.replace(clo.ploCode, clo.totalWeightage);
+                }
 
                 Long totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
 
@@ -210,7 +279,7 @@ public class CourseInformationController extends Controller {
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfos,
-                        totalAssessmentWeights, request, messages));
+                        totalAssessmentWeights, cloWithTotalWeightMap, ploWithTotalWeightMap, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -229,9 +298,116 @@ public class CourseInformationController extends Controller {
                 }
                 else {
                     AssessmentInfoFormData formData = fromRequest.get();
-                    courseInformationService.saveAssessmentInfo(formData.getAssessment(), formData.getAssessmentType(),
-                            formData.getFullMarks(), formData.getWeightage(), formData.getCloTitle(), lecturerId,
-                            courseId);
+                    Long totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
+
+                    if(totalAssessmentWeights+formData.getWeightage() > 100) {
+                        Form<AssessmentInfoFormData> formWithError = formFactory.form(AssessmentInfoFormData.class)
+                                .withGlobalError("Total weight of the assessments must be 100.");
+
+                        CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                        List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
+                        logger.debug("plo List : " + programmeLearningOutcomeList.size());
+
+                        List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
+                        logger.debug("assessment infos : " + assessmentInfos.size());
+
+                        List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
+                        logger.debug("clo list : " + courseLearningOutcomes.size());
+
+                        List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
+                        Map<String, Integer> cloWithTotalWeightMap = new HashMap<>();
+                        Map<String, Integer> ploWithTotalWeightMap = new HashMap<>();
+                        for(int i=1; i<=12; i++) {
+                            if(i<=8) {
+                                cloWithTotalWeightMap.put("CLO"+i, 0);
+                            }
+                            ploWithTotalWeightMap.put("PLO"+i, 0);
+                        }
+
+                        for(CloWithTotalWeightage clo: cloWithTotalWeightageList) {
+                            cloWithTotalWeightMap.replace(clo.cloTitle, clo.totalWeightage);
+                            ploWithTotalWeightMap.replace(clo.ploCode, clo.totalWeightage);
+                        }
+
+                        Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                        CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
+                                courseLearningOutcomes);
+
+                        Messages messages = messagesApi.preferred(request);
+
+                        return ok(views.html.assessmentInfoForm.render(lecturerId, optionalUsername.get(), viewModel,
+                                formWithError, assessmentInfos, totalAssessmentWeights, cloWithTotalWeightMap,
+                                ploWithTotalWeightMap, request, messages));
+
+                    }
+                    else {
+                        courseInformationService.saveAssessmentInfo(formData.getAssessment(), formData.getAssessmentType(),
+                                formData.getFullMarks(), formData.getWeightage(), formData.getCloTitle(), lecturerId,
+                                courseId);
+
+                        return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+                    }
+                }
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result deleteAssessment(Http.Request request, Long lecturerId, Long courseId, Long assessmentId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                courseInformationService.deleteAssessment(assessmentId);
+                return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showEditAssessmentForm(Http.Request request, Long lecturerId, Long courseId, Long assessmentId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Form<AssessmentInfoFormData> form = formFactory.form(AssessmentInfoFormData.class);
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
+                AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
+                return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), form, assessmentInfo,
+                        courseInformation, courseLearningOutcomes));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleEditAssessmentForm(Http.Request request, Long lecturerId, Long courseId, Long assessmentId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Form<AssessmentInfoFormData> fromRequest = formFactory.form(AssessmentInfoFormData.class).bindFromRequest(request);
+                if(fromRequest.hasGlobalErrors()) {
+                    return redirect(routes.CourseInformationController.showEditAssessmentForm(lecturerId, courseId, assessmentId));
+                }
+                else {
+                    AssessmentInfoFormData formData = fromRequest.get();
+
+                    AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
+                    assessmentInfo.assessment = formData.getAssessment();
+                    assessmentInfo.assessmentType = formData.getAssessmentType();
+                    assessmentInfo.fullMarks = formData.getFullMarks();
+                    assessmentInfo.weightage = formData.getWeightage();
+                    assessmentInfo.cloTitle = formData.getCloTitle();
+                    courseInformationService.updateAssessmentInfo(assessmentInfo);
 
                     return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
                 }

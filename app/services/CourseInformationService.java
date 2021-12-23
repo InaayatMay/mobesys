@@ -106,6 +106,13 @@ public class CourseInformationService {
         Ebean.save(courseLearningOutcome);
     }
 
+    public void updateCloToPloMap(String cloTitle, String ploCode, Long courseLearningOutcomeId) {
+        CourseLearningOutcome courseLearningOutcome = getCourseLearningOutcome(courseLearningOutcomeId);
+        courseLearningOutcome.title = cloTitle;
+        courseLearningOutcome.ploCode = ploCode;
+        Ebean.update(courseLearningOutcome);
+    }
+
     public void deleteCloToPloMap(Long cloToPloMapId) {
         int delete = Ebean.delete(CourseLearningOutcome.class, cloToPloMapId);
         logger.debug("Deleted : " + delete);
@@ -122,6 +129,14 @@ public class CourseInformationService {
         else {
             return new ArrayList<>();
         }
+    }
+
+    public CourseLearningOutcome getCourseLearningOutcome(Long id) {
+        return Ebean.find(CourseLearningOutcome.class, id);
+    }
+
+    public ProgrammeLearningOutcome getProgrammeLearningOutcome(String code) {
+        return Ebean.find(ProgrammeLearningOutcome.class).where().eq("code", code).findOne();
     }
 
     public void saveAssessmentInfo(String assessment, String assessmentType, int fullMarks, int weightage, String cloTitle,
@@ -146,14 +161,42 @@ public class CourseInformationService {
                 .endAnd().findList();
     }
 
+    public AssessmentInfo getAssessmentInfo(Long id) {
+        return Ebean.find(AssessmentInfo.class, id);
+    }
+
+    public void updateAssessmentInfo(AssessmentInfo assessmentInfo) {
+        Ebean.update(assessmentInfo);
+    }
+
     public Long getTotalAssessmentWeights(Long lecturerId, Long courseId) {
         String sql = "SELECT SUM(weightage) \n" +
                 "FROM assessment_info \n" +
                 "WHERE lecturer_id = :lecturerId AND course_information_id = :courseInformationId";
 
-        return Ebean.findNative(ProgrammeLearningOutcome.class, sql)
+        Long total =  Ebean.findNative(ProgrammeLearningOutcome.class, sql)
                 .setParameter("lecturerId", lecturerId)
                 .setParameter("courseInformationId", courseId)
                 .findSingleAttribute();
+
+        return total == null ? 0 : total;
+    }
+
+    public List<CloWithTotalWeightage> getCloWithTotalWeights(Long lecturerId, Long courseId) {
+        String sql = "SELECT clo_title, plo_code, SUM(full_marks) AS total_full_marks, SUM(weightage) AS total_weightage\n" +
+                "FROM assessment_info as aif\n" +
+                "left join course_learning_outcome as clo on clo.course_information_id = :courseInformationId and clo.lecturer_id = :lecturerId and aif.clo_title = clo.title\n" +
+                "WHERE aif.lecturer_id = :lecturerId AND aif.course_information_id = :courseInformationId\n" +
+                "GROUP BY clo_title;";
+
+        return Ebean.findDto(CloWithTotalWeightage.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .setParameter("courseInformationId", courseId)
+                .findList();
+    }
+
+    public void deleteAssessment(Long assessmentId) {
+        int delete = Ebean.delete(AssessmentInfo.class, assessmentId);
+        logger.debug("Deleted : " + delete);
     }
 }

@@ -1,5 +1,6 @@
 @(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
-assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
+assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long,
+cloWithTotalWeightageMap: Map[String, Integer], ploWithTotalWeightMap: Map[String, Integer]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
@@ -117,13 +118,27 @@ assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
                     Assessment To CLO Mapping
                 </div>
                 <div class="col text-right">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                        Add Assignment
-                    </button>
+                    @if(totalAssessmentWeights == 100) {
+                        <button type="button" class="btn btn-sm btn-secondary" disabled>
+                            Add Assignment
+                        </button>
+                    } else {
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                            Add Assignment
+                        </button>
+                    }
+
                 </div>
             </div>
         </div>
         <div class="card-body">
+            @if(form.hasGlobalErrors){
+            <div class="alert alert-warning">
+                @for(error <- form.globalErrors){
+                <span>@error.message</span>
+                }
+            </div>
+            }
             <table class="table">
                 <thead>
                 <tr>
@@ -132,7 +147,16 @@ assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
                     <th>Assessment Type</th>
                     <th>Full Marks</th>
                     <th>Weightage(%)</th>
-                    <th>CLOs</th>
+                    <th>CLO1</th>
+                    <th>CLO2</th>
+                    <th>CLO3</th>
+                    <th>CLO4</th>
+                    <th>CLO5</th>
+                    <th>CLO6</th>
+                    <th>CLO7</th>
+                    <th>CLO8</th>
+                    <th></th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -143,18 +167,113 @@ assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
                             <td>@assessment.assessmentType</td>
                             <td>@assessment.fullMarks</td>
                             <td>@assessment.weightage</td>
-                            <td>@assessment.cloTitle</td>
+                            @if(assessment.cloTitle.equals("CLO1")) {
+                            <td>CLO1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO2")) {
+                            <td></td><td>CLO2</td><td></td><td></td><td></td><td></td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO3")) {
+                            <td></td><td></td><td>CLO3</td><td></td><td></td><td></td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO4")) {
+                            <td></td><td></td><td></td><td>CLO4</td><td></td><td></td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO5")) {
+                            <td></td><td></td><td></td><td></td><td>CLO5</td><td></td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO6")) {
+                            <td></td><td></td><td></td><td></td><td></td><td>CLO6</td><td></td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO7")) {
+                            <td></td><td></td><td></td><td></td><td></td><td></td><td>CLO7</td><td></td>
+                            } else if (assessment.cloTitle.equals("CLO8")) {
+                            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>CLO8</td>
+                            }
+                            <td>
+                                <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/editAssessment" class="btn btn-link">
+                                    <span class="text-secondary">
+                                        <i class="fas fa-pencil-alt"></i>
+                                    </span>
+                                </a>
+                            </td>
+                            <td>
+                                <form method="post" action="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/deleteAssessment">
+                                    <button type="submit" class="btn btn-link">
+                                        <span class="text-secondary">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </span>
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     }
+                    <tr>
+                        <th colspan="4" class="text-center">Total</th>
+                        <th>@totalAssessmentWeights</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO1")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO2")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO3")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO4")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO5")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO6")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO7")</th>
+                        <th>@cloWithTotalWeightageMap.get("CLO8")</th>
+                    </tr>
                 </tbody>
             </table>
+            <table class="table table-bordered mt-5">
+                <tr>
+                    <th rowspan="2">PLO% Emphasis</th>
+                    <th>PLO1</th>
+                    <th>PLO2</th>
+                    <th>PLO3</th>
+                    <th>PLO4</th>
+                    <th>PLO5</th>
+                    <th>PLO6</th>
+                    <th>PLO7</th>
+                    <th>PLO8</th>
+                    <th>PLO9</th>
+                    <th>PLO10</th>
+                    <th>PLO11</th>
+                    <th>PLO12</th>
+                    <th>Total</th>
+                </tr>
+                <tr>
+                    <th>@ploWithTotalWeightMap.get("PLO1")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO2")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO3")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO4")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO5")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO6")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO7")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO8")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO9")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO10")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO11")</th>
+                    <th>@ploWithTotalWeightMap.get("PLO12")</th>
+                    <th>@totalAssessmentWeights</th>
+                </tr>
+            </table>
+
+        </div>
+        <div class="card-footer">
+            <div class="row">
+                <div class="col text-right">
+                    @if(totalAssessmentWeights == 100) {
+                        <a href="#" type="button" class="btn btn-sm btn-secondary">
+                            Continue to Fill Up Students Information
+                        </a>
+                        <button type="button" class="btn btn-sm btn-secondary" disabled>
+                            Add Assignment
+                        </button>
+                    } else {
+                        <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="To continue, the total weight of the assessments must be 100%.">
+                            <button class="btn btn-sm btn-secondary" type="button" disabled>Continue to Fill Up Students Information</button>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                            Add Assignment
+                        </button>
+                    }
+                </div>
+            </div>
         </div>
     </div>
-    @if(totalAssessmentWeights == 100) {
-        <a href="#" type="button" class="btn btn-sm btn-secondary float-right mb-5">
-            Continue to Fill Up Students Information
-        </a>
-    }
+
 </div>
 
 <!-- The Modal -->
@@ -189,18 +308,20 @@ assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long
                     </select>
 
                     <label>Full Marks</label>
-                    <input type="number" class="form-control" name="fullMarks" required>
+                    <input type="number" class="form-control" name="fullMarks" min="0" max="100" required>
 
                     <label>Weightage</label>
-                    <input type="number" class="form-control" name="weightage" required>
+                    <input type="number" class="form-control" name="weightage" min="0" max="30" required>
 
                     <label>CLO</label>
                     <select class="form-control" name="cloTitle">
-                        @for(clo <- info.cloToPloMapperList) {
-                            <option value="@clo.cloTitle">@clo.cloTitle</option>
+                        @if(info.cloToPloMapperList.size > 0) {
+                            @for(clo <- info.cloToPloMapperList) {
+                                <option value="@clo.cloTitle">@clo.cloTitle</option>
+                            }
                         }
-                    </select>
 
+                    </select>
 
                     <button type="submit" class="btn btn-primary mt-3">Save Assignment</button>
                 </form>

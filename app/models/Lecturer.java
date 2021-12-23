@@ -23,9 +23,6 @@ public class Lecturer {
     @Column(name = "code_number")
     public String codeNumber;
 
-    @Column(name = "subject_code")
-    public String subjectCode;
-
     public String email;
 
     public String password;

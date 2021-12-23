@@ -1,0 +1,60 @@
+@(userId: Long, username: String, form : Form[forms.AssessmentInfoFormData], info: models.AssessmentInfo,
+courseInformation: models.CourseInformation, courseLearningOutcomeList: List[models.CourseLearningOutcome])
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Edit Course Information
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <label>Assessments</label>
+                <input type="text" class="form-control" name="assessment" value="@info.assessment" required>
+
+                <label>Assessment Type</label>
+                <select class="form-control" name="assessmentType">
+                    <option value="@info.assessmentType">@info.assessmentType</option>
+                    <option value="Assignment">Assignment</option>
+                    <option value="Quiz">Quiz</option>
+                    <option value="Test-1">Test-1</option>
+                    <option value="Test-2">Test-2</option>
+                    <option value="Mini project">Mini project</option>
+                    <option value="Final Exam">Final Exam</option>
+                    @if(courseInformation.courseType.equals("Theory with Lab")) {
+                        <option value="Lab Coursework">Lab Coursework</option>
+                        <option value="Lab Test/Exam">Lab Test/Exam</option>
+                    }
+                </select>
+
+                <label>Full Marks</label>
+                <input type="number" class="form-control" name="fullMarks" min="0" max="100" value="@info.fullMarks" required>
+
+                <label>Weightage</label>
+                <input type="number" class="form-control" name="weightage" min="0" max="30" value="@info.weightage" required>
+
+                <label>CLO</label>
+                <select class="form-control" name="cloTitle">
+                    @if(courseLearningOutcomeList.size > 0) {
+                        <option value="@info.cloTitle">@info.cloTitle</option>
+                        @for(clo <- courseLearningOutcomeList) {
+                            <option value="@clo.title">@clo.title</option>
+                        }
+                    }
+
+                </select>
+
+                <button type="submit" class="btn btn-primary mt-3">Save Assignment</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

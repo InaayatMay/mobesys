@@ -1,0 +1,38 @@
+@(userId: Long, username: String, form : Form[forms.CloToPloMapFormData], unlinkedPloList: List[ProgrammeLearningOutcome],
+clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Edit Course Information
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <label>Plo</label>
+                <select class="form-control" name="ploCode">
+                    @if(unlinkedPloList.size() > 0) {
+                            <option value="@plo.code" selected>@plo.code _ @plo.title</option>
+                        @for(plo <- unlinkedPloList) {
+                            <option value="@plo.code">@plo.code _ @plo.title</option>
+                        }
+                    }
+                </select>
+
+                <label>Clo</label>
+                <input type="text" class="form-control" name="cloTitle" value="@clo.title" minlength="4" required>
+
+                <button type="submit" class="btn btn-primary mt-3">Save Map</button>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>
