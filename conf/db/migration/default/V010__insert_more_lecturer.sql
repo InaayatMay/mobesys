@@ -13,4 +13,4 @@ CREATE TABLE lecturer_student_course (
     lecturer_id INT REFERENCES lecturer(id),
     course_information_id INT REFERENCES course_information(id),
     student_id INT REFERENCES student(id)
-)
+);

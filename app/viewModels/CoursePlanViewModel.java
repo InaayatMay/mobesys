@@ -41,10 +41,10 @@ public class CoursePlanViewModel {
                 .collect(Collectors.toList());
 
         coursePlanViewModel.cloToPloMapperList = courseLearningOutcomes.stream().map(item -> {
-            CloToPloMapper cloToPloMapper = new CloToPloMapper(item.id, "plo title", item.ploCode, item.title);
+            CloToPloMapper cloToPloMapper = new CloToPloMapper(item.id, "plo title", item.ploCode, item.code, item.title);
             for(ProgrammeLearningOutcome plo: programmeLearningOutcomeList) {
                 if(plo.code.equals(item.ploCode)) {
-                    cloToPloMapper = new CloToPloMapper(item.id, plo.title, plo.code, item.title);
+                    cloToPloMapper = new CloToPloMapper(item.id, plo.title, plo.code,item.code, item.title);
                 }
             }
             return cloToPloMapper;
@@ -67,12 +67,14 @@ public class CoursePlanViewModel {
         public Long cloId;
         public String ploTitle;
         public String ploCode;
+        public String cloCode;
         public String cloTitle;
 
-        public CloToPloMapper(Long cloId, String ploTitle, String ploCode, String cloTitle) {
+        public CloToPloMapper(Long cloId, String ploTitle, String ploCode, String cloCode, String cloTitle) {
             this.cloId = cloId;
             this.ploTitle = ploTitle;
             this.ploCode = ploCode;
+            this.cloCode = cloCode;
             this.cloTitle = cloTitle;
         }
     }

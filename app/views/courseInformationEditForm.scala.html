@@ -1,5 +1,6 @@
 @(userId: Long, username: String, form : Form[forms.CloToPloMapFormData], unlinkedPloList: List[ProgrammeLearningOutcome],
-clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome)
+clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseId: Long
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +16,13 @@ clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome)
             Edit Course Information
         </div>
         <div class="card-body">
+            @if(form.hasGlobalErrors){
+                <div class="alert alert-warning">
+                    @for(error <- form.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
+            }
             <form method="post">
                 <label>Plo</label>
                 <select class="form-control" name="ploCode">
@@ -26,10 +34,14 @@ clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome)
                     }
                 </select>
 
-                <label>Clo</label>
-                <input type="text" class="form-control" name="cloTitle" value="@clo.title" minlength="4" required>
+                <label class="mt-3">Clo Code</label>
+                <input type="text" class="form-control" name="cloCode" value="@clo.code" required>
 
-                <button type="submit" class="btn btn-primary mt-3">Save Map</button>
+                <label class="mt-3">Clo Title</label>
+                <input type="text" class="form-control" name="cloTitle" value="@clo.title" required>
+
+                <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Map</button>
+                <a href="/lecturer/@userId/courseInformation/@courseId/details" class="btn btn-outline-secondary mt-3">Cancel</a>
             </form>
         </div>
     </div>

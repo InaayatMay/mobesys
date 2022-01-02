@@ -81,7 +81,7 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                     CLO to PLO mapping
                 </div>
                 <div class="col text-right">
-                    @if(numberOfCloToPloMaps < 5) {
+                    @if(numberOfCloToPloMaps < 8) {
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
                             Create New Map
                         </button>
@@ -94,10 +94,32 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
             </div>
         </div>
         <div class="card-body">
+            @if(form.hasGlobalErrors){
+                <div class="alert alert-warning">
+                    @for(error <- form.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
+            }
+
+            @if(info.cloToPloMapperList.size() == 8) {
+                <div class="alert alert-secondary">
+                    <div class="row">
+                        <div class="col">
+                            <p>You've reached maximum number of CLO to PLO mapping. Click the button to continue to fill up assessments information.</p>
+                        </div>
+                        <div class="col">
+                            <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation" type="button" class="btn btn-sm btn-secondary float-right">
+                                Continue to Fill Up Assessments Information
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
             <table class="table">
                 <thead>
                 <tr>
-                    <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
+                    <th scope="col">Programme Learning Outcome</th>
                     <th scope="col">Course Learning Outcome</th>
                     <th></th>
                     <th></th>
@@ -108,13 +130,10 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                     @for(clo <- info.cloToPloMapperList) {
                         <tr>
                             <td>
-                                @clo.ploTitle
+                                @clo.ploCode _ @clo.ploTitle
                             </td>
                             <td>
-                                @clo.ploCode
-                            </td>
-                            <td>
-                                @clo.cloTitle
+                                @clo.cloCode _ @clo.cloTitle
                             </td>
                             <td>
                                 <a href="/lecturer/@userId/courseInformation/@info.courseId/details/@clo.cloId/editMap" class="btn btn-link">
@@ -124,7 +143,7 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                                 </a>
                             </td>
                             <td>
-                                <form method="post" action="/lecturer/@userId/courseInformation/@info.courseId/details/@clo.cloId/deleteMap">
+                                <form method="post" class="show-confirm" data-file="@clo.ploCode To @clo.cloTitle" action="/lecturer/@userId/courseInformation/@info.courseId/details/@clo.cloId/deleteMap">
                                     <button type="submit" class="btn btn-link">
                                         <span class="text-secondary">
                                             <i class="fas fa-trash-alt"></i>
@@ -136,7 +155,7 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                     }
                 } else {
                     <tr>
-                        <td colspan="3" class="text-center">
+                        <td colspan="5" class="text-center">
                             <div class="alert alert-secondary" role="alert">
                                 There is no CLO to PLO mapping yet. <br><br>
                                 <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
@@ -149,12 +168,17 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                 </tbody>
             </table>
         </div>
+        <div class="card-footer">
+            @if(info.cloToPloMapperList.size() >= 3 && info.cloToPloMapperList.size() <= 8) {
+                <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation" type="button" class="btn btn-sm btn-secondary float-right">
+                    Continue to Fill Up Assessments Information
+                </a>
+            } else {
+                <button class="btn btn-secondary float-right" disabled>Continue to Fill Up Assessments Information</button>
+            }
+        </div>
     </div>
-    @if(info.cloToPloMapperList.size() > 0) {
-        <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation" type="button" class="btn btn-sm btn-secondary float-right mb-5">
-           Continue to Fill Up Assessments Information
-        </a>
-    }
+
 </div>
 
 <!-- The Modal -->
@@ -180,20 +204,24 @@ unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer
                         }
                     </select>
 
-                    <label>Clo</label>
+                    <label>Clo Code</label>
+                    <input type="text" class="form-control" name="cloCode" required>
+
+                    <label>Clo Title</label>
                     <input type="text" class="form-control" name="cloTitle" required>
 
-                    <button type="submit" class="btn btn-primary mt-3">Save Map</button>
+                    <button type="submit" class="btn btn-secondary mt-3">Save Map</button>
                 </form>
             </div>
 
             <!-- Modal footer -->
             <div class="modal-footer">
-                <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
+<script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
 </body>
 </html>

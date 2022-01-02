@@ -12,6 +12,8 @@ public class CourseLearningOutcome {
     @Id
     public Long id;
 
+    public String code;
+
     public String title;
 
     @Column(name = "plo_code")

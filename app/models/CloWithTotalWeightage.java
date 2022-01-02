@@ -9,14 +9,14 @@ import javax.persistence.Entity;
 @Sql
 public class CloWithTotalWeightage {
 
-    @Column(name = "clo_title")
-    public String cloTitle;
+    @Column(name = "clo_code")
+    public String cloCode;
 
     @Column(name = "plo_code")
     public String ploCode;
 
     @Column(name = "total_weightage")
-    public int totalWeightage;
+    public Double totalWeightage;
 
     @Column(name = "total_full_marks")
     public int totalFullMarks;

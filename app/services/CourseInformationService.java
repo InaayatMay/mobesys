@@ -5,8 +5,7 @@ import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class CourseInformationService {
     private final Logger logger = LoggerFactory.getLogger("application");
@@ -31,8 +30,19 @@ public class CourseInformationService {
         return Ebean.find(Department.class).where().eq("school_id", schoolId).findList();
     }
 
-    public List<CourseInformation> getCourseInformationByDept(Long departmentId) {
-        return Ebean.find(CourseInformation.class).where().eq("department_id", departmentId).findList();
+    public List<String> getProgrammesByDepartment(Long deptId) {
+        String sql = "select programme\n" +
+                "from course_information\n" +
+                "where department_id = :deptId\n" +
+                "group by programme";
+
+        return Ebean.findNative(CourseInformation.class, sql)
+                .setParameter("deptId", deptId)
+                .findSingleAttributeList();
+    }
+
+    public List<CourseInformation> getCourseInformationByDept(String programme) {
+        return Ebean.find(CourseInformation.class).where().eq("programme", programme).findList();
     }
 
     public CourseInformation getCourseInformationById(Long courseInformationId) {
@@ -44,10 +54,20 @@ public class CourseInformationService {
     }
 
     public List<ProgrammeLearningOutcome> getUnlinkedPloList(Long courseInformationId) {
-        String sql = "SELECT plo.*\n" +
-                "FROM programme_learning_outcome AS plo\n" +
-                "LEFT JOIN course_learning_outcome AS clo ON clo.plo_code = plo.code AND clo.course_information_id = :courseInformationId\n" +
-                "WHERE clo.id IS NULL";
+        CourseInformation courseInformation = getCourseInformationById(courseInformationId);
+        String sql;
+        if(courseInformation.programme.equals("Bachelor of Computer Science")) {
+            sql = "SELECT plo.*\n" +
+                    "FROM programme_learning_outcome AS plo\n" +
+                    "LEFT JOIN course_learning_outcome AS clo ON clo.plo_code = plo.code AND clo.course_information_id = :courseInformationId\n" +
+                    "WHERE clo.id IS NULL AND plo.id <= 9";
+        }
+        else {
+            sql = "SELECT plo.*\n" +
+                    "FROM programme_learning_outcome AS plo\n" +
+                    "LEFT JOIN course_learning_outcome AS clo ON clo.plo_code = plo.code AND clo.course_information_id = :courseInformationId\n" +
+                    "WHERE clo.id IS NULL";
+        }
 
         List<ProgrammeLearningOutcome> programmeLearningOutcomeList = Ebean.findNative(ProgrammeLearningOutcome.class, sql)
                 .setParameter("courseInformationId", courseInformationId)
@@ -62,31 +82,45 @@ public class CourseInformationService {
         }
     }
 
-    public boolean hasCloToPloMap(String cloTitle, String ploCode, Long lecturerId, Long courseInformationId) {
-        int count = Ebean.find(CourseLearningOutcome.class).where().and()
+    public List<Long> cloToPloDuplicateList(String cloCode, String cloTitle, String ploCode, Long lecturerId,
+                                            Long courseInformationId) {
+        return Ebean.find(CourseLearningOutcome.class).where().and()
+                .eq("code", cloCode)
                 .eq("title", cloTitle)
                 .eq("ploCode", ploCode)
                 .eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseInformationId)
-                .endAnd().findCount();
+                .endAnd().findIds();
+    }
 
-        if(count == 0) {
-            count = Ebean.find(CourseLearningOutcome.class).where().and()
-                    .eq("title", cloTitle)
-                    .eq("lecturerId", lecturerId)
-                    .eq("courseInformationId", courseInformationId)
-                    .endAnd().findCount();
-        }
+    public List<Long> ploDuplicateList(String ploCode, Long lecturerId, Long courseInformationId) {
+        return Ebean.find(CourseLearningOutcome.class).where().and()
+                .eq("ploCode", ploCode)
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseInformationId)
+                .endAnd().findIds();
+    }
 
-        if(count == 0) {
-            count = Ebean.find(CourseLearningOutcome.class).where().and()
-                    .eq("ploCode", ploCode)
-                    .eq("lecturerId", lecturerId)
-                    .eq("courseInformationId", courseInformationId)
-                    .endAnd().findCount();
-        }
+    public List<Long> cloDuplicateList(String cloCode, String cloTitle, Long lecturerId, Long courseInformationId) {
+        List<Long> cloCodeDuplicateList = Ebean.find(CourseLearningOutcome.class).where()
+                .and()
+                .eq("code", cloCode)
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseInformationId)
+                .endAnd()
+                .findIds();
 
-        return count > 0;
+        List<Long> cloTitleDuplicateList = Ebean.find(CourseLearningOutcome.class).where()
+                .and()
+                .eq("title", cloTitle)
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseInformationId)
+                .endAnd()
+                .findIds();
+
+        Set<Long> set = new LinkedHashSet<>(cloCodeDuplicateList);
+        set.addAll(cloTitleDuplicateList);
+        return new ArrayList<>(set);
     }
 
     public int countCloToPloMaps(Long lecturerId, Long courseInformationId) {
@@ -97,8 +131,9 @@ public class CourseInformationService {
                 .endAnd().findCount();
     }
 
-    public void saveCloToPloMap(String cloTitle, String ploCode, Long lecturerId, Long courseInformationId) {
+    public void saveCloToPloMap(String cloCode, String cloTitle, String ploCode, Long lecturerId, Long courseInformationId) {
         CourseLearningOutcome courseLearningOutcome = new CourseLearningOutcome();
+        courseLearningOutcome.code = cloCode;
         courseLearningOutcome.title = cloTitle;
         courseLearningOutcome.ploCode = ploCode;
         courseLearningOutcome.lecturerId = lecturerId;
@@ -119,16 +154,9 @@ public class CourseInformationService {
     }
 
     public List<CourseLearningOutcome> getCourseLearningOutcomeList(Long courseInformationId, Long lecturerId) {
-        List<CourseLearningOutcome> courseLearningOutcomes = Ebean.find(CourseLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
+        return Ebean.find(CourseLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseInformationId)
-                .endAnd().orderBy().asc("ploCode").findList();
-
-        if(courseLearningOutcomes.size() > 0) {
-            return courseLearningOutcomes;
-        }
-        else {
-            return new ArrayList<>();
-        }
+                .endAnd().orderBy("substr(plo_code from 1 for 3), cast(substr(plo_code from 4) AS UNSIGNED)").findList();
     }
 
     public CourseLearningOutcome getCourseLearningOutcome(Long id) {
@@ -139,7 +167,7 @@ public class CourseInformationService {
         return Ebean.find(ProgrammeLearningOutcome.class).where().eq("code", code).findOne();
     }
 
-    public void saveAssessmentInfo(String assessment, String assessmentType, int fullMarks, int weightage, String cloTitle,
+    public void saveAssessmentInfo(String assessment, String assessmentType, int fullMarks, Double weightage, String cloTitle,
                                    Long lecturerId, Long courseInformationId) {
 
         AssessmentInfo info = new AssessmentInfo();
@@ -147,7 +175,7 @@ public class CourseInformationService {
         info.assessmentType = assessmentType;
         info.fullMarks = fullMarks;
         info.weightage = weightage;
-        info.cloTitle = cloTitle;
+        info.cloCode = cloTitle;
         info.lecturerId = lecturerId;
         info.courseInformationId = courseInformationId;
 
@@ -158,7 +186,8 @@ public class CourseInformationService {
         return Ebean.find(AssessmentInfo.class).where().and()
                 .eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseId)
-                .endAnd().findList();
+                .endAnd()
+                .orderBy().asc("assessmentType").findList();
     }
 
     public AssessmentInfo getAssessmentInfo(Long id) {
@@ -183,11 +212,11 @@ public class CourseInformationService {
     }
 
     public List<CloWithTotalWeightage> getCloWithTotalWeights(Long lecturerId, Long courseId) {
-        String sql = "SELECT clo_title, plo_code, SUM(full_marks) AS total_full_marks, SUM(weightage) AS total_weightage\n" +
+        String sql = "SELECT clo_code, plo_code, SUM(full_marks) AS total_full_marks, ROUND(SUM(weightage), 2) AS total_weightage\n" +
                 "FROM assessment_info as aif\n" +
-                "left join course_learning_outcome as clo on clo.course_information_id = :courseInformationId and clo.lecturer_id = :lecturerId and aif.clo_title = clo.title\n" +
+                "left join course_learning_outcome as clo on clo.course_information_id = :courseInformationId and clo.lecturer_id = :lecturerId and aif.clo_code = clo.code\n" +
                 "WHERE aif.lecturer_id = :lecturerId AND aif.course_information_id = :courseInformationId\n" +
-                "GROUP BY clo_title;";
+                "GROUP BY clo_code;";
 
         return Ebean.findDto(CloWithTotalWeightage.class, sql)
                 .setParameter("lecturerId", lecturerId)
@@ -198,5 +227,57 @@ public class CourseInformationService {
     public void deleteAssessment(Long assessmentId) {
         int delete = Ebean.delete(AssessmentInfo.class, assessmentId);
         logger.debug("Deleted : " + delete);
+    }
+
+    public void deleteAllAssessments(Long lecturerId, Long courseId) {
+        try{
+            List<AssessmentInfo> assessmentInfoList = getAssessmentInfoList(lecturerId, courseId);
+            Ebean.beginTransaction();
+
+            Ebean.deleteAll(assessmentInfoList);
+
+            Ebean.commitTransaction();
+        }catch(Exception e){
+            Ebean.endTransaction();
+        }
+    }
+
+    public Optional<PreviousCloRecord> getPreviousCloRecord(Long lecturerId, Long courseId, String cloCode) {
+        return Ebean.find(PreviousCloRecord.class).where().and()
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseId)
+                .eq("cloCode", cloCode)
+                .endAnd().findOneOrEmpty();
+    }
+
+    public List<PreviousCloRecord> getPreviousCloRecordList(Long lecturerId, Long courseId) {
+        return Ebean.find(PreviousCloRecord.class).where().and()
+                .eq("lecturerId", lecturerId)
+                .eq("courseInformationId", courseId).findList();
+    }
+
+    public void savePreviousCloRecord(Long lecturerId, Long courseId, String cloCode, Optional<Double> previousSemesterClassAvg,
+                                      Optional<String> comments) {
+
+        Optional<PreviousCloRecord> optional = getPreviousCloRecord(lecturerId, courseId, cloCode);
+        if(optional.isPresent()) {
+            PreviousCloRecord previousCloRecord = optional.get();
+            previousSemesterClassAvg.ifPresent(aDouble -> previousCloRecord.previousSemesterClassAverage = aDouble);
+            comments.ifPresent(s -> previousCloRecord.comments = s);
+            Ebean.update(previousCloRecord);
+        }
+        else {
+            PreviousCloRecord previousCloRecord = new PreviousCloRecord();
+            previousCloRecord.lecturerId = lecturerId;
+            previousCloRecord.courseInformationId = courseId;
+            previousCloRecord.cloCode = cloCode;
+            previousCloRecord.previousSemesterClassAverage = previousSemesterClassAvg.orElse(null);
+            previousCloRecord.comments = comments.orElse( null);
+            Ebean.save(previousCloRecord);
+        }
+    }
+
+    public List<CourseInformation> getCourseInformationsByCourseName(String courseName) {
+        return Ebean.find(CourseInformation.class).where().eq("course_name", courseName).findList();
     }
 }

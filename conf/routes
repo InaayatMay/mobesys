@@ -35,18 +35,56 @@ GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation 
 POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation         controllers.CourseInformationController.handleAssessmentInformationForm(request: Request, id: Long, courseId: Long)
 
 +nocsrf
-POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/deleteAssessment   controllers.CourseInformationController.deleteAssessment(request: Request, id: Long, courseId: Long, assessmentId: Long)
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/deleteAssessment      controllers.CourseInformationController.deleteAssessment(request: Request, id: Long, courseId: Long, assessmentId: Long)
 
-GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment   controllers.CourseInformationController.showEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
 +nocsrf
-POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment   controllers.CourseInformationController.handleEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/deleteAll      controllers.CourseInformationController.deleteAllAssessments(request: Request, id: Long, courseId: Long)
+
+
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment        controllers.CourseInformationController.showEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/editAssessment        controllers.CourseInformationController.handleEditAssessmentForm(request: Request, id: Long, courseId: Long, assessmentId: Long)
+
+
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/deleteMap      controllers.CourseInformationController.deleteCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
+
 
 GET     /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/editMap        controllers.CourseInformationController.showEditCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/editMap        controllers.CourseInformationController.handleEditCloToPloMap(request: Request, id: Long, courseId: Long, cloToPloMapId: Long)
 
 
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation                  controllers.CourseInformationController.showStudentInformationForm(request: Request, id: Long, courseId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation                  controllers.CourseInformationController.handleStudentInformationForm(request: Request, id: Long, courseId: Long)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/deleteStudent                  controllers.CourseInformationController.deleteStudentInformation(request: Request, id: Long, courseId: Long, studentId: Long)
+
+
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.showEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.handleEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/studentInformation/:studentId/marksEnty/:marksEntryId        controllers.CourseInformationController.saveStudentMarksForAssessment(request: Request, id: Long, courseId: Long, assessmentId: Long, studentId: Long, marksEntryId: Long)
+
+GET     /lecturer/:id/courseInformation/:courseId/reports                               controllers.CourseInformationController.showReports(request: Request, id: Long, courseId: Long)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/reports/studentStatistics/:studentId/saveAttemptNumber  controllers.CourseInformationController.saveStudentAttemptNumber(request: Request, id: Long, courseId: Long, studentId: Long)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/reports/cloAnalysis/:cloCode/savePreviousClassAvg       controllers.CourseInformationController.saveCloPreviousSemClassAvgRecord(request: Request, id: Long, courseId: Long, cloCode: String)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/reports/cloAnalysis/:cloCode/saveComment       controllers.CourseInformationController.saveComment(request: Request, id: Long, courseId: Long, cloCode: String)
+
+
 GET     /schools/:id/departments                                     controllers.CourseInformationController.showDepartmentsBySchool(request: Request, id: Long)
-GET     /schools/:schoolId/departments/:departmentId/courses         controllers.CourseInformationController.showCoursesByDeptAndSchool(request: Request, schoolId: Long, departmentId: Long)
+GET     /schools/:schoolId/departments/:departmentId/programmes      controllers.CourseInformationController.showProgrammesByDept(request: Request, schoolId: Long, departmentId: Long)
+GET     /schools/:schoolId/departments/:departmentId/programmes/:programme/courses         controllers.CourseInformationController.showCoursesByProgramme(request: Request, schoolId: Long, departmentId: Long, programme: String)
+GET     /lecturer/:lecturerId/courseInformation/:courseId/gradeDistribution                controllers.CourseInformationController.calculateGradeDistribution(request: Request, lecturerId: Long, courseId: Long)
+GET     /lecturer/:lecturerId/courseInformation/:courseId/classCloAttainment               controllers.CourseInformationController.generateClassCloAttainment(request: Request, lecturerId: Long, courseId: Long)
+GET     /lecturer/:lecturerId/courseInformation/:courseId/classPloAttainment               controllers.CourseInformationController.generateClassPloAttainment(request: Request, lecturerId: Long, courseId: Long)

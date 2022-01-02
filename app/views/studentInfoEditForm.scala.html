@@ -1,0 +1,51 @@
+@(userId: Long, username: String, form : Form[forms.StudentInfoFormData], student: models.Student
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Edit Student Information
+        </div>
+        <div class="card-body">
+            @if(form.hasGlobalErrors){
+                <div class="alert alert-warning">
+                    @for(error <- form.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
+            }
+            <form method="post">
+                <label>Code Number</label>
+                <input type="text" class="form-control" name="codeNumber" value="@student.codeNumber" required>
+
+                <label class="mt-2">First Name</label>
+                <input type="text" class="form-control" name="firstName" value="@student.firstName" required>
+
+                <label class="mt-2">Last Name</label>
+                <input type="text" class="form-control" name="lastName" value="@student.lastName" required>
+
+                <label class="mt-2">Gender</label>
+                <input type="text" class="form-control" name="gender" value="@student.gender" required>
+
+                <label class="mt-2">Current Semester</label>
+                <input type="text" class="form-control" name="currentSemester" value="@student.currentSemester" required>
+
+                <label class="mt-2">Email</label>
+                <input type="text" class="form-control" name="email" value="@student.email" required>
+
+                <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Student</button>
+                <a href="/lecturer/@userId/courseInformation/@student.courseInformationId/details/assessmentInformation/studentInformation" class="btn btn-outline-secondary mt-3">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>
+</body>
+</html>

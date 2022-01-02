@@ -1,0 +1,623 @@
+@(userId: Long, username: String, gradeViewModel: viewModels.GradeViewModel, cloViewModel: viewModels.CloViewModel
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+
+</head>
+<body>
+@views.html.common.navbar(userId, username)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            <div class="row">
+                <div class="col">
+                    Student's Reports
+                </div>
+                <div class="col text-right">
+                    <button class="btn btn-sm btn-secondary" onclick="createPDFFromHTML()">Download</button>
+                </div>
+            </div>
+        </div>
+    </div>
+        <nav>
+            <div class="nav nav-tabs" id="nav-tab" role="tablist">
+                <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">GRADES</button>
+                <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">CLO%</button>
+                <button class="nav-link" id="nav-contact-tab" data-bs-toggle="tab" data-bs-target="#nav-contact" type="button" role="tab" aria-controls="nav-contact" aria-selected="false">PLO%</button>
+            </div>
+        </nav>
+        <div class="tab-content html-content" id="nav-tabContent">
+            <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                <div class="row mb-4 mt-2">
+                    <div class="col text-center">
+                        <strong>Course Information</strong>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-end">
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Programme
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.programme
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Code
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseCode
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Semester
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.semester
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-4">
+                                Lecturer
+                            </div>
+                            <div class="col col-8">
+                                @username
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row mb-2">
+                            <div class="col">
+                                -
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Name
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseName
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Intake Batch
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.intakeBatch
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                No. of Students
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.numberOfStudent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-bordered mt-5 mb-5">
+                    <tr>
+                        <th rowspan="3">
+                            Statistics
+                        </th>
+                        <th colspan="@gradeViewModel.statistics.size()" class="text-center">Total Coursework Weight(%)</th>
+                        <th colspan="2" class="text-center">Grand Total Weight(%)</th>
+                        <th>Grades</th>
+                    </tr>
+                    <tr>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <th>@stat.assessmentType</th>
+                        }
+                        <th>@gradeViewModel.finalExamStatistics.assessmentType</th>
+                        <th>@gradeViewModel.courseworkStatistics.assessmentType</th>
+                        <th>@gradeViewModel.grandTotalStatistics.assessmentType</th>
+                    </tr>
+                    <tr>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <th>@stat.weightage</th>
+                        }
+                        <th>@gradeViewModel.finalExamStatistics.weightage</th>
+                        <th>@gradeViewModel.courseworkStatistics.weightage</th>
+                        <th>@gradeViewModel.grandTotalStatistics.weightage</th>
+                    </tr>
+                    <tr>
+                        <th>Total Marks</th>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <td>@stat.totalMarks</td>
+                        }
+                        <td>@gradeViewModel.finalExamStatistics.totalMarks</td>
+                        <td>@gradeViewModel.courseworkStatistics.totalMarks</td>
+                        <td>@gradeViewModel.grandTotalStatistics.totalMarks</td>
+                    </tr>
+                    <tr>
+                        <th>Average Marks</th>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <td>@stat.averageMarks</td>
+                        }
+                        <td>@gradeViewModel.finalExamStatistics.averageMarks</td>
+                        <td>@gradeViewModel.courseworkStatistics.averageMarks</td>
+                        <td>@gradeViewModel.grandTotalStatistics.averageMarks</td>
+                    </tr>
+
+                </table>
+                <table class="table table-bordered mb-5">
+                    <tr>
+                        <th rowspan="3"></th>
+                        <th rowspan="3">Student ID</th>
+                        <th rowspan="3">Student Name</th>
+                        <th rowspan="3">Number of Attempt</th>
+                        <th colspan="@gradeViewModel.statistics.size()" class="text-center">Total Coursework Weightage(%)</th>
+                        <th colspan="2" class="text-center">Grand Total Weight(%)</th>
+                        <th colspan="4" class="text-center">Grades</th>
+                    </tr>
+                    <tr>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <th>@stat.assessmentType</th>
+                        }
+                        <th>@gradeViewModel.finalExamStatistics.assessmentType</th>
+                        <th>@gradeViewModel.courseworkStatistics.assessmentType</th>
+                        <th>@gradeViewModel.grandTotalStatistics.assessmentType</th>
+                        <th rowspan="2">Grade</th>
+                        <th rowspan="2">Point</th>
+                        <th rowspan="2">Status</th>
+                    </tr>
+                    <tr>
+                        @for(stat <- gradeViewModel.statistics) {
+                            <th>@stat.weightage</th>
+                        }
+                        <th>@gradeViewModel.finalExamStatistics.weightage</th>
+                        <th>@gradeViewModel.courseworkStatistics.weightage</th>
+                        <th>@gradeViewModel.grandTotalStatistics.weightage</th>
+                    </tr>
+                    @for(std <- gradeViewModel.studentStatisticsList) {
+                        <tr>
+                            <td>@std.serialNo</td>
+                            <td>@std.studentCodeNumber</td>
+                            <td>@std.studentName</td>
+
+                            <form method="post" id="uniqueForm@std.studentId" action="@routes.CourseInformationController.saveStudentAttemptNumber(userId, gradeViewModel.courseId, std.studentId)">
+                                <input id="marksInput@std.studentId" name="numberOfAttempt" hidden>
+                                @if(std.numberOfAttempt == null) {
+                                    <td class="bg-secondary editable" data-marksId="@std.studentId" id="@std.studentId">X</td>
+                                } else {
+                                    <td class="editable" data-marksId="@std.studentId" id="@std.studentId">@std.numberOfAttempt</td>
+                                }
+                            </form>
+
+                            @for(marks <- std.totalAssessmentMarks) {
+                                <td>@marks</td>
+                            }
+                            <td>@std.finalExamTotal</td>
+                            <td>@std.courseworkTotal</td>
+                            <td>@std.grandTotal</td>
+                            <td>@std.grade</td>
+                            <td>@std.point</td>
+
+                            @if(std.status.equals("Repeat")) {
+                                <td class="bg-warning">@std.status</td>
+                            } else {
+                                <td>@std.status</td>
+                            }
+
+                        </tr>
+                    }
+                </table>
+                <div class="row">
+                    <div class="col">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th colspan="4" class="text-center">Analysis of Results</th>
+                            </tr>
+                            <tr>
+                                <th>Marks</th>
+                                <th>Grade</th>
+                                <th>Frequency</th>
+                                <th>%</th>
+                            </tr>
+                            @for(analysis <- gradeViewModel.analysisOfResultsList) {
+                            <tr>
+                                <td>@analysis.marks</td>
+                                <td>@analysis.grade</td>
+                                <td>@analysis.frequency</td>
+                                <td>@analysis.percentage</td>
+                            </tr>
+                            }
+                            <tr>
+                                <td colspan="4"></td>
+                            </tr>
+                            <tr>
+                                <th colspan="2" class="text-right">
+                                    Total Students
+                                </th>
+                                <th colspan="2" class="text-left">
+                                    @gradeViewModel.studentStatisticsList.size()
+                                </th>
+                            </tr>
+                            <tr>
+                                <th>Fail</th>
+                                <th>@gradeViewModel.failPercentage%</th>
+                                <th>Pass</th>
+                                <th>@gradeViewModel.passPercentage%</th>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="col">
+                        <div id="myDiv" data-lecturerId="@userId" data-courseId="@gradeViewModel.courseId"></div>
+                        <canvas id="myChart"  style="width:100%;max-width:600px"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                <div class="row mb-4 mt-2">
+                    <div class="col text-center">
+                        <strong>Course Information</strong>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-end">
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Programme
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.programme
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Code
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseCode
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Semester
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.semester
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-4">
+                                Lecturer
+                            </div>
+                            <div class="col col-8">
+                                @username
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row mb-2">
+                            <div class="col">
+                                -
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Name
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseName
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Intake Batch
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.intakeBatch
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                No. of Students
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.numberOfStudent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-5 mb-5">
+                    <div class="col">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>CLO</th>
+                                <th>Class Avg (in %)</th>
+                                <th>% of Students scoring > 50%</th>
+                                <th>Previous Sem Class Avg (in %)</th>
+                                <th>Comments</th>
+                            </tr>
+                            @for((analysis, index) <- cloViewModel.cloAnalysisList.view.zipWithIndex) {
+                            <tr>
+                                <td>@analysis.cloCode</td>
+                                <td>
+                                    @if(analysis.classAverage > 0.0) {
+                                        @analysis.classAverage
+                                    }
+                                </td>
+                                <td>
+                                    @if(analysis.percentageOfPassedStudent > 0) {
+                                        @analysis.percentageOfPassedStudent
+                                    }
+                                </td>
+                                <form method="post" id="uniqueForm@analysis.cloCode" action="@routes.CourseInformationController.saveCloPreviousSemClassAvgRecord(userId, gradeViewModel.courseId, analysis.cloCode)">
+                                    <input id="marksInput@analysis.cloCode" name="previousSemClassAvg" hidden>
+                                    @if(analysis.previousSemClassAvg == null) {
+                                        <td class="editable text-muted" data-cellId="@analysis.cloCode" data-input-type="number" id="@analysis.cloCode">
+                                            Click to Edit
+                                        </td>
+                                    } else {
+                                        <td class="editable" data-cellId="@analysis.cloCode" data-input-type="text" id="@analysis.cloCode">@analysis.previousSemClassAvg</td>
+                                    }
+                                </form>
+                                @if(index == 0) {
+                                    <form method="post" id="uniqueFormCloComment" action="@routes.CourseInformationController.saveComment(userId, gradeViewModel.courseId, analysis.cloCode)">
+                                        <input id="marksInputCloComment" name="comment" hidden>
+                                        <td rowspan="@cloViewModel.cloAnalysisList.size()" class="editable" data-cellId="CloComment" data-input-type="text" id="CloComment">@analysis.comments</td>
+                                    </form>
+                                }
+
+                            </tr>
+                            }
+                        </table>
+                    </div>
+                    <div class="col">
+                        <div id="cloChartDiv" data-lecturerId="@userId" data-courseId="@gradeViewModel.courseId"></div>
+                        <canvas id="cloChart"  style="width:100%;max-width:600px"></canvas>
+                    </div>
+                </div>
+                <table class="table table-bordered">
+                    <tr>
+                        <th rowspan="3">No</th>
+                        <th rowspan="3">ID</th>
+                        <th rowspan="2">Name</th>
+                        <th colspan="8" class="text-center">CLO Attainment (Marks)</th>
+                        <th colspan="8" class="text-center">CLO Attainment (%)</th>
+                    </tr>
+                    <tr>
+                        @for(clo <- cloViewModel.cloMaxMarkList) {
+                            <th>@clo.cloCode</th>
+                        }
+                        @for(clo <- cloViewModel.cloMaxMarkList) {
+                            <th rowspan="2">@clo.cloCode</th>
+                        }
+                    </tr>
+                    <tr>
+                        <th class="text-right">CLO Max Marks</th>
+                        @for(clo <- cloViewModel.cloMaxMarkList) {
+                            <th>@clo.marks</th>
+                        }
+                    </tr>
+                    @for(attainment <- cloViewModel.cloAttainmentList) {
+                        <tr>
+                            <td>@attainment.serialNo</td>
+                            <td>@attainment.studentCode</td>
+                            <td>@attainment.studentName</td>
+                            @for(attainmentMark <- attainment.cloAttainmentMarks) {
+                                <td>@attainmentMark.marks</td>
+                            }
+                            @for(attainmentPercent <- attainment.cloAttainmentPercentage) {
+                                @if(attainmentPercent.marks <50 && attainmentPercent.marks != null) {
+                                    <td class="text-white bg-danger">@attainmentPercent.marks</td>
+                                } else {
+                                    <td>@attainmentPercent.marks</td>
+                                }
+                            }
+                        </tr>
+                    }
+                </table>
+            </div>
+            <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
+                <div class="row mb-4 mt-2">
+                    <div class="col text-center">
+                        <strong>Course Information</strong>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col border-end">
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Programme
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.programme
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Code
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseCode
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Semester
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.semester
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col col-4">
+                                Lecturer
+                            </div>
+                            <div class="col col-8">
+                                @username
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="row mb-2">
+                            <div class="col">
+                                -
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Course Name
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.courseName
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                Intake Batch
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.intakeBatch
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col col-4">
+                                No. of Students
+                            </div>
+                            <div class="col col-8">
+                                @gradeViewModel.numberOfStudent
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-5 mb-5">
+                    <div class="col">
+                        <table class="table table-bordered">
+                            <tr>
+                                <th>PLO</th>
+                                <th>Class Avg (in %)</th>
+                                <th>% of Students scoring > 50%</th>
+                                <th>Previous Sem Class Avg (in %)</th>
+                                <th>Comments</th>
+                            </tr>
+                            @for((analysis, index) <- cloViewModel.ploAnalysisList.view.zipWithIndex) {
+                            <tr>
+                                <td>@analysis.cloCode</td>
+                                <td>
+                                    @if(analysis.classAverage > 0.0) {
+                                        @analysis.classAverage
+                                    }
+                                </td>
+                                <td>
+                                    @if(analysis.percentageOfPassedStudent > 0) {
+                                        @analysis.percentageOfPassedStudent
+                                    }
+                                </td>
+                                <form method="post" id="uniqueForm@analysis.cloCode" action="@routes.CourseInformationController.saveCloPreviousSemClassAvgRecord(userId, gradeViewModel.courseId, analysis.cloCode)">
+                                    <input id="marksInput@analysis.cloCode" name="previousSemClassAvg" hidden>
+                                    @if(analysis.previousSemClassAvg == null) {
+                                        <td class="editable text-muted" data-cellId="@analysis.cloCode"  data-input-type="number" id="@analysis.cloCode">
+                                            Click to Edit
+                                        </td>
+                                    } else {
+                                        <td class="editable" data-cellId="@analysis.cloCode" id="@analysis.cloCode">@analysis.previousSemClassAvg</td>
+                                    }
+                                </form>
+                                @if(index == 0) {
+                                    <form method="post" id="uniqueFormploComment" action="@routes.CourseInformationController.saveComment(userId, gradeViewModel.courseId, analysis.cloCode)">
+                                        <input id="marksInputploComment" name="comment" hidden>
+                                        <td rowspan="@cloViewModel.ploAnalysisList.size()" class="editable" data-cellId="ploComment" data-input-type="text" id="ploComment">@analysis.comments</td>
+                                    </form>
+                                }
+
+                            </tr>
+                            }
+                        </table>
+                    </div>
+                    <div class="col">
+                        <div id="ploChartDiv" data-lecturerId="@userId" data-courseId="@gradeViewModel.courseId"></div>
+                        <canvas id="ploChart"  style="width:100%;max-width:600px"></canvas>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <tr>
+                            <th rowspan="3">No</th>
+                            <th rowspan="3">ID</th>
+                            <th rowspan="2">Name</th>
+                            <th colspan="12" class="text-center">PLO Attainment (Marks)</th>
+                            <th colspan="12" class="text-center">PLO Attainment (%)</th>
+                        </tr>
+                        <tr>
+                            @for(clo <- cloViewModel.ploMaxMarkList) {
+                            <th>@clo.cloCode</th>
+                            }
+                            @for(clo <- cloViewModel.ploMaxMarkList) {
+                            <th rowspan="2">@clo.cloCode</th>
+                            }
+                        </tr>
+                        <tr>
+                            <th class="text-right">PLO Max Marks</th>
+                            @for(clo <- cloViewModel.ploMaxMarkList) {
+                            <th>@clo.marks</th>
+                            }
+                        </tr>
+                        @for(attainment <- cloViewModel.ploAttainmentList) {
+                        <tr>
+                            <td>@attainment.serialNo</td>
+                            <td>@attainment.studentCode</td>
+                            <td>@attainment.studentName</td>
+                            @for(attainmentMark <- attainment.cloAttainmentMarks) {
+                            <td>@attainmentMark.marks</td>
+                            }
+                            @for(attainmentPercent <- attainment.cloAttainmentPercentage) {
+                            @if(attainmentPercent.marks <50 && attainmentPercent.marks != null) {
+                            <td class="text-white bg-danger">@attainmentPercent.marks</td>
+                            } else {
+                            <td>@attainmentPercent.marks</td>
+                            }
+                            }
+                        </tr>
+                        }
+                    </table>
+                </div>
+
+            </div>
+        </div>
+</div>
+
+<script src='@routes.Assets.versioned("javascripts/grades-chart.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/clo-chart.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/plo-chart.js")'></script>
+
+<script src='@routes.Assets.versioned("javascripts/edit-number-of-attempt.js")'></script>
+<script>
+    function createPDFFromHTML() {
+    var HTML_Width = $(".html-content").width();
+    var HTML_Height = $(".html-content").height();
+    var top_left_margin = 15;
+    var PDF_Width = HTML_Width + (top_left_margin * 2);
+    var PDF_Height = (PDF_Width * 1.5) + (top_left_margin * 2);
+    var canvas_image_width = HTML_Width;
+    var canvas_image_height = HTML_Height;
+
+    var totalPDFPages = Math.ceil(HTML_Height / PDF_Height) - 1;
+
+    html2canvas($(".html-content")[0]).then(function (canvas) {
+        var imgData = canvas.toDataURL("image/jpeg", 1.0);
+        var pdf = new jsPDF('p', 'pt', [PDF_Width, PDF_Height]);
+        pdf.addImage(imgData, 'JPG', top_left_margin, top_left_margin, canvas_image_width, canvas_image_height);
+        for (var i = 1; i <= totalPDFPages; i++) {
+            pdf.addPage(PDF_Width, PDF_Height);
+            pdf.addImage(imgData, 'JPG', top_left_margin, -(PDF_Height*i)+(top_left_margin*4),canvas_image_width,canvas_image_height);
+        }
+        pdf.save("Your_PDF_Name.pdf");
+    });
+}
+</script>
+
+</body>
+</html>

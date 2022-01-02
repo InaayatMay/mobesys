@@ -8,6 +8,14 @@ schoolList: List[models.School]
     @views.html.common.headMeta("Course Information Form")
 
     <link href="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-choice {
+            display: block!important;
+            height: 36px!important;
+            white-space: nowrap!important;
+            line-height: 26px!important;
+        }
+    </style>
 </head>
 <body>
     @views.html.common.navbar(userId, username)
@@ -21,26 +29,33 @@ schoolList: List[models.School]
                 <form method="post">
 
                     <label>School</label>
-                    <select type="select" class="form-control form-control-select" name="schoolId" id="schoolId">
+                    <select type="select" class="form-control" name="schoolId" id="schoolId">
                         @for(sc <- schoolList) {
                             <option value="@sc.id" class="pb-5">@sc.schoolName</option>
                         }
                     </select>
 
                     <label class="mt-3">Department</label>
-                    <select type="select" class="form-control form-control-select" name="departmentId" id="departmentId">
+                    <select type="select" class="form-control" name="departmentId" id="departmentId">
+                    </select>
+
+                    <label class="mt-3">Programme</label>
+                    <select type="select" class="form-control" name="programme" id="programme">
                     </select>
 
                     <label class="mt-3">Course</label>
-                    <select type="select" class="form-control form-control-select" name="courseInformationId" id="courseId">
+                    <select type="select" class="form-control form-control-select2" name="courseInformationId" id="courseId">
                     </select>
 
-                    <button type="submit" class="btn btn-primary mt-3">Save Course Information</button>
+                    <button type="submit" class="btn btn-secondary mt-3">Save Course Information</button>
                 </form>
 
             </div>
         </div>
     </div>
-    <script src='@routes.Assets.versioned("javascripts/select2.js")'></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script type="text/javascript" src='@routes.Assets.versioned("javascripts/select2.js")'></script>
 </body>
 </html>

@@ -4,7 +4,7 @@ public class AssessmentInfoFormData {
     protected String assessment;
     protected String assessmentType;
     protected int fullMarks;
-    protected int weightage;
+    protected Double weightage;
     protected String cloTitle;
 
     public String getAssessment() {
@@ -31,11 +31,11 @@ public class AssessmentInfoFormData {
         this.fullMarks = fullMarks;
     }
 
-    public int getWeightage() {
+    public Double getWeightage() {
         return weightage;
     }
 
-    public void setWeightage(int weightage) {
+    public void setWeightage(Double weightage) {
         this.weightage = weightage;
     }
 
