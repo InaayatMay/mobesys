@@ -1,5 +1,10 @@
 $(document).ready(function() {
 $('.form-control-select2').select2();
+
+$('#courseId').one('select2:open', function(e) {
+    $('input.select2-search__field').prop('placeholder', 'Search Course');
+});
+
 var schoolId;
 var departmentId;
 var programme;
@@ -54,6 +59,10 @@ var programme;
                     courseOptions.push(obj);
                 }
                 console.log(courseOptions);
+
+                $('#courseId').one('select2:open', function(e) {
+                    $('input.select2-search__field').prop('placeholder', 'Search Course');
+                });
 
                 $('#courseId').select2().empty();
                 $('#courseId').select2({

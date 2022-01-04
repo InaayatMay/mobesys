@@ -21,10 +21,7 @@ import play.mvc.Result;
 import services.CourseInformationService;
 import services.LecturerService;
 import services.StudentService;
-import viewModels.CloViewModel;
-import viewModels.CoursePlanViewModel;
-import viewModels.GradeViewModel;
-import viewModels.StudentMarksViewModel;
+import viewModels.*;
 
 import javax.inject.Inject;
 import java.util.*;
@@ -70,8 +67,10 @@ public class CourseInformationController extends Controller {
 
                 Form<LecturerCourseMapFormData> form = formFactory.form(LecturerCourseMapFormData.class);
                 List<School> schoolList = courseInformationService.getSchoolList();
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(id);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                return ok(views.html.courseInformationForm.render(id, username, form, schoolList, request, messages));
+                return ok(views.html.courseInformationForm.render(id, username, form, schoolList, subjectsStateViewModels, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -115,7 +114,15 @@ public class CourseInformationController extends Controller {
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 List<CourseInformation> courseInformationList = courseInformationService.getCourseInformationsByCourseName(courseInformation.courseName);
 
-
+                List<CourseActivationViewModel> courseActivationViewModels = new ArrayList<>();
+                for(CourseInformation courseInfo: courseInformationList) {
+                    if(courseInfo.id == courseId) {
+                        courseActivationViewModels.add(new CourseActivationViewModel(courseInfo.id, courseInfo.programme, true));
+                    }
+                    else {
+                        courseActivationViewModels.add(new CourseActivationViewModel(courseInfo.id, courseInfo.programme, false));
+                    }
+                }
                 List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
                 List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
 
@@ -128,9 +135,14 @@ public class CourseInformationController extends Controller {
                 int numberOfCloToPloMaps = courseInformationService.countCloToPloMaps(lecturerId, courseId);
                 Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
 
+                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                        "Course Plan");
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.courseInformationDetails.render(lecturerId, optionalUsername.get(), viewModel, form, unlinkedPloList,
-                        numberOfCloToPloMaps, request, messages));
+                        numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
             }
         }
 
@@ -179,6 +191,18 @@ public class CourseInformationController extends Controller {
                         List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
                         List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
 
+                        List<CourseInformation> courseInformationList = courseInformationService.getCourseInformationsByCourseName(courseInformation.courseName);
+
+                        List<CourseActivationViewModel> courseActivationViewModels = new ArrayList<>();
+                        for(CourseInformation courseInfo: courseInformationList) {
+                            if(courseInfo.id == courseId) {
+                                courseActivationViewModels.add(new CourseActivationViewModel(courseInfo.id, courseInfo.programme, true));
+                            }
+                            else {
+                                courseActivationViewModels.add(new CourseActivationViewModel(courseInfo.id, courseInfo.programme, false));
+                            }
+                        }
+
                         logger.debug("plo size : " + programmeLearningOutcomeList.size());
                         logger.debug("unlinked list : " + unlinkedPloList.size());
                         List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
@@ -187,9 +211,12 @@ public class CourseInformationController extends Controller {
                                 courseLearningOutcomes);
                         int numberOfCloToPloMaps = courseInformationService.countCloToPloMaps(lecturerId, courseId);
 
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.courseInformationDetails.render(lecturerId, optionalUsername.get(), viewModel,
-                                form, unlinkedPloList, numberOfCloToPloMaps, request, messages));
+                                form, unlinkedPloList, numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
                     }
                     else {
                         courseInformationService.saveCloToPloMap(cloCode, cloTitle, ploCode, lecturerId, courseId);
@@ -228,9 +255,12 @@ public class CourseInformationController extends Controller {
                 ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
 
                 Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
-                        courseLearningOutcome, selectedPlo, courseId, request, messages));
+                        courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -281,9 +311,12 @@ public class CourseInformationController extends Controller {
                         List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
                         ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
 
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
-                                courseLearningOutcome, selectedPlo, courseId, request, messages));
+                                courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, request, messages));
                     }
                     else {
                         courseInformationService.updateCloToPloMap(cloTitle, ploCode, cloToPloMapId);
@@ -350,16 +383,20 @@ public class CourseInformationController extends Controller {
                     ploWithTotalWeightMap.replace(clo.ploCode, clo.totalWeightage);
                 }
 
-                Long totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
+                Double totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
 
                 CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
                         courseLearningOutcomes);
 
                 Form<AssessmentInfoFormData> form = formFactory.form(AssessmentInfoFormData.class);
+                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                        "Assessment");
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfos,
-                        totalAssessmentWeights, cloWithTotalWeightMap, ploWithTotalWeightMap, request, messages));
+                        totalAssessmentWeights, cloWithTotalWeightMap, ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -378,12 +415,27 @@ public class CourseInformationController extends Controller {
                 }
                 else {
                     AssessmentInfoFormData formData = fromRequest.get();
-                    Long totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
+                    Double totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
 
-                    if(totalAssessmentWeights+formData.getWeightage() > 100) {
-                        long require = 100 - totalAssessmentWeights;
-                        Form<AssessmentInfoFormData> formWithError = formFactory.form(AssessmentInfoFormData.class)
-                                .withGlobalError("Total weight of the assessments must be 100. Only " + require + "% is required.");
+                    Double totalWeightageByAssessment = courseInformationService.getTotalWeightageByAssessmentType(lecturerId,
+                            courseId, formData.getAssessmentType());
+
+                    boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
+                            totalWeightageByAssessment, formData.getWeightage());
+
+                    if(totalAssessmentWeights+formData.getWeightage() > 100 || isWeightageExceed) {
+                        Form<AssessmentInfoFormData> formWithError;
+                        if(totalAssessmentWeights+formData.getWeightage() > 100) {
+                            Double require = 100 - totalAssessmentWeights;
+                            formWithError = formFactory.form(AssessmentInfoFormData.class)
+                                    .withGlobalError("Total weight of the assessments must be 100. Only " + require + "% is required.");
+                        }
+                        else {
+                            Double require = totalWeightageByAssessment - formData.getWeightage();
+                            Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
+                            formWithError = formFactory.form(AssessmentInfoFormData.class)
+                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+                        }
 
                         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                         List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
@@ -414,11 +466,15 @@ public class CourseInformationController extends Controller {
                         CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
                                 courseLearningOutcomes);
 
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+
                         Messages messages = messagesApi.preferred(request);
 
                         return ok(views.html.assessmentInfoForm.render(lecturerId, optionalUsername.get(), viewModel,
                                 formWithError, assessmentInfos, totalAssessmentWeights, cloWithTotalWeightMap,
-                                ploWithTotalWeightMap, request, messages));
+                                ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
 
                     }
                     else {
@@ -475,8 +531,11 @@ public class CourseInformationController extends Controller {
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
                 AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                 return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), form, assessmentInfo,
-                        courseInformation, courseLearningOutcomes));
+                        courseInformation, courseLearningOutcomes, subjectsStateViewModels));
             }
         }
 
@@ -496,16 +555,38 @@ public class CourseInformationController extends Controller {
                 }
                 else {
                     AssessmentInfoFormData formData = fromRequest.get();
+                    Double totalWeightageByAssessment = courseInformationService.getTotalWeightageByAssessmentType(lecturerId,
+                            courseId, formData.getAssessmentType());
 
-                    AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
-                    assessmentInfo.assessment = formData.getAssessment();
-                    assessmentInfo.assessmentType = formData.getAssessmentType();
-                    assessmentInfo.fullMarks = formData.getFullMarks();
-                    assessmentInfo.weightage = formData.getWeightage();
-                    assessmentInfo.cloCode = formData.getCloTitle();
-                    courseInformationService.updateAssessmentInfo(assessmentInfo);
+                    boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
+                            totalWeightageByAssessment, formData.getWeightage());
 
-                    return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+                    if(isWeightageExceed) {
+                        Double require = totalWeightageByAssessment - formData.getWeightage();
+                        Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
+                        Form<AssessmentInfoFormData> formDataForm = formFactory.form(AssessmentInfoFormData.class)
+                                .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+
+                        CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                        List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
+                        AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                        return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), formDataForm, assessmentInfo,
+                                courseInformation, courseLearningOutcomes, subjectsStateViewModels));
+                    }
+                    else {
+                        AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
+                        assessmentInfo.assessment = formData.getAssessment();
+                        assessmentInfo.assessmentType = formData.getAssessmentType();
+                        assessmentInfo.fullMarks = formData.getFullMarks();
+                        assessmentInfo.weightage = formData.getWeightage();
+                        assessmentInfo.cloCode = formData.getCloTitle();
+                        courseInformationService.updateAssessmentInfo(assessmentInfo);
+
+                        return redirect(routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseId));
+                    }
                 }
             }
         }
@@ -546,12 +627,18 @@ public class CourseInformationController extends Controller {
                     studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
                 }
 
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                        "Student");
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                 logger.debug("Student list : " + studentList.size());
 
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseId, studentList, form,
-                        assessmentMap, studentMarksViewModels, assessmentOrders,  request, messages));
+                        assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels,  request, messages));
             }
         }
 
@@ -606,11 +693,14 @@ public class CourseInformationController extends Controller {
                             studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
                         }
 
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                         Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class)
                                 .withGlobalError("Code number " + formData.getCodeNumber() + " is already exists. Please try again with new code number.");
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseId, studentList,
-                                form, assessmentMap, studentMarksViewModels, assessmentOrders, request, messages));
+                                form, assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, request, messages));
                     }
                 }
             }
@@ -643,8 +733,11 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Student student = studentService.getStudent(studentId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student, request, messages));
+                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student, subjectsStateViewModels, request, messages));
             }
         }
 
@@ -670,9 +763,13 @@ public class CourseInformationController extends Controller {
                     if(countDuplicate > 0 && !student.codeNumber.equals(formData.getCodeNumber())) {
                         Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class)
                                 .withGlobalError("Code number " + formData.getCodeNumber() + " is already exists. Please try again with new code number.");
+
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
-                                request, messages));
+                                subjectsStateViewModels, request, messages));
                     }
                     else {
                         student.firstName = formData.getFirstName();
@@ -732,7 +829,14 @@ public class CourseInformationController extends Controller {
                 logger.debug("ploAnalysisList : " + cloViewModel.ploAnalysisList.size());
                 logger.debug("ploMaxMarkList : " + cloViewModel.ploMaxMarkList.size());
                 logger.debug("ploAttainmentList : " + cloViewModel.ploAttainmentList.size());
-                return ok(views.html.reports.render(sessionId, optionalUsername.get(), gradeViewModel, cloViewModel, request, messages));
+
+                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                        "Report");
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                return ok(views.html.reports.render(sessionId, optionalUsername.get(), gradeViewModel, cloViewModel,
+                        subjectsStateViewModels, request, messages));
             }
         }
 
@@ -829,3 +933,4 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 }
+

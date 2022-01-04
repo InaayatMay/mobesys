@@ -1,7 +1,7 @@
 @(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
-assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Long,
+assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Double,
 cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String, Double]
-)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,7 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username)
+@views.html.common.navbar(userId, username, subjectStateList)
 
 <div class="container mt-5">
     <div class="card">
@@ -329,10 +329,10 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                     </select>
 
                     <label>Full Marks</label>
-                    <input type="number" class="form-control" name="fullMarks" min="0" max="100" required>
+                    <input type="number" class="form-control" name="fullMarks" min="10" max="100" required>
 
                     <label>Weightage</label>
-                    <input type="number" class="form-control" name="weightage" min="0" max="30" step="0.01" required>
+                    <input type="number" class="form-control" name="weightage" min="0" max="50" step="0.01" required>
 
                     <label>CLO</label>
                     <select class="form-control" name="cloTitle">

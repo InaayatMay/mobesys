@@ -6,9 +6,8 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 
 @Entity
-@Table(name="lecturer_course_map")
-public class LecturerCourseMap {
-
+@Table(name="lecturer_current_subject")
+public class LecturerCurrentSubject {
 
     @Id
     public Long id;
@@ -19,9 +18,12 @@ public class LecturerCourseMap {
     @Column(name = "course_information_id")
     public Long courseInformationId;
 
-    @Column(name = "department_id")
-    public Long departmentId;
+    @Column(name = "course_name")
+    public String courseName;
 
-    @Column(name = "school_id")
-    public Long schoolId;
+    @Column(name = "is_completed")
+    public Boolean isCompleted;
+
+    @Column(name = "current_page")
+    public String currentPage;
 }

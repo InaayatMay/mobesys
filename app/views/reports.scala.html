@@ -1,5 +1,5 @@
 @(userId: Long, username: String, gradeViewModel: viewModels.GradeViewModel, cloViewModel: viewModels.CloViewModel
-)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,7 +8,7 @@
 
 </head>
 <body>
-@views.html.common.navbar(userId, username)
+@views.html.common.navbar(userId, username, subjectStateList)
 
 <div class="container mt-5">
     <div class="card">

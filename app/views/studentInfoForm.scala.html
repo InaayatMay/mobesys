@@ -1,6 +1,7 @@
 @(userId: Long, username: String, courseInformationId: Long, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
 assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
-assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
+subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @import viewModels.StudentMarksViewModel
 <!DOCTYPE html>
@@ -9,7 +10,7 @@ assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder])(implic
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username)
+@views.html.common.navbar(userId, username, subjectStateList)
 
 <div class="container mt-5 p-0">
     <div class="card">

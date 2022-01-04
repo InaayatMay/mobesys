@@ -187,7 +187,7 @@ public class CourseInformationService {
                 .eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseId)
                 .endAnd()
-                .orderBy().asc("assessmentType").findList();
+                .orderBy().asc("id").findList();
     }
 
     public AssessmentInfo getAssessmentInfo(Long id) {
@@ -198,7 +198,7 @@ public class CourseInformationService {
         Ebean.update(assessmentInfo);
     }
 
-    public Long getTotalAssessmentWeights(Long lecturerId, Long courseId) {
+    public Double getTotalAssessmentWeights(Long lecturerId, Long courseId) {
         String sql = "SELECT SUM(weightage) \n" +
                 "FROM assessment_info \n" +
                 "WHERE lecturer_id = :lecturerId AND course_information_id = :courseInformationId";
@@ -208,7 +208,7 @@ public class CourseInformationService {
                 .setParameter("courseInformationId", courseId)
                 .findSingleAttribute();
 
-        return total == null ? 0 : total;
+        return total == null ? 0.0 : Double.parseDouble(String.valueOf(total));
     }
 
     public List<CloWithTotalWeightage> getCloWithTotalWeights(Long lecturerId, Long courseId) {
@@ -279,5 +279,51 @@ public class CourseInformationService {
 
     public List<CourseInformation> getCourseInformationsByCourseName(String courseName) {
         return Ebean.find(CourseInformation.class).where().eq("course_name", courseName).findList();
+    }
+
+    public Double getTotalWeightageByAssessmentType(Long lecturerId, Long courseId, String assessmentType) {
+        String sql = "select sum(weightage)\n" +
+                "from assessment_info\n" +
+                "where lecturer_id = :lecturerId and course_information_id = :courseInformationId and assessment_type = :assessmentType\n" +
+                "group by assessment_type;";
+
+        Long weightage = Ebean.findNative(AssessmentInfo.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .setParameter("courseInformationId", courseId)
+                .setParameter("assessmentType", assessmentType)
+                .findSingleAttribute();
+
+        return weightage == null ? 0.0 : Double.parseDouble(String.valueOf(weightage));
+    }
+
+    public boolean isWeightageExceed(String assessmentType, Double totalWeightage, Double newWeightage) {
+        if(assessmentType.equals("Assignment")) {
+            return (totalWeightage + newWeightage) > 30;
+        }
+        else if(assessmentType.equals("Test")) {
+            return (totalWeightage + newWeightage) > 20;
+        }
+        else if(assessmentType.equals("Quiz")) {
+            return (totalWeightage + newWeightage) > 15;
+        }
+        else if(assessmentType.equals("Final Exam")) {
+            return (totalWeightage + newWeightage) > 50;
+        }
+        else return false;
+    }
+
+    public Double getDefaultAssessmentWeightage(String assessmentType) {
+        if(assessmentType.equals("Assignment")) {
+            return 30.0;
+        }
+        else if(assessmentType.equals("Test")) {
+            return 20.0;
+        }
+        else if(assessmentType.equals("Quiz")) {
+            return 15.0;
+        }
+        else {
+            return 50.0;
+        }
     }
 }
