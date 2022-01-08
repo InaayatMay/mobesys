@@ -53,8 +53,32 @@ public class StudentService {
         }
     }
 
-    public int hasDuplicateCodeNumber(String codeNumber) {
-        int count = Ebean.find(Student.class).where().eq("code_number", codeNumber).findCount();
+    public int hasDuplicateCodeNumber(String codeNumber, Long courseInformationId) {
+        int count = Ebean.find(Student.class).where()
+                .and()
+                .eq("code_number", codeNumber)
+                .eq("course_information_id", courseInformationId)
+                .endAnd()
+                .findCount();
+        return count;
+    }
+
+    public int hasDuplicateName(String firstName, String lastName, Long courseInformationId) {
+        int count = Ebean.find(Student.class).where()
+                .and()
+                .eq("first_name", firstName)
+                .eq("last_name", lastName)
+                .eq("course_information_id", courseInformationId)
+                .endAnd()
+                .findCount();
+        return count;
+    }
+
+    public int hasDuplicateEmail(String email, Long courseInformationId) {
+        int count = Ebean.find(Student.class).where()
+                .eq("email", email)
+                .eq("course_information_id", courseInformationId)
+                .findCount();
         return count;
     }
 
@@ -88,7 +112,7 @@ public class StudentService {
 
     public void updateStudentMarks(Long studentMarksId, Double marks) {
         StudentMarks studentMarks = getStudentMarks(studentMarksId);
-        if(marks > 0.0) {
+        if(marks >= 0.0) {
             studentMarks.marks = marks;
             Ebean.update(studentMarks);
         }

@@ -56,7 +56,7 @@ public class CourseInformationService {
     public List<ProgrammeLearningOutcome> getUnlinkedPloList(Long courseInformationId) {
         CourseInformation courseInformation = getCourseInformationById(courseInformationId);
         String sql;
-        if(courseInformation.programme.equals("Bachelor of Computer Science")) {
+        if(courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
             sql = "SELECT plo.*\n" +
                     "FROM programme_learning_outcome AS plo\n" +
                     "LEFT JOIN course_learning_outcome AS clo ON clo.plo_code = plo.code AND clo.course_information_id = :courseInformationId\n" +
@@ -312,11 +312,62 @@ public class CourseInformationService {
         else return false;
     }
 
+    public boolean isWeightageExceedByCourseWork(Long lecturerId, Long courseId, Optional<AssessmentInfo> assessmentInfoOptional, Double newWeightage) {
+        String sql = "select sum(weightage)\n" +
+                "from assessment_info\n" +
+                "where lecturer_id = :lecturerId and course_information_id = :courseInformationId and assessment_type <> 'Final Exam';";
+
+        Long weightage = Ebean.findNative(AssessmentInfo.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .setParameter("courseInformationId", courseId)
+                .findSingleAttribute();
+
+
+        Double weightageDouble;
+        if(weightage == null) {
+            weightageDouble = 0.0;
+        }
+        else {
+            weightageDouble = weightage * 1.0;
+        }
+
+        if(assessmentInfoOptional.isPresent()) {
+            weightageDouble = weightageDouble - assessmentInfoOptional.get().weightage;
+        }
+
+        return weightageDouble + newWeightage > 50;
+    }
+
+    public boolean isWeightageExceedByFinalExam(Long lecturerId, Long courseId, Optional<AssessmentInfo> assessmentInfoOptional, Double newWeightage) {
+        String sql = "select sum(weightage)\n" +
+                "from assessment_info\n" +
+                "where lecturer_id = :lecturerId and course_information_id = :courseInformationId and assessment_type = 'Final Exam';";
+
+        Long weightage = Ebean.findNative(AssessmentInfo.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .setParameter("courseInformationId", courseId)
+                .findSingleAttribute();
+
+        Double weightageDouble;
+        if(weightage == null) {
+            weightageDouble = 0.0;
+        }
+        else {
+            weightageDouble = weightage * 1.0;
+        }
+
+        if(assessmentInfoOptional.isPresent()) {
+            weightageDouble = weightageDouble - assessmentInfoOptional.get().weightage;
+        }
+
+        return weightageDouble + newWeightage > 50;
+    }
+
     public Double getDefaultAssessmentWeightage(String assessmentType) {
         if(assessmentType.equals("Assignment")) {
             return 30.0;
         }
-        else if(assessmentType.equals("Test")) {
+        else if(assessmentType.equals("Test-1") || assessmentType.equals("Test-2")) {
             return 20.0;
         }
         else if(assessmentType.equals("Quiz")) {

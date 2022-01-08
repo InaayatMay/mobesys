@@ -16,6 +16,13 @@ courseInformation: models.CourseInformation, courseLearningOutcomeList: List[mod
             Edit Course Information
         </div>
         <div class="card-body">
+            @if(form.hasGlobalErrors){
+                <div class="alert alert-warning">
+                    @for(error <- form.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
+            }
             <form method="post">
                 <label>Assessments</label>
                 <input type="text" class="form-control" name="assessment" value="@info.assessment" required>
@@ -44,9 +51,13 @@ courseInformation: models.CourseInformation, courseLearningOutcomeList: List[mod
                 <label class="mt-3">CLO</label>
                 <select class="form-control" name="cloTitle">
                     @if(courseLearningOutcomeList.size > 0) {
-                        <option value="@info.cloCode">@info.cloCode</option>
                         @for(clo <- courseLearningOutcomeList) {
-                            <option value="@clo.code">@clo.code</option>
+                            @if(info.cloCode.equals(clo.code)) {
+                                <option value="@clo.code" selected>@clo.code</option>
+                            } else{
+                                <option value="@clo.code">@clo.code</option>
+                            }
+
                         }
                     }
                 </select>

@@ -1,7 +1,8 @@
 @(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
-assessmentInfoList: List[models.AssessmentInfo], totalAssessmentWeights: Double,
+assessmentInfoMap: Map[String, List[AssessmentInfo]], totalAssessmentWeights: Double,
 cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String, Double]
-, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -133,11 +134,11 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
         </div>
         <div class="card-body">
             @if(form.hasGlobalErrors){
-            <div class="alert alert-warning">
-                @for(error <- form.globalErrors){
-                <span>@error.message</span>
-                }
-            </div>
+                <div class="alert alert-warning">
+                    @for(error <- form.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
             }
 
             @if(totalAssessmentWeights == 100){
@@ -181,48 +182,52 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                 </tr>
                 </thead>
                 <tbody>
-                    @for((assessment, index) <- assessmentInfoList.view.zipWithIndex) {
+                @for(entry <- assessmentInfoMap.entrySet()) {
+                    <tr><th>@entry.getKey()</th></tr>
+                    @for((assessment, index) <- entry.getValue().view.zipWithIndex) {
                         <tr>
-                            <td>@{index+1}</td>
-                            <td>@assessment.assessment</td>
-                            <td>@assessment.assessmentType</td>
-                            <td>@assessment.fullMarks</td>
-                            <td>@assessment.weightage</td>
-                            @if(assessment.cloCode.equals("CLO1")) {
-                            <td>CLO1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO2")) {
-                            <td></td><td>CLO2</td><td></td><td></td><td></td><td></td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO3")) {
-                            <td></td><td></td><td>CLO3</td><td></td><td></td><td></td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO4")) {
-                            <td></td><td></td><td></td><td>CLO4</td><td></td><td></td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO5")) {
-                            <td></td><td></td><td></td><td></td><td>CLO5</td><td></td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO6")) {
-                            <td></td><td></td><td></td><td></td><td></td><td>CLO6</td><td></td><td></td>
-                            } else if (assessment.cloCode.equals("CLO7")) {
-                            <td></td><td></td><td></td><td></td><td></td><td></td><td>CLO7</td><td></td>
-                            } else if (assessment.cloCode.equals("CLO8")) {
-                            <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>CLO8</td>
-                            }
-                            <td>
-                                <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/editAssessment" class="btn btn-link">
-                                    <span class="text-secondary">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </span>
-                                </a>
-                            </td>
-                            <td>
-                                <form method="post" class="show-confirm" data-file="@{index+1}" action="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/deleteAssessment">
-                                    <button type="submit" class="btn btn-link">
+                        <td>@{index+1}</td>
+                        <td>@assessment.assessment</td>
+                        <td>@assessment.assessmentType</td>
+                        <td>@assessment.fullMarks</td>
+                        <td>@assessment.weightage</td>
+                        @if(assessment.cloCode.equals("CLO1")) {
+                        <td>CLO1</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO2")) {
+                        <td></td><td>CLO2</td><td></td><td></td><td></td><td></td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO3")) {
+                        <td></td><td></td><td>CLO3</td><td></td><td></td><td></td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO4")) {
+                        <td></td><td></td><td></td><td>CLO4</td><td></td><td></td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO5")) {
+                        <td></td><td></td><td></td><td></td><td>CLO5</td><td></td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO6")) {
+                        <td></td><td></td><td></td><td></td><td></td><td>CLO6</td><td></td><td></td>
+                        } else if (assessment.cloCode.equals("CLO7")) {
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td>CLO7</td><td></td>
+                        } else if (assessment.cloCode.equals("CLO8")) {
+                        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>CLO8</td>
+                        }
+                        <td>
+                            <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/editAssessment" class="btn btn-link">
                                         <span class="text-secondary">
-                                            <i class="fas fa-trash-alt"></i>
+                                            <i class="fas fa-pencil-alt"></i>
                                         </span>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                            </a>
+                        </td>
+                        <td>
+                            <form method="post" class="show-confirm" data-file="@{index+1}" action="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/deleteAssessment">
+                                <button type="submit" class="btn btn-link">
+                                            <span class="text-secondary">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                     }
+                }
+
                     <tr>
                         <th colspan="4" class="text-center">Total</th>
                         <th>@totalAssessmentWeights</th>
@@ -249,10 +254,14 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                     <th>PLO7</th>
                     <th>PLO8</th>
                     <th>PLO9</th>
-                    <th>PLO10</th>
-                    <th>PLO11</th>
-                    <th>PLO12</th>
-                    <th>Total</th>
+                    @if(info.programme.equals("Bachelor of Computer Science (Hons)")) {
+                        <th>Total</th>
+                    } else {
+                        <th>PLO10</th>
+                        <th>PLO11</th>
+                        <th>PLO12</th>
+                        <th>Total</th>
+                    }
                 </tr>
                 <tr>
                     <th>@ploWithTotalWeightMap.get("PLO1")</th>
@@ -264,9 +273,12 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                     <th>@ploWithTotalWeightMap.get("PLO7")</th>
                     <th>@ploWithTotalWeightMap.get("PLO8")</th>
                     <th>@ploWithTotalWeightMap.get("PLO9")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO10")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO11")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO12")</th>
+                    @if(!info.programme.equals("Bachelor of Computer Science (Hons)")) {
+                        <th>@ploWithTotalWeightMap.get("PLO10")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO11")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO12")</th>
+                    }
+
                     <th>@totalAssessmentWeights</th>
                 </tr>
             </table>

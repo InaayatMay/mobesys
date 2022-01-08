@@ -15,7 +15,7 @@
                         <li><span class="dropdown-item">Working On</span></li>
                         @for(subject <- subjectStateList) {
                             @if(!subject.isCompleted) {
-                                <li><a class="dropdown-item" href="@subject.currentPageUrl">@subject.courseName <span class="badge bg-secondary">Not Complete</span></a></li>
+                                <li><a class="dropdown-item" href="@subject.currentPageUrl">@subject.courseName <span class="badge bg-secondary">UnComplete</span></a></li>
                             }
                         }
                         <li><hr class="dropdown-divider"></li>

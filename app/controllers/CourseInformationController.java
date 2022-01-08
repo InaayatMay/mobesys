@@ -137,7 +137,7 @@ public class CourseInformationController extends Controller {
 
                 lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                         "Course Plan");
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
@@ -173,7 +173,7 @@ public class CourseInformationController extends Controller {
                     List<Long> cloDuplicateIdList = courseInformationService.cloDuplicateList(cloCode, cloTitle, lecturerId, courseId);
 
                     if(cloToPloDuplicateIdList.size() > 0 || cloDuplicateIdList.size() > 0 || ploDuplicateIdList.size() > 0) {
-                        logger.debug("there is duplication.");
+                        logger.debug("There is duplication.");
                         Form<CloToPloMapFormData> form;
                         if(cloToPloDuplicateIdList.size() > 0) {
                             form = formFactory.form(CloToPloMapFormData.class).withGlobalError("There is already a map with " + ploCode + " and " + cloTitle + ". Please try again.");
@@ -211,7 +211,7 @@ public class CourseInformationController extends Controller {
                                 courseLearningOutcomes);
                         int numberOfCloToPloMaps = courseInformationService.countCloToPloMaps(lecturerId, courseId);
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         Messages messages = messagesApi.preferred(request);
@@ -255,7 +255,7 @@ public class CourseInformationController extends Controller {
                 ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
 
                 Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
@@ -311,7 +311,7 @@ public class CourseInformationController extends Controller {
                         List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
                         ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         Messages messages = messagesApi.preferred(request);
@@ -383,6 +383,20 @@ public class CourseInformationController extends Controller {
                     ploWithTotalWeightMap.replace(clo.ploCode, clo.totalWeightage);
                 }
 
+                Map<String, List<AssessmentInfo>> assessmentInfoMap = new LinkedHashMap<>();
+                for(AssessmentInfo info: assessmentInfos) {
+                    if(assessmentInfoMap.containsKey(info.assessmentType)) {
+                        List<AssessmentInfo> list = assessmentInfoMap.get(info.assessmentType);
+                        list.add(info);
+                        assessmentInfoMap.replace(info.assessmentType, list);
+                    }
+                    else {
+                        List<AssessmentInfo> list = new ArrayList<>();
+                        list.add(info);
+                        assessmentInfoMap.put(info.assessmentType, list);
+                    }
+                }
+
                 Double totalAssessmentWeights = courseInformationService.getTotalAssessmentWeights(lecturerId, courseId);
 
                 CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
@@ -391,11 +405,11 @@ public class CourseInformationController extends Controller {
                 Form<AssessmentInfoFormData> form = formFactory.form(AssessmentInfoFormData.class);
                 lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                         "Assessment");
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfos,
+                return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfoMap,
                         totalAssessmentWeights, cloWithTotalWeightMap, ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
             }
         }
@@ -423,18 +437,32 @@ public class CourseInformationController extends Controller {
                     boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
                             totalWeightageByAssessment, formData.getWeightage());
 
-                    if(totalAssessmentWeights+formData.getWeightage() > 100 || isWeightageExceed) {
+                    boolean isWeightageExceedByTotal;
+                    if(formData.getAssessmentType().equals("Final Exam")) {
+                        isWeightageExceedByTotal = courseInformationService.isWeightageExceedByFinalExam(lecturerId, courseId, Optional.empty(), formData.getWeightage());
+                    }
+                    else {
+                        isWeightageExceedByTotal = courseInformationService.isWeightageExceedByCourseWork(lecturerId, courseId, Optional.empty(), formData.getWeightage());
+                        logger.debug("is weightage exceed by total : " + isWeightageExceedByTotal + " _ assessment type _ " + formData.getAssessmentType());
+                    }
+
+
+                    if(totalAssessmentWeights+formData.getWeightage() > 100 || isWeightageExceed || isWeightageExceedByTotal) {
                         Form<AssessmentInfoFormData> formWithError;
                         if(totalAssessmentWeights+formData.getWeightage() > 100) {
                             Double require = 100 - totalAssessmentWeights;
                             formWithError = formFactory.form(AssessmentInfoFormData.class)
-                                    .withGlobalError("Total weight of the assessments must be 100. Only " + require + "% is required.");
+                                    .withGlobalError("Total weight of the assessments must be 100%. Only " + require + "% is required.");
+                        }
+                        else if(isWeightageExceed) {
+                            Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
+                            Double require = defaultWeightage - totalWeightageByAssessment;
+                            formWithError = formFactory.form(AssessmentInfoFormData.class)
+                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be " + defaultWeightage + "%. Only " + require + "% is required.");
                         }
                         else {
-                            Double require = totalWeightageByAssessment - formData.getWeightage();
-                            Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
                             formWithError = formFactory.form(AssessmentInfoFormData.class)
-                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+                                    .withGlobalError("Total weightage of coursework and final exam assessments must be 50% each. Please try again.");
                         }
 
                         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
@@ -443,6 +471,20 @@ public class CourseInformationController extends Controller {
 
                         List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
                         logger.debug("assessment infos : " + assessmentInfos.size());
+
+                        Map<String, List<AssessmentInfo>> assessmentInfoMap = new LinkedHashMap<>();
+                        for(AssessmentInfo info: assessmentInfos) {
+                            if(assessmentInfoMap.containsKey(info.assessmentType)) {
+                                List<AssessmentInfo> list = assessmentInfoMap.get(info.assessmentType);
+                                list.add(info);
+                                assessmentInfoMap.replace(info.assessmentType, list);
+                            }
+                            else {
+                                List<AssessmentInfo> list = new ArrayList<>();
+                                list.add(info);
+                                assessmentInfoMap.put(info.assessmentType, list);
+                            }
+                        }
 
                         List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
                         logger.debug("clo list : " + courseLearningOutcomes.size());
@@ -466,14 +508,14 @@ public class CourseInformationController extends Controller {
                         CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
                                 courseLearningOutcomes);
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
 
                         Messages messages = messagesApi.preferred(request);
 
                         return ok(views.html.assessmentInfoForm.render(lecturerId, optionalUsername.get(), viewModel,
-                                formWithError, assessmentInfos, totalAssessmentWeights, cloWithTotalWeightMap,
+                                formWithError, assessmentInfoMap, totalAssessmentWeights, cloWithTotalWeightMap,
                                 ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
 
                     }
@@ -531,7 +573,7 @@ public class CourseInformationController extends Controller {
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
                 AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), form, assessmentInfo,
@@ -555,29 +597,48 @@ public class CourseInformationController extends Controller {
                 }
                 else {
                     AssessmentInfoFormData formData = fromRequest.get();
+                    AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
                     Double totalWeightageByAssessment = courseInformationService.getTotalWeightageByAssessmentType(lecturerId,
-                            courseId, formData.getAssessmentType());
+                            courseId, formData.getAssessmentType()) - assessmentInfo.weightage;
 
                     boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
                             totalWeightageByAssessment, formData.getWeightage());
 
-                    if(isWeightageExceed) {
-                        Double require = totalWeightageByAssessment - formData.getWeightage();
-                        Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
-                        Form<AssessmentInfoFormData> formDataForm = formFactory.form(AssessmentInfoFormData.class)
-                                .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+                    boolean isWeightageExceedByTotal;
+                    if(formData.getAssessmentType().equals("Final Exam")) {
+                        isWeightageExceedByTotal = courseInformationService.isWeightageExceedByFinalExam(lecturerId, courseId,
+                                Optional.of(assessmentInfo), formData.getWeightage());
+                    }
+                    else {
+                        isWeightageExceedByTotal = courseInformationService.isWeightageExceedByCourseWork(lecturerId, courseId,
+                                Optional.of(assessmentInfo), formData.getWeightage());
+                    }
+
+                    logger.debug("is weightage exceed : " + isWeightageExceed);
+                    logger.debug("is weightage exceed by total : " + isWeightageExceedByTotal);
+                    if(isWeightageExceed || isWeightageExceedByTotal) {
+                        Form<AssessmentInfoFormData> formDataForm;
+
+                        if(isWeightageExceed) {
+                            Double require = totalWeightageByAssessment - formData.getWeightage();
+                            Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
+                            formDataForm = formFactory.form(AssessmentInfoFormData.class)
+                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+                        }
+                        else {
+                            formDataForm = formFactory.form(AssessmentInfoFormData.class)
+                                    .withGlobalError("Total weightage of coursework and final exam assessments must be 50% each. Please try again.");
+                        }
 
                         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                         List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
-                        AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), formDataForm, assessmentInfo,
                                 courseInformation, courseLearningOutcomes, subjectsStateViewModels));
                     }
                     else {
-                        AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
                         assessmentInfo.assessment = formData.getAssessment();
                         assessmentInfo.assessmentType = formData.getAssessmentType();
                         assessmentInfo.fullMarks = formData.getFullMarks();
@@ -630,14 +691,14 @@ public class CourseInformationController extends Controller {
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                         "Student");
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 logger.debug("Student list : " + studentList.size());
 
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseId, studentList, form,
+                return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseInformation, studentList, form,
                         assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels,  request, messages));
             }
         }
@@ -660,8 +721,13 @@ public class CourseInformationController extends Controller {
                     StudentInfoFormData formData = fromRequest.get();
                     CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                     List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
-                    int countDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber());
-                    if(countDuplicate == 0) {
+                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), courseId);
+                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(), courseId);
+                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), courseId);
+
+                    boolean hasDuplicate = countIdDuplicate > 0 || countNameDuplicate > 0 || countEmailDuplicate > 0;
+
+                    if(!hasDuplicate) {
                         studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
                                 formData.getLastName(), formData.getGender(), courseInformation.programme,
                                 formData.getCurrentSemester(), formData.getEmail(), lecturerId, courseId, assessmentInfos);
@@ -693,13 +759,26 @@ public class CourseInformationController extends Controller {
                             studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
                         }
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                        Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class)
-                                .withGlobalError("Code number " + formData.getCodeNumber() + " is already exists. Please try again with new code number.");
+                        Form<StudentInfoFormData> form;
+                        if(countIdDuplicate > 0) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with ID Number - " + formData.getCodeNumber() + " is already exists. Please try again.");
+                        }
+                        else if(countEmailDuplicate > 0) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Email - " + formData.getEmail() + " is already exists. Please try again.");
+                        }
+                        else {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Name - " + formData.getFirstName() + " " +
+                                            formData.getLastName() + " is already exists. Please try again.");
+                        }
+
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseId, studentList,
+                        return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseInformation, studentList,
                                 form, assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, request, messages));
                     }
                 }
@@ -733,11 +812,13 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Student student = studentService.getStudent(studentId);
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student, subjectsStateViewModels, request, messages));
+                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
+                        subjectsStateViewModels, courseInformation, request, messages));
             }
         }
 
@@ -758,18 +839,41 @@ public class CourseInformationController extends Controller {
                 else {
                     StudentInfoFormData formData = fromRequest.get();
 
-                    int countDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber());
-                    Student student = studentService.getStudent(studentId);
-                    if(countDuplicate > 0 && !student.codeNumber.equals(formData.getCodeNumber())) {
-                        Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class)
-                                .withGlobalError("Code number " + formData.getCodeNumber() + " is already exists. Please try again with new code number.");
+                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), courseId);
+                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(), courseId);
+                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), courseId);
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                    Student student = studentService.getStudent(studentId);
+                    boolean hasDuplicate = (countIdDuplicate > 0 && !student.codeNumber.equals(formData.getCodeNumber()))
+                            || (countNameDuplicate > 0 && !student.firstName.equals(formData.getFirstName())
+                            && !student.lastName.equals(formData.getLastName()) )
+                            || (countEmailDuplicate > 0 && !student.email.equals(formData.getEmail()));
+
+                    if(hasDuplicate) {
+                        Form<StudentInfoFormData> form;
+
+                        if(countIdDuplicate > 0 && !student.codeNumber.equals(formData.getCodeNumber())) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with ID Number - " + formData.getCodeNumber() + " is already exists. Please try again.");
+                        }
+                        else if(countNameDuplicate > 0 && !student.firstName.equals(formData.getFirstName())
+                                && !student.lastName.equals(formData.getLastName())) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Name - " + formData.getFirstName() + " "
+                                            + formData.getLastName() + " is already exists. Please try again.");
+                        }
+                        else {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Email - " + formData.getEmail() + " is already exists. Please try again.");
+                        }
+
+                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                        CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
-                                subjectsStateViewModels, request, messages));
+                                subjectsStateViewModels, courseInformation, request, messages));
                     }
                     else {
                         student.firstName = formData.getFirstName();
@@ -832,7 +936,7 @@ public class CourseInformationController extends Controller {
 
                 lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
                         "Report");
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(courseId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 return ok(views.html.reports.render(sessionId, optionalUsername.get(), gradeViewModel, cloViewModel,

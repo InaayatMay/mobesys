@@ -1,4 +1,4 @@
-@(userId: Long, username: String, courseInformationId: Long, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
+@(userId: Long, username: String, courseInformation: models.CourseInformation, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
 assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
 assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
 subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
@@ -144,7 +144,7 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
                     <tr>
                         <th>No</th>
                         <th>ID</th>
-                        <th>Name</th>
+                        <th>Full Name</th>
                     </tr>
                     @for((std, index) <- marksViewModel.view.zipWithIndex) {
                         <tr>
@@ -156,11 +156,11 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
                                     @for(marks <- std.studentMarks) {
                                         @if(marks.assessmentId == assessment.id) {
                                             <form method="post" id="uniqueForm@marks.id" action="@routes.CourseInformationController.saveStudentMarksForAssessment(userId, assessment.courseInformationId, assessment.id, std.studentId, marks.id)">
-                                                <input id="marksInput@marks.id" name="marks" hidden>
+                                                <input id="marksInput@marks.id" name="marks" data-max="@assessment.fullMarks" hidden>
                                                 @if(marks.marks == 0.0) {
-                                                    <td class="bg-secondary editable" data-marksId="@marks.id" id="@marks.id">@marks.marks</td>
+                                                    <td class="bg-secondary editable" data-marksId="@marks.id" data-original-value="@marks.marks" data-max="@assessment.fullMarks" id="@marks.id">@marks.marks</td>
                                                 } else {
-                                                    <td class="editable" data-marksId="@marks.id" id="@marks.id">@marks.marks</td>
+                                                    <td class="editable" data-marksId="@marks.id" data-max="@assessment.fullMarks" data-original-value="@marks.marks" id="@marks.id">@marks.marks</td>
                                                 }
                                             </form>
                                         }
@@ -175,7 +175,7 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
         <div class="card-footer">
             <div class="row">
                 <div class="col text-right">
-                    <a href="/lecturer/@userId/courseInformation/@courseInformationId/reports" class="btn btn-sm btn-secondary">
+                    <a href="/lecturer/@userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
                         Generate Reports
                     </a>
                 </div>
@@ -199,23 +199,37 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
             <!-- Modal body -->
             <div class="modal-body">
                 <form method="post">
-                    <label>Code Number</label>
+                    <label>Student ID</label>
                     <input type="text" class="form-control" name="codeNumber" required>
 
                     <label>First Name</label>
-                    <input type="text" class="form-control" name="firstName" required>
+                    <input type="text" class="form-control" minlength="3" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Last Name</label>
-                    <input type="text" class="form-control" name="lastName" required>
+                    <input type="text" class="form-control" name="lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Gender</label>
-                    <input type="text" class="form-control" name="gender" required>
+                    <select name="gender" class="form-control">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
 
                     <label>Current Semester</label>
-                    <input type="text" class="form-control" name="currentSemester" required>
+                    <select name="currentSemester" class="form-control">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        @if(!courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        }
+                    </select>
 
                     <label>Email</label>
-                    <input type="text" class="form-control" name="email" required>
+                    <input type="email" class="form-control" name="email" required>
 
                     <button type="submit" class="btn btn-secondary mt-3">Save Student</button>
                 </form>

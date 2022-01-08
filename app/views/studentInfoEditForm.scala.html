@@ -1,5 +1,6 @@
 @(userId: Long, username: String, form : Form[forms.StudentInfoFormData], student: models.Student
-, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], courseInformation: models.CourseInformation
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -23,10 +24,10 @@
                 </div>
             }
             <form method="post">
-                <label>Code Number</label>
+                <label>Student ID</label>
                 <input type="text" class="form-control" name="codeNumber" value="@student.codeNumber" required>
 
-                <label class="mt-2">First Name</label>
+                <!--<label class="mt-2">First Name</label>
                 <input type="text" class="form-control" name="firstName" value="@student.firstName" required>
 
                 <label class="mt-2">Last Name</label>
@@ -36,7 +37,39 @@
                 <input type="text" class="form-control" name="gender" value="@student.gender" required>
 
                 <label class="mt-2">Current Semester</label>
-                <input type="text" class="form-control" name="currentSemester" value="@student.currentSemester" required>
+                <input type="text" class="form-control" name="currentSemester" value="@student.currentSemester" required>-->
+
+                <label>First Name</label>
+                <input type="text" class="form-control" minlength="3" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+
+                <label>Last Name</label>
+                <input type="text" class="form-control" name="lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+
+                <label>Gender</label>
+                <select name="gender" class="form-control">
+                    @if(student.gender.equals("Male")){
+                        <option value="Male" selected>Male</option>
+                        <option value="Female">Female</option>
+                    } else {
+                        <option value="Male">Male</option>
+                        <option value="Female" selected>Female</option>
+                    }
+
+                </select>
+
+                <label>Current Semester</label>
+                <select name="currentSemester" class="form-control">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                    <option value="5">5</option>
+                    <option value="6">6</option>
+                    @if(!courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
+                    <option value="7">7</option>
+                    <option value="8">8</option>
+                    }
+                </select>
 
                 <label class="mt-2">Email</label>
                 <input type="text" class="form-control" name="email" value="@student.email" required>
