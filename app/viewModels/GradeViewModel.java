@@ -1,5 +1,6 @@
 package viewModels;
 
+import io.vavr.control.Either;
 import models.CourseInformation;
 import models.StatisticsReport;
 import models.Student;
@@ -32,9 +33,10 @@ public class GradeViewModel {
     public Double passPercentage;
 
 
-    public static GradeViewModel build(CourseInformation courseInformation, List<Student> studentList,
-                                       List<StatisticsReport> statisticsReports, List<StudentStatisticsReport> studentStatisticsReports) {
+    public static Either<ErrorType, GradeViewModel> build(CourseInformation courseInformation, List<Student> studentList,
+                                                          List<StatisticsReport> statisticsReports, List<StudentStatisticsReport> studentStatisticsReports) {
 
+        List<String> assessmentTypes = Arrays.asList("Assignment", "Quiz", "Test-1", "Test-2", "Mini project");
         GradeViewModel viewModel = new GradeViewModel();
         viewModel.courseId = courseInformation.id;
         viewModel.programme = courseInformation.programme;
@@ -44,15 +46,16 @@ public class GradeViewModel {
         viewModel.semester = courseInformation.semester;
         viewModel.numberOfStudent = studentList.size();
 
+
         List<Statistics> statisticsList = new ArrayList<>();
 
-        List<String> assessmentTypes = Statistics.getAssessmentType(courseInformation.courseType);
         Double courseworkTotalMarks = 0.0;
         Double courseworkTotalWeightage = 0.0;
         for(String assessmentType: assessmentTypes) {
             boolean foundAssessmentType = false;
+            logger.debug("Report : 55 : " + statisticsReports.size());
             for(StatisticsReport report: statisticsReports) {
-                if(report.assessmentType.equals(assessmentType)) {
+                if(report.assessmentType != null && report.assessmentType.equals(assessmentType)) {
                     foundAssessmentType = true;
                     Statistics stat = new Statistics();
                     stat.assessmentType = assessmentType;
@@ -63,9 +66,8 @@ public class GradeViewModel {
 
                     courseworkTotalMarks += report.totalStatisticsMarks;
                     courseworkTotalWeightage += report.totalWeightage;
-
                 }
-                else if(report.assessmentType.equals("Final Exam")) {
+                else if(report.assessmentType != null && report.assessmentType.equals("Final Exam")) {
                     Statistics stat = new Statistics();
                     stat.assessmentType = report.assessmentType;
                     stat.totalMarks = report.totalStatisticsMarks;
@@ -105,6 +107,7 @@ public class GradeViewModel {
         List<Long> studentIds = new ArrayList<>();
         int serialNo = 1;
 
+        logger.debug("Student statistics reports : 111 : " + studentStatisticsReports.size());
         for(int i=0; i<studentStatisticsReports.size(); i++) {
             if(studentIds.contains(studentStatisticsReports.get(i).studentId)) {
                 continue;
@@ -117,21 +120,21 @@ public class GradeViewModel {
                 statistics.studentName = studentStatisticsReports.get(i).studentName;
                 statistics.numberOfAttempt = studentStatisticsReports.get(i).numberOfAttempt;
 
-                List<String> assessmentTypeList = Statistics.getAssessmentType(courseInformation.courseType);
                 List<Double> marksList = new ArrayList<>();
 
                 Double courseworkTotal = 0.0;
                 List<String> includedAssessment = new ArrayList<>();
 
-                forLoop: for(String type: assessmentTypeList) {
+                logger.debug("Assessment types : 129 : " + assessmentTypes.size());
+                forLoop: for(String type: assessmentTypes) {
                     int j=0;
                     boolean foundAssessmentType = false;
                     while (j<studentStatisticsReports.size()) {
-                        if(studentStatisticsReports.get(j).studentId == studentStatisticsReports.get(i).studentId) {
-                            if(studentStatisticsReports.get(j).assessmentType.equals("Final Exam")) {
+                        if(studentStatisticsReports.get(j).studentId != null && studentStatisticsReports.get(j).studentId == studentStatisticsReports.get(i).studentId) {
+                            if(studentStatisticsReports.get(j).assessmentType != null && studentStatisticsReports.get(j).assessmentType.equals("Final Exam")) {
                                 statistics.finalExamTotal = studentStatisticsReports.get(j).totalStatisticsMarks;
                             }
-                            else if(!includedAssessment.contains(type) && studentStatisticsReports.get(j).assessmentType.equals(type)) {
+                            else if(studentStatisticsReports.get(j).assessmentType != null && !includedAssessment.contains(type) && studentStatisticsReports.get(j).assessmentType.equals(type)) {
                                 includedAssessment.add(type);
                                 logger.debug("Assessment type : " + type + " _ " + "Marks : " + studentStatisticsReports.get(j).totalStatisticsMarks);
                                 marksList.add(studentStatisticsReports.get(j).totalStatisticsMarks);
@@ -164,6 +167,7 @@ public class GradeViewModel {
 
         Double failPercentage = 0.0;
         Double passPercentage = 0.0;
+        logger.debug("Analysis of Results List : 169 : " + viewModel.analysisOfResultsList.size());
         for(AnalysisOfResults results: viewModel.analysisOfResultsList) {
             if(results.grade.equals("F")) {
                 failPercentage += results.percentage;
@@ -179,7 +183,13 @@ public class GradeViewModel {
         viewModel.failPercentage = Double.parseDouble(dfHalfUp.format(failPercentage));
         viewModel.passPercentage = Double.parseDouble(dfHalfUp.format(passPercentage));
 
-        return viewModel;
+        return Either.right(viewModel);
+
+        /*try {
+
+        }catch (NullPointerException e) {
+            return Either.left(ErrorType.Null_Value_Detected);
+        }*/
     }
 
     public static class Statistics{
@@ -190,10 +200,7 @@ public class GradeViewModel {
 
         public static List<String> getAssessmentType(String courseType) {
             List<String> assessmentTypes = Arrays.asList("Assignment", "Quiz", "Test-1", "Test-2", "Mini project");
-            if(courseType.equals("Theory with Lab")) {
-                assessmentTypes.add("Lab Coursework");
-                assessmentTypes.add("Lab Test/Exam");
-            }
+
             return assessmentTypes;
         }
     }
@@ -280,5 +287,9 @@ public class GradeViewModel {
 
             return new ArrayList<>(analysisOfResultsMap.values());
         }
+    }
+
+    public enum ErrorType {
+        Null_Value_Detected
     }
 }

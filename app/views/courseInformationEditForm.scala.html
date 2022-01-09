@@ -8,43 +8,45 @@ clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseI
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username, subjectStateList)
-
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            Edit Course Information
-        </div>
-        <div class="card-body">
-            @if(form.hasGlobalErrors){
+@views.html.common.sideBar(userId, username, subjectStateList) {
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                Edit Course Information
+            </div>
+            <div class="card-body">
+                @if(form.hasGlobalErrors){
                 <div class="alert alert-warning">
                     @for(error <- form.globalErrors){
-                        <span>@error.message</span>
+                    <span>@error.message</span>
                     }
                 </div>
-            }
-            <form method="post">
-                <label>Plo</label>
-                <select class="form-control" name="ploCode">
-                    @if(unlinkedPloList.size() > 0) {
-                            <option value="@plo.code" selected>@plo.code _ @plo.title</option>
+                }
+                <form method="post">
+                    <label>Plo</label>
+                    <select class="form-control" name="ploCode">
+                        @if(unlinkedPloList.size() > 0) {
+                        <option value="@plo.code" selected>@plo.code _ @plo.title</option>
                         @for(plo <- unlinkedPloList) {
-                            <option value="@plo.code">@plo.code _ @plo.title</option>
+                        <option value="@plo.code">@plo.code _ @plo.title</option>
                         }
-                    }
-                </select>
+                        }
+                    </select>
 
-                <label class="mt-3">Clo Code</label>
-                <input type="text" class="form-control" name="cloCode" value="@clo.code" required>
+                    <label class="mt-3">Clo Code</label>
+                    <input type="text" class="form-control" name="cloCode" value="@clo.code" required>
 
-                <label class="mt-3">Clo Title</label>
-                <input type="text" class="form-control" name="cloTitle" value="@clo.title" required>
+                    <label class="mt-3">Clo Title</label>
+                    <input type="text" class="form-control" name="cloTitle" value="@clo.title" required>
 
-                <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Map</button>
-                <a href="/lecturer/@userId/courseInformation/@courseId/details" class="btn btn-outline-secondary mt-3">Cancel</a>
-            </form>
+                    <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Map</button>
+                    <a href="/lecturer/@userId/courseInformation/@courseId/details" class="btn btn-outline-secondary mt-3">Cancel</a>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+}
+
+
 </body>
 </html>

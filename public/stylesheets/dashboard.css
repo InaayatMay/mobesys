@@ -1,0 +1,31 @@
+body {
+    background: #dadada;
+}
+
+.center-box {
+  width: 100%;
+  max-width: 420px;
+  margin: auto;
+  background: #fefefe;
+  border: 1px solid rgba(0, 0, 0, .15);
+}
+
+.center-box .checkbox {
+  font-weight: 400;
+}
+
+.center-box .form-floating:focus-within {
+  z-index: 2;
+}
+
+.center-box input[type="email"] {
+  margin-bottom: -1px;
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.center-box input[type="password"] {
+  margin-bottom: 10px;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}

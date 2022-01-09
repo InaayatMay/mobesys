@@ -26,4 +26,5 @@ lazy val root = (project in file("."))
     testOptions in Test := Seq(Tests.Argument(TestFrameworks.JUnit, "-a", "-v"))
   )
 
-libraryDependencies += "org.flywaydb" %% "flyway-play" % "7.5.0" 
+libraryDependencies += "org.flywaydb" %% "flyway-play" % "7.5.0"
+libraryDependencies += "io.vavr" % "vavr" % "0.10.2"

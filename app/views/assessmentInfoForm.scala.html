@@ -1,8 +1,17 @@
-@(userId: Long, username: String, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
+@(essentials: viewModels.EssentialFieldsViewModel, info: viewModels.CoursePlanViewModel, form : Form[forms.AssessmentInfoFormData],
 assessmentInfoMap: Map[String, List[AssessmentInfo]], totalAssessmentWeights: Double,
 cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String, Double]
 , subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add(essentials.programme, "")
+.add(essentials.courseName, "")
+.add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, info.courseId).url)
+.add("Assessment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, info.courseId).url)
+.toList()
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -10,182 +19,182 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username, subjectStateList)
-
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            Course Plan
-        </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-4">
-                    <div class="row">
-                        <div class="col">
-                            <p>PROGRAMME</p>
+@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+@views.html.common.breadcrumb(link)
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                Course Plan
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-4">
+                        <div class="row">
+                            <div class="col">
+                                <p>PROGRAMME</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.programme</p>
+                            </div>
                         </div>
-                        <div class="col">
-                            <p>@info.programme</p>
+                        <div class="row">
+                            <div class="col">
+                                <p>COURSE CODE</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.courseCode</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p>COURSE NAME</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.courseName</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p>SEMESTER</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.semester</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p>INTAKE BATCH</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.intakeBatch</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p>LECTURER</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.lecturerName</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <p>COURSE TYPE</p>
+                            </div>
+                            <div class="col">
+                                <p>@info.courseType</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>COURSE CODE</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.courseCode</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>COURSE NAME</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.courseName</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>SEMESTER</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.semester</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>INTAKE BATCH</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.intakeBatch</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>LECTURER</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.lecturerName</p>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <p>COURSE TYPE</p>
-                        </div>
-                        <div class="col">
-                            <p>@info.courseType</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-8">
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th scope="col" colspan="4" class="text-center">CLO to PLO Mapping</th>
-                        </tr>
-                        <tr>
-                            <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
-                            <th scope="col" colspan="2" class="text-center">Course Learning Outcome</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        @if(info.cloToPloMapperList.size() > 0) {
+                    <div class="col-8">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th scope="col" colspan="4" class="text-center">CLO to PLO Mapping</th>
+                            </tr>
+                            <tr>
+                                <th scope="col" colspan="2" class="text-center">Programme Learning Outcome</th>
+                                <th scope="col" colspan="2" class="text-center">Course Learning Outcome</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            @if(info.cloToPloMapperList.size() > 0) {
                             @for(clo <- info.cloToPloMapperList) {
-                                <tr>
-                                    <td>
-                                        @clo.ploCode
-                                    </td>
-                                    <td>
-                                        @clo.ploTitle
-                                    </td>
-                                    <td>
-                                        @clo.cloCode
-                                    </td>
-                                    <td>
-                                         @clo.cloTitle
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    @clo.ploCode
+                                </td>
+                                <td>
+                                    @clo.ploTitle
+                                </td>
+                                <td>
+                                    @clo.cloCode
+                                </td>
+                                <td>
+                                    @clo.cloTitle
+                                </td>
+                            </tr>
                             }
-                        }
-                        </tbody>
-                    </table>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="card">
-        <div class="card-header">
-            <div class="row">
-                <div class="col">
-                    Assessment To CLO Mapping
-                </div>
-                <div class="col text-right">
-                    @if(totalAssessmentWeights == 100) {
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col">
+                        Assessment To CLO Mapping
+                    </div>
+                    <div class="col text-right">
+                        @if(totalAssessmentWeights == 100) {
                         <button type="button" class="btn btn-sm btn-secondary" disabled>
                             Add Assignment
                         </button>
-                    } else {
+                        } else {
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
                             Add Assignment
                         </button>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card-body">
-            @if(form.hasGlobalErrors){
+            <div class="card-body">
+                @if(form.hasGlobalErrors){
                 <div class="alert alert-warning">
                     @for(error <- form.globalErrors){
-                        <span>@error.message</span>
+                    <span>@error.message</span>
                     }
                 </div>
-            }
+                }
 
-            @if(totalAssessmentWeights == 100){
-            <div class="alert alert-secondary">
-                <div class="row">
-                    <div class="col">
-                        <p>You've successfully filled up assessment information and the total weightage of assessments is 100% now. Click the button to continue to fill up student information.</p>
-                    </div>
-                    <div class="col text-right">
-                        <a methods="get" href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/studentInformation" type="button" class="btn btn-sm btn-secondary">
-                            Continue to Fill Up Students Information
-                        </a>
+                @if(totalAssessmentWeights == 100){
+                <div class="alert alert-secondary">
+                    <div class="row">
+                        <div class="col">
+                            <p>You've successfully filled up assessment information and the total weightage of assessments is 100% now. Click the button to continue to fill up student information.</p>
+                        </div>
+                        <div class="col text-right">
+                            <a methods="get" href="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/studentInformation" type="button" class="btn btn-sm btn-secondary">
+                                Continue to Fill Up Students Information
+                            </a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            }
-            <table class="table">
-                <thead>
-                <tr>
-                    <th scope="col">No</th>
-                    <th scope="col">Assessments</th>
-                    <th>Assessment Type</th>
-                    <th>Full Marks</th>
-                    <th>Weightage(%)</th>
-                    <th>CLO1</th>
-                    <th>CLO2</th>
-                    <th>CLO3</th>
-                    <th>CLO4</th>
-                    <th>CLO5</th>
-                    <th>CLO6</th>
-                    <th>CLO7</th>
-                    <th>CLO8</th>
-                    <th></th>
-                    <th>
-                        <form method="post" class="show-confirm" data-file="All assessments" action="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/deleteAll">
-                            <button type="submit" class="btn btn-link text-secondary">
-                                <i class="fas fa-trash-alt"></i>
-                            </button>
-                        </form>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                @for(entry <- assessmentInfoMap.entrySet()) {
+                }
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th scope="col">No</th>
+                        <th scope="col">Assessments</th>
+                        <th>Assessment Type</th>
+                        <th>Full Marks</th>
+                        <th>Weightage(%)</th>
+                        <th>CLO1</th>
+                        <th>CLO2</th>
+                        <th>CLO3</th>
+                        <th>CLO4</th>
+                        <th>CLO5</th>
+                        <th>CLO6</th>
+                        <th>CLO7</th>
+                        <th>CLO8</th>
+                        <th></th>
+                        <th>
+                            <form method="post" class="show-confirm" data-file="All assessments" action="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/deleteAll">
+                                <button type="submit" class="btn btn-link text-secondary">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </form>
+                        </th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @for(entry <- assessmentInfoMap.entrySet()) {
                     <tr><th>@entry.getKey()</th></tr>
                     @for((assessment, index) <- entry.getValue().view.zipWithIndex) {
-                        <tr>
+                    <tr>
                         <td>@{index+1}</td>
                         <td>@assessment.assessment</td>
                         <td>@assessment.assessmentType</td>
@@ -209,24 +218,24 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                         <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>CLO8</td>
                         }
                         <td>
-                            <a href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/editAssessment" class="btn btn-link">
-                                        <span class="text-secondary">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </span>
+                            <a href="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/editAssessment" class="btn btn-link">
+                                            <span class="text-secondary">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </span>
                             </a>
                         </td>
                         <td>
-                            <form method="post" class="show-confirm" data-file="@{index+1}" action="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/deleteAssessment">
+                            <form method="post" class="show-confirm" data-file="@{index+1}" action="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/@assessment.id/deleteAssessment">
                                 <button type="submit" class="btn btn-link">
-                                            <span class="text-secondary">
-                                                <i class="fas fa-trash-alt"></i>
-                                            </span>
+                                                <span class="text-secondary">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
                                 </button>
                             </form>
                         </td>
                     </tr>
                     }
-                }
+                    }
 
                     <tr>
                         <th colspan="4" class="text-center">Total</th>
@@ -240,74 +249,77 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                         <th>@cloWithTotalWeightageMap.get("CLO7")</th>
                         <th>@cloWithTotalWeightageMap.get("CLO8")</th>
                     </tr>
-                </tbody>
-            </table>
-            <table class="table table-bordered mt-5">
-                <tr>
-                    <th rowspan="2">PLO% Emphasis</th>
-                    <th>PLO1</th>
-                    <th>PLO2</th>
-                    <th>PLO3</th>
-                    <th>PLO4</th>
-                    <th>PLO5</th>
-                    <th>PLO6</th>
-                    <th>PLO7</th>
-                    <th>PLO8</th>
-                    <th>PLO9</th>
-                    @if(info.programme.equals("Bachelor of Computer Science (Hons)")) {
+                    </tbody>
+                </table>
+                <table class="table table-bordered mt-5">
+                    <tr>
+                        <th rowspan="2">PLO% Emphasis</th>
+                        <th>PLO1</th>
+                        <th>PLO2</th>
+                        <th>PLO3</th>
+                        <th>PLO4</th>
+                        <th>PLO5</th>
+                        <th>PLO6</th>
+                        <th>PLO7</th>
+                        <th>PLO8</th>
+                        <th>PLO9</th>
+                        @if(info.programme.equals("Bachelor of Computer Science (Hons)")) {
                         <th>Total</th>
-                    } else {
+                        } else {
                         <th>PLO10</th>
                         <th>PLO11</th>
                         <th>PLO12</th>
                         <th>Total</th>
-                    }
-                </tr>
-                <tr>
-                    <th>@ploWithTotalWeightMap.get("PLO1")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO2")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO3")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO4")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO5")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO6")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO7")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO8")</th>
-                    <th>@ploWithTotalWeightMap.get("PLO9")</th>
-                    @if(!info.programme.equals("Bachelor of Computer Science (Hons)")) {
+                        }
+                    </tr>
+                    <tr>
+                        <th>@ploWithTotalWeightMap.get("PLO1")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO2")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO3")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO4")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO5")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO6")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO7")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO8")</th>
+                        <th>@ploWithTotalWeightMap.get("PLO9")</th>
+                        @if(!info.programme.equals("Bachelor of Computer Science (Hons)")) {
                         <th>@ploWithTotalWeightMap.get("PLO10")</th>
                         <th>@ploWithTotalWeightMap.get("PLO11")</th>
                         <th>@ploWithTotalWeightMap.get("PLO12")</th>
-                    }
+                        }
 
-                    <th>@totalAssessmentWeights</th>
-                </tr>
-            </table>
+                        <th>@totalAssessmentWeights</th>
+                    </tr>
+                </table>
 
-        </div>
-        <div class="card-footer">
-            <div class="row">
-                <div class="col text-right">
-                    @if(totalAssessmentWeights == 100) {
-                        <a methods="get" href="/lecturer/@userId/courseInformation/@info.courseId/details/assessmentInformation/studentInformation" type="button" class="btn btn-sm btn-secondary mr-2">
+            </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col text-right">
+                        @if(totalAssessmentWeights == 100) {
+                        <a methods="get" href="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/studentInformation" type="button" class="btn btn-sm btn-secondary mr-2">
                             Continue to Fill Up Students Information
                         </a>
                         <button type="button" class="btn btn-sm btn-secondary" disabled>
                             Add Assignment
                         </button>
-                    } else {
+                        } else {
                         <span class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" title="To continue, the total weight of the assessments must be 100%.">
-                            <button class="btn btn-sm btn-secondary" type="button" disabled>Continue to Fill Up Students Information</button>
-                        </span>
+                                <button class="btn btn-sm btn-secondary" type="button" disabled>Continue to Fill Up Students Information</button>
+                            </span>
                         <button type="button" class="btn btn-sm btn-secondary ml-2" data-bs-toggle="modal" data-bs-target="#myModal">
                             Add Assignment
                         </button>
-                    }
+                        }
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
+}
+
+
 
 <!-- The Modal -->
 <div class="modal fade" id="myModal">
@@ -334,10 +346,6 @@ cloWithTotalWeightageMap: Map[String, Double], ploWithTotalWeightMap: Map[String
                         <option value="Test-2">Test-2</option>
                         <option value="Mini project">Mini project</option>
                         <option value="Final Exam">Final Exam</option>
-                        @if(info.courseType.equals("Theory with Lab")) {
-                            <option value="Lab Coursework">Lab Coursework</option>
-                            <option value="Lab Test/Exam">Lab Test/Exam</option>
-                        }
                     </select>
 
                     <label>Full Marks</label>

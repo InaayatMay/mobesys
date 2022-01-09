@@ -1,7 +1,17 @@
-@(userId: Long, username: String, courseInformation: models.CourseInformation, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
+@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
 assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
 assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
 subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add(essentials.programme, "")
+.add(essentials.courseName, "")
+.add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, courseInformation.id).url)
+.add("Assignment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, courseInformation.id).url)
+.add("Marks Entry", routes.CourseInformationController.showStudentInformationForm(essentials.userId, courseInformation.id).url)
+.toList()
+}
 
 @import viewModels.StudentMarksViewModel
 <!DOCTYPE html>
@@ -10,140 +20,141 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username, subjectStateList)
+@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+@views.html.common.breadcrumb(link)
 
-<div class="container mt-5 p-0">
-    <div class="card">
-        <div class="card-header">
-            <div class="row">
-                <div class="col">
-                    Students
-                </div>
-                <div class="col text-right">
-                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                        Add New Student
-                    </button>
+    <div class="container mt-5 p-0">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col">
+                        Students
+                    </div>
+                    <div class="col text-right">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                            Add New Student
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
-        <div class="card-body">
-            @if(form.hasGlobalErrors){
+            <div class="card-body">
+                @if(form.hasGlobalErrors){
                 <div class="alert alert-warning">
                     @for(error <- form.globalErrors){
-                        <span>@error.message</span>
+                    <span>@error.message</span>
                     }
                 </div>
-            }
-            <table class="table">
-                <thead>
-                    <th>Code Number</th>
-                    <th>Name</th>
+                }
+                <table class="table">
+                    <thead>
+                    <th>Student ID</th>
+                    <th>Full Name</th>
                     <th>Gender</th>
                     <th>Programme</th>
                     <th>Current Semester</th>
                     <th>Email</th>
                     <th></th>
                     <th></th>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     @for(std <- studentList) {
-                        <tr>
-                            <td>@std.codeNumber</td>
-                            <td>@std.firstName @std.lastName</td>
-                            <td>@std.gender</td>
-                            <td>@std.program</td>
-                            <td>@std.currentSemester</td>
-                            <td>@std.email</td>
-                            <td>
-                                <a href="/lecturer/@userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/editStudent"
-                                   class="btn btn-link" >
-                                    <span class="text-secondary">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </span>
-                                </a>
-                            </td>
-                            <td>
-                                <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName" action="/lecturer/@userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/deleteStudent">
-                                    <button type="submit" class="btn btn-link">
+                    <tr>
+                        <td>@std.codeNumber</td>
+                        <td>@std.firstName @std.lastName</td>
+                        <td>@std.gender</td>
+                        <td>@std.program</td>
+                        <td>@std.currentSemester</td>
+                        <td>@std.email</td>
+                        <td>
+                            <a href="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/editStudent"
+                               class="btn btn-link" >
                                         <span class="text-secondary">
-                                            <i class="fas fa-trash-alt"></i>
+                                            <i class="fas fa-pencil-alt"></i>
                                         </span>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                            </a>
+                        </td>
+                        <td>
+                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName" action="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/deleteStudent">
+                                <button type="submit" class="btn btn-link">
+                                            <span class="text-secondary">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                     }
                     @if(studentList.size == 0) {
-                        <tr>
-                            <td colspan="8" class="text-center">
-                                <div class="alert alert-secondary" role="alert">
-                                    There is no student yet. <br><br>
-                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                                        Add New Student
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="alert alert-secondary" role="alert">
+                                There is no student yet. <br><br>
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                                    Add New Student
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
                     }
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="card-header">
-            Marks Entry
-        </div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <td>Assessment Type</td>
-                    @for(order <- assessmentOrders) {
+        <div class="card">
+            <div class="card-header">
+                Marks Entry
+            </div>
+            <div class="card-body">
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <td>Assessment Type</td>
+                        @for(order <- assessmentOrders) {
                         <th colspan="@assessmentMap.get(order.assessmentType).size()" class="text-center">
                             @order.assessmentType
                         </th>
-                    }
-                </tr>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <td>Assessments</td>
-                    @for(order <- assessmentOrders) {
-                        @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                            <th>
-                                @assessment.assessment
-                            </th>
                         }
-                    }
-                </tr>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <td>Full Marks</td>
-                    @for(order <- assessmentOrders) {
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <td>Assessments</td>
+                        @for(order <- assessmentOrders) {
                         @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                            <th>@assessment.fullMarks</th>
+                        <th>
+                            @assessment.assessment
+                        </th>
                         }
-                    }
-                </tr>
-                <tr>
-                    <th></th>
-                    <th></th>
-                    <td>Weightage 100%</td>
-                    @for(order <- assessmentOrders) {
+                        }
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <td>Full Marks</td>
+                        @for(order <- assessmentOrders) {
                         @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                            <th>@assessment.weightage</th>
+                        <th>@assessment.fullMarks</th>
                         }
-                    }
-                </tr>
-                </thead>
-                <tbody>
+                        }
+                    </tr>
+                    <tr>
+                        <th></th>
+                        <th></th>
+                        <td>Weightage 100%</td>
+                        @for(order <- assessmentOrders) {
+                        @for(assessment <- assessmentMap.get(order.assessmentType)) {
+                        <th>@assessment.weightage</th>
+                        }
+                        }
+                    </tr>
+                    </thead>
+                    <tbody>
                     <tr>
                         <th>No</th>
-                        <th>ID</th>
+                        <th>Student ID</th>
                         <th>Full Name</th>
                     </tr>
                     @for((std, index) <- marksViewModel.view.zipWithIndex) {
@@ -155,12 +166,12 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
                                 @for(assessment <- assessmentMap.get(order.assessmentType)) {
                                     @for(marks <- std.studentMarks) {
                                         @if(marks.assessmentId == assessment.id) {
-                                            <form method="post" id="uniqueForm@marks.id" action="@routes.CourseInformationController.saveStudentMarksForAssessment(userId, assessment.courseInformationId, assessment.id, std.studentId, marks.id)">
+                                            <form method="post" id="uniqueForm@marks.id" action="@routes.CourseInformationController.saveStudentMarksForAssessment(essentials.userId, assessment.courseInformationId, assessment.id, std.studentId, marks.id)">
                                                 <input id="marksInput@marks.id" name="marks" data-max="@assessment.fullMarks" hidden>
                                                 @if(marks.marks == 0.0) {
-                                                    <td class="bg-secondary editable" data-marksId="@marks.id" data-original-value="@marks.marks" data-max="@assessment.fullMarks" id="@marks.id">@marks.marks</td>
+                                                    <td class="bg-secondary editable" data-marksId="@marks.id" data-original-value="@marks.marks" data-lecturerId="@essentials.userId" data-courseId="@assessment.courseInformationId" data-assessmentId="@assessment.id" data-studentId="@std.studentId" data-max="@assessment.fullMarks" id="@marks.id">@marks.marks</td>
                                                 } else {
-                                                    <td class="editable" data-marksId="@marks.id" data-max="@assessment.fullMarks" data-original-value="@marks.marks" id="@marks.id">@marks.marks</td>
+                                                    <td class="editable" data-marksId="@marks.id" data-max="@assessment.fullMarks" data-original-value="@marks.marks" data-lecturerId="@essentials.userId" data-courseId="@assessment.courseInformationId" data-assessmentId="@assessment.id" data-studentId="@std.studentId" id="@marks.id">@marks.marks</td>
                                                 }
                                             </form>
                                         }
@@ -169,21 +180,24 @@ subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requ
                             }
                         </tr>
                     }
-                </tbody>
-            </table>
-        </div>
-        <div class="card-footer">
-            <div class="row">
-                <div class="col text-right">
-                    <a href="/lecturer/@userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
-                        Generate Reports
-                    </a>
-                </div>
+                    </tbody>
+                </table>
             </div>
+            <div class="card-footer">
+                <div class="row">
+                    <div class="col text-right">
+                        <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
+                            Generate Reports
+                        </a>
+                    </div>
+                </div>
 
+            </div>
         </div>
     </div>
-</div>
+}
+
+
 
 <!-- The Modal -->
 <div class="modal fade" id="myModal">

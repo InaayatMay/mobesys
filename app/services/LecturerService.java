@@ -3,11 +3,15 @@ package services;
 import io.ebean.Ebean;
 import models.Lecturer;
 import models.LecturerCurrentSubject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Optional;
 
 public class LecturerService {
+    private final Logger logger = LoggerFactory.getLogger("application");
+
     public boolean authenticate(String email, String password) {
         Lecturer lecturer = Ebean.find(Lecturer.class).where().and().eq("email",email)
                 .eq("password", password)
@@ -43,9 +47,15 @@ public class LecturerService {
         Optional<LecturerCurrentSubject> optionalLecturerCurrentSubject = getLecturerCurrentSubjectState(lecturerId, courseId);
         if(optionalLecturerCurrentSubject.isPresent()) {
             LecturerCurrentSubject lecturerCurrentSubject = optionalLecturerCurrentSubject.get();
-            lecturerCurrentSubject.isCompleted = isCompleted;
-            lecturerCurrentSubject.currentPage = currentPage;
-            Ebean.update(lecturerCurrentSubject);
+
+            String sql = "update lecturer_current_subject\n" +
+                    "set is_completed = :isCompleted, current_page = :currentPage\n" +
+                    "where id = :id;";
+            int updatedRow = Ebean.createSqlUpdate(sql)
+                    .setParameter("isCompleted", isCompleted)
+                    .setParameter("currentPage", currentPage)
+                    .setParameter("id", lecturerCurrentSubject.id)
+                    .execute();
         }
         else {
             LecturerCurrentSubject lecturerCurrentSubject = new LecturerCurrentSubject();

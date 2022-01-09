@@ -12,10 +12,10 @@
                         Courses
                     </a>
                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
-                        <li><span class="dropdown-item">Working On</span></li>
+                        <li><span class="dropdown-item">Uncompleted</span></li>
                         @for(subject <- subjectStateList) {
                             @if(!subject.isCompleted) {
-                                <li><a class="dropdown-item" href="@subject.currentPageUrl">@subject.courseName <span class="badge bg-secondary">UnComplete</span></a></li>
+                                <li><a class="dropdown-item" href="@subject.currentPageUrl">@subject.courseName <span class="badge bg-secondary">UnCompleted</span></a></li>
                             }
                         }
                         <li><hr class="dropdown-divider"></li>
@@ -26,9 +26,6 @@
                             }
                         }
                     </ul>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link disabled" href="#" tabindex="-1" aria-disabled="true">Disabled</a>
                 </li>
             </ul>
             <ul class="navbar-nav ms-auto">

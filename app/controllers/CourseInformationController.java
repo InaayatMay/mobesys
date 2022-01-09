@@ -5,7 +5,7 @@ import forms.AssessmentInfoFormData;
 import forms.CloToPloMapFormData;
 import forms.LecturerCourseMapFormData;
 import forms.StudentInfoFormData;
-import io.ebean.Ebean;
+import io.vavr.control.Either;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,8 +101,6 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
-
-
     public Result showCourseInformationDetails(Http.Request request, Long lecturerId, Long courseId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
@@ -140,8 +138,11 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.courseInformationDetails.render(lecturerId, optionalUsername.get(), viewModel, form, unlinkedPloList,
+                return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel, form, unlinkedPloList,
                         numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
             }
         }
@@ -214,8 +215,11 @@ public class CourseInformationController extends Controller {
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                courseInformation.programme, courseInformation.courseName);
+
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.courseInformationDetails.render(lecturerId, optionalUsername.get(), viewModel,
+                        return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel,
                                 form, unlinkedPloList, numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
                     }
                     else {
@@ -408,8 +412,11 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.assessmentInfoForm.render(lecturerId, name, viewModel, form, assessmentInfoMap,
+                return ok(views.html.assessmentInfoForm.render(essentialFieldsViewModel, viewModel, form, assessmentInfoMap,
                         totalAssessmentWeights, cloWithTotalWeightMap, ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
             }
         }
@@ -511,10 +518,12 @@ public class CourseInformationController extends Controller {
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                courseInformation.programme, courseInformation.courseName);
 
                         Messages messages = messagesApi.preferred(request);
 
-                        return ok(views.html.assessmentInfoForm.render(lecturerId, optionalUsername.get(), viewModel,
+                        return ok(views.html.assessmentInfoForm.render(essentialFieldsViewModel, viewModel,
                                 formWithError, assessmentInfoMap, totalAssessmentWeights, cloWithTotalWeightMap,
                                 ploWithTotalWeightMap, subjectsStateViewModels, request, messages));
 
@@ -576,7 +585,10 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), form, assessmentInfo,
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
+                return ok(views.html.assessmentInfoEditForm.render(essentialFieldsViewModel, form, assessmentInfo,
                         courseInformation, courseLearningOutcomes, subjectsStateViewModels));
             }
         }
@@ -635,7 +647,10 @@ public class CourseInformationController extends Controller {
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                        return ok(views.html.assessmentInfoEditForm.render(lecturerId, optionalUsername.get(), formDataForm, assessmentInfo,
+                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                courseInformation.programme, courseInformation.courseName);
+
+                        return ok(views.html.assessmentInfoEditForm.render(essentialFieldsViewModel, formDataForm, assessmentInfo,
                                 courseInformation, courseLearningOutcomes, subjectsStateViewModels));
                     }
                     else {
@@ -696,9 +711,12 @@ public class CourseInformationController extends Controller {
 
                 logger.debug("Student list : " + studentList.size());
 
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseInformation, studentList, form,
+                return ok(views.html.studentInfoForm.render(essentialFieldsViewModel, courseInformation, studentList, form,
                         assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels,  request, messages));
             }
         }
@@ -777,8 +795,11 @@ public class CourseInformationController extends Controller {
                                             formData.getLastName() + " is already exists. Please try again.");
                         }
 
+                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                courseInformation.programme, courseInformation.courseName);
+
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoForm.render(lecturerId, optionalUsername.get(), courseInformation, studentList,
+                        return ok(views.html.studentInfoForm.render(essentialFieldsViewModel, courseInformation, studentList,
                                 form, assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, request, messages));
                     }
                 }
@@ -816,8 +837,11 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
+                return ok(views.html.studentInfoEditForm.render(essentialFieldsViewModel, form, student,
                         subjectsStateViewModels, courseInformation, request, messages));
             }
         }
@@ -871,8 +895,11 @@ public class CourseInformationController extends Controller {
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                courseInformation.programme, courseInformation.courseName);
+
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
+                        return ok(views.html.studentInfoEditForm.render(essentialFieldsViewModel, form, student,
                                 subjectsStateViewModels, courseInformation, request, messages));
                     }
                     else {
@@ -923,24 +950,32 @@ public class CourseInformationController extends Controller {
                 List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
                 List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
                 List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
-                GradeViewModel gradeViewModel = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
 
-                List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
-                List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
-                List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);
-                CloViewModel cloViewModel = CloViewModel.build(cloWithTotalWeightageList, cloAttainments, studentList.size(), previousCloRecords);
+                logger.debug("statisticsReports : " + statisticsReports.size());
+                logger.debug("Student statistic : " + studentStatisticsReports.size());
+                Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
 
-                logger.debug("ploAnalysisList : " + cloViewModel.ploAnalysisList.size());
-                logger.debug("ploMaxMarkList : " + cloViewModel.ploMaxMarkList.size());
-                logger.debug("ploAttainmentList : " + cloViewModel.ploAttainmentList.size());
+                return either.fold(
+                        error -> ok(error.toString()),
+                        gradeViewModel -> {
+                            List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
+                            List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
+                            List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);
+                            CloViewModel cloViewModel = CloViewModel.build(cloWithTotalWeightageList, cloAttainments, studentList.size(), previousCloRecords);
 
-                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
-                        "Report");
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+                            lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                                    "Report");
+                            List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                            List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                return ok(views.html.reports.render(sessionId, optionalUsername.get(), gradeViewModel, cloViewModel,
-                        subjectsStateViewModels, request, messages));
+                            EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                                    courseInformation.programme, courseInformation.courseName);
+
+                            return ok(views.html.reports.render(essentialFieldsViewModel, gradeViewModel, cloViewModel,
+                                    subjectsStateViewModels, request, messages));
+                        }
+                );
+
             }
         }
 
@@ -970,11 +1005,15 @@ public class CourseInformationController extends Controller {
         List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
         List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
         List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
-        GradeViewModel gradeViewModel = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
+        Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
 
-        List<GradeDistributionDto> dtos = GradeDistributionDto.to(gradeViewModel);
-
-        return ok(Json.toJson(dtos));
+        return either.fold(
+                error -> ok(error.toString()),
+                gradeViewModel -> {
+                    List<GradeDistributionDto> dtos = GradeDistributionDto.to(gradeViewModel);
+                    return ok(Json.toJson(dtos));
+                }
+        );
     }
 
     public Result generateClassCloAttainment(Http.Request request, Long lecturerId, Long courseId) {

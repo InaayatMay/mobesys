@@ -1,0 +1,18 @@
+@(linkList : List[viewModels.LinkViewModel])
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        @for(link <- linkList){
+            @if(link.url.equals("")) {
+                <li class="breadcrumb-item">
+                    @link.label
+                </li>
+            } else {
+                <li class="breadcrumb-item">
+                    <a href="@link.url"> @link.label</a>
+                </li>
+            }
+
+        }
+    </ol>
+</nav>

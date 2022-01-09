@@ -364,7 +364,7 @@ public class CourseInformationService {
     }
 
     public Double getDefaultAssessmentWeightage(String assessmentType) {
-        if(assessmentType.equals("Assignment")) {
+        if(assessmentType.equals("Assignment") || assessmentType.equals("Mini Project")) {
             return 30.0;
         }
         else if(assessmentType.equals("Test-1") || assessmentType.equals("Test-2")) {

@@ -1,6 +1,16 @@
-@(userId: Long, username: String, form : Form[forms.AssessmentInfoFormData], info: models.AssessmentInfo,
+@(essentials: viewModels.EssentialFieldsViewModel, form : Form[forms.AssessmentInfoFormData], info: models.AssessmentInfo,
 courseInformation: models.CourseInformation, courseLearningOutcomeList: List[models.CourseLearningOutcome]
 , subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add(essentials.programme, "")
+.add(essentials.courseName, "")
+.add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, info.courseInformationId).url)
+.add("Assignment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, info.courseInformationId).url)
+.add("Edit Assessment", "")
+.toList()
+}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,65 +18,63 @@ courseInformation: models.CourseInformation, courseLearningOutcomeList: List[mod
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.navbar(userId, username, subjectStateList)
-
-<div class="container mt-5">
-    <div class="card">
-        <div class="card-header">
-            Edit Course Information
-        </div>
-        <div class="card-body">
-            @if(form.hasGlobalErrors){
+@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+@views.html.common.breadcrumb(link)
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-header">
+                Edit Course Information
+            </div>
+            <div class="card-body">
+                @if(form.hasGlobalErrors){
                 <div class="alert alert-warning">
                     @for(error <- form.globalErrors){
-                        <span>@error.message</span>
+                    <span>@error.message</span>
                     }
                 </div>
-            }
-            <form method="post">
-                <label>Assessments</label>
-                <input type="text" class="form-control" name="assessment" value="@info.assessment" required>
+                }
+                <form method="post">
+                    <label>Assessments</label>
+                    <input type="text" class="form-control" name="assessment" value="@info.assessment" required>
 
-                <label class="mt-3">Assessment Type</label>
-                <select class="form-control" name="assessmentType">
-                    <option value="@info.assessmentType">@info.assessmentType</option>
-                    <option value="Assignment">Assignment</option>
-                    <option value="Quiz">Quiz</option>
-                    <option value="Test-1">Test-1</option>
-                    <option value="Test-2">Test-2</option>
-                    <option value="Mini project">Mini project</option>
-                    <option value="Final Exam">Final Exam</option>
-                    @if(courseInformation.courseType.equals("Theory with Lab")) {
-                        <option value="Lab Coursework">Lab Coursework</option>
-                        <option value="Lab Test/Exam">Lab Test/Exam</option>
-                    }
-                </select>
+                    <label class="mt-3">Assessment Type</label>
+                    <select class="form-control" name="assessmentType">
+                        <option value="@info.assessmentType">@info.assessmentType</option>
+                        <option value="Assignment">Assignment</option>
+                        <option value="Quiz">Quiz</option>
+                        <option value="Test-1">Test-1</option>
+                        <option value="Test-2">Test-2</option>
+                        <option value="Mini project">Mini project</option>
+                        <option value="Final Exam">Final Exam</option>
+                    </select>
 
-                <label class="mt-3">Full Marks</label>
-                <input type="number" class="form-control" name="fullMarks" min="10" max="100" value="@info.fullMarks" required>
+                    <label class="mt-3">Full Marks</label>
+                    <input type="number" class="form-control" name="fullMarks" min="10" max="100" value="@info.fullMarks" required>
 
-                <label class="mt-3">Weightage</label>
-                <input type="number" class="form-control" name="weightage" min="0.0" max="50.0" step="0.01" value="@info.weightage" required>
+                    <label class="mt-3">Weightage</label>
+                    <input type="number" class="form-control" name="weightage" min="0.0" max="50.0" step="0.01" value="@info.weightage" required>
 
-                <label class="mt-3">CLO</label>
-                <select class="form-control" name="cloTitle">
-                    @if(courseLearningOutcomeList.size > 0) {
-                        @for(clo <- courseLearningOutcomeList) {
-                            @if(info.cloCode.equals(clo.code)) {
-                                <option value="@clo.code" selected>@clo.code</option>
-                            } else{
-                                <option value="@clo.code">@clo.code</option>
+                    <label class="mt-3">CLO</label>
+                    <select class="form-control" name="cloTitle">
+                        @if(courseLearningOutcomeList.size > 0) {
+                            @for(clo <- courseLearningOutcomeList) {
+                                @if(info.cloCode.equals(clo.code)) {
+                                    <option value="@clo.code" selected>@clo.code</option>
+                                } else{
+                                    <option value="@clo.code">@clo.code</option>
+                                }
                             }
-
                         }
-                    }
-                </select>
+                    </select>
 
-                <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Assignment</button>
-                <a href="/lecturer/@userId/courseInformation/@courseInformation.id/details/assessmentInformation" class="btn btn-outline-secondary mt-3">Cancel</a>
-            </form>
+                    <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Assignment</button>
+                    <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/details/assessmentInformation" class="btn btn-outline-secondary mt-3">Cancel</a>
+                </form>
+            </div>
         </div>
     </div>
-</div>
+}
+
+
 </body>
 </html>

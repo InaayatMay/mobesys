@@ -83,8 +83,11 @@ public class StudentService {
     }
 
     public void deleteStudent(Long studentId) {
-        int delete = Ebean.delete(Student.class, studentId);
-        logger.debug("Deleted : " + delete);
+        String sql = "delete from student_marks where student_id = :studentId;";
+        int deleteMarks = Ebean.createSqlUpdate(sql).setParameter("studentId", studentId).execute();
+        int deleteStudent = Ebean.delete(Student.class, studentId);
+
+        logger.debug("Deleted Marks rows : " + deleteMarks + " Deleted student rows : " + deleteMarks);
     }
 
     public void updateStudent(Student student) {
@@ -123,7 +126,7 @@ public class StudentService {
                 "round(sum(ai.weightage), 2) as total_weightage\n" +
                 "FROM student_marks as sm\n" +
                 "left join assessment_info as ai on assessment_id = ai.id\n" +
-                "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId\n" +
+                "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId and ai.assessment_type is not null\n" +
                 "group by ai.assessment_type;";
 
         return Ebean.findDto(StatisticsReport.class, sql)
@@ -138,7 +141,7 @@ public class StudentService {
                 "left join assessment_info as ai on sm.assessment_id = ai.id\n" +
                 "left join student as std on std.id = sm.student_id\n" +
                 "left join student_number_of_attempt as attempt on attempt.student_id = sm.student_id\n" +
-                "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId\n" +
+                "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId and std.code_number is not null\n" +
                 "group by ai.assessment_type, sm.student_id;";
 
         return Ebean.findDto(StudentStatisticsReport.class, sql)
