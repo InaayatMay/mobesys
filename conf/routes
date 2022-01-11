@@ -19,11 +19,21 @@ GET     /resetPassword                                               controllers
 +nocsrf
 POST    /resetPassword                                               controllers.AuthController.handleResetPassword(request: Request)
 
+GET     /lecturer/:id/dashboard                                      controllers.CourseInformationController.showDashboard(request: Request, id: Long)
+
+GET     /lecturer/:id/studentList                                    controllers.CourseInformationController.showStudentList(request: Request, id: Long)
+
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/deleteStudent                  controllers.CourseInformationController.deleteStudentInformation(request: Request, id: Long, courseId: Long, studentId: Long)
+
+
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.showEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.handleEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
 
 GET     /lecturer/:id/courseInformation                              controllers.CourseInformationController.showCourseInformationForm(request: Request, id: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation                              controllers.CourseInformationController.handleCourseInformationForm(request: Request, id: Long)
-
 
 GET     /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.showCourseInformationDetails(request: Request, id: Long, courseId: Long)
 +nocsrf
@@ -58,14 +68,6 @@ POST    /lecturer/:id/courseInformation/:courseId/details/:cloToPloMapId/editMap
 GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation                  controllers.CourseInformationController.showStudentInformationForm(request: Request, id: Long, courseId: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation                  controllers.CourseInformationController.handleStudentInformationForm(request: Request, id: Long, courseId: Long)
-
-+nocsrf
-POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/deleteStudent                  controllers.CourseInformationController.deleteStudentInformation(request: Request, id: Long, courseId: Long, studentId: Long)
-
-
-GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.showEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
-+nocsrf
-POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentInformation/:studentId/editStudent                    controllers.CourseInformationController.handleEditStudentForm(request: Request, id: Long, courseId: Long, studentId: Long)
 
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/:assessmentId/studentInformation/:studentId/marksEnty/:marksEntryId        controllers.CourseInformationController.saveStudentMarksForAssessment(request: Request, id: Long, courseId: Long, assessmentId: Long, studentId: Long, marksEntryId: Long)

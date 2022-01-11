@@ -47,15 +47,16 @@ public class LecturerService {
         Optional<LecturerCurrentSubject> optionalLecturerCurrentSubject = getLecturerCurrentSubjectState(lecturerId, courseId);
         if(optionalLecturerCurrentSubject.isPresent()) {
             LecturerCurrentSubject lecturerCurrentSubject = optionalLecturerCurrentSubject.get();
-
-            String sql = "update lecturer_current_subject\n" +
-                    "set is_completed = :isCompleted, current_page = :currentPage\n" +
-                    "where id = :id;";
-            int updatedRow = Ebean.createSqlUpdate(sql)
-                    .setParameter("isCompleted", isCompleted)
-                    .setParameter("currentPage", currentPage)
-                    .setParameter("id", lecturerCurrentSubject.id)
-                    .execute();
+            if(!lecturerCurrentSubject.isCompleted || lecturerCurrentSubject.currentPage.equals("Student")) {
+                String sql = "update lecturer_current_subject\n" +
+                        "set is_completed = :isCompleted, current_page = :currentPage\n" +
+                        "where id = :id;";
+                int updatedRow = Ebean.createSqlUpdate(sql)
+                        .setParameter("isCompleted", isCompleted)
+                        .setParameter("currentPage", currentPage)
+                        .setParameter("id", lecturerCurrentSubject.id)
+                        .execute();
+            }
         }
         else {
             LecturerCurrentSubject lecturerCurrentSubject = new LecturerCurrentSubject();
@@ -67,5 +68,4 @@ public class LecturerService {
             Ebean.save(lecturerCurrentSubject);
         }
     }
-
 }

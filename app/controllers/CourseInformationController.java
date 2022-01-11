@@ -442,7 +442,7 @@ public class CourseInformationController extends Controller {
                             courseId, formData.getAssessmentType());
 
                     boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
-                            totalWeightageByAssessment, formData.getWeightage());
+                            formData.getWeightage());
 
                     boolean isWeightageExceedByTotal;
                     if(formData.getAssessmentType().equals("Final Exam")) {
@@ -614,7 +614,7 @@ public class CourseInformationController extends Controller {
                             courseId, formData.getAssessmentType()) - assessmentInfo.weightage;
 
                     boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
-                            totalWeightageByAssessment, formData.getWeightage());
+                            formData.getWeightage());
 
                     boolean isWeightageExceedByTotal;
                     if(formData.getAssessmentType().equals("Final Exam")) {
@@ -669,6 +669,11 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
+    public Result showStudentList(Http.Request request, Long lecturerId) {
+        //return ok(views.html.studentList.render());
+        return ok();
+    }
+
     public Result showStudentInformationForm(Http.Request request, Long lecturerId, Long courseId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
@@ -704,8 +709,16 @@ public class CourseInformationController extends Controller {
                 }
 
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
-                        "Student");
+
+                if(studentMarksViewModels.size() > 0) {
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                            "Student");
+                }
+                else {
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                            "Student");
+                }
+
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
@@ -749,6 +762,9 @@ public class CourseInformationController extends Controller {
                         studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
                                 formData.getLastName(), formData.getGender(), courseInformation.programme,
                                 formData.getCurrentSemester(), formData.getEmail(), lecturerId, courseId, assessmentInfos);
+
+                        lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                                "Student");
 
                         return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
                     }
@@ -1073,6 +1089,24 @@ public class CourseInformationController extends Controller {
             }
         }
 
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showDashboard(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                String username = optionalUsername.get();
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.dashboard.render(lecturerId, username, subjectsStateViewModels, request, messages));
+            }
+        }
         return unauthorized("You are unauthorized to access this page!");
     }
 }

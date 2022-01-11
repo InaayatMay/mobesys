@@ -1,0 +1,64 @@
+@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("Dashboard", "").toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Form")
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-choice {
+            display: block!important;
+            height: 36px!important;
+            white-space: nowrap!important;
+            line-height: 26px!important;
+        }
+    </style>
+</head>
+<body>
+
+@views.html.common.sideBar(userId, username, subjectStateList) {
+
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Courses
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <th>Course Code</th>
+                        <th>Course Name</th>
+                        <th>Programme</th>
+                        <th>Completed Percentage</th>
+                    </thead>
+                    <tbody>
+                        @for(subject <- subjectStateList) {
+                            <tr>
+                                <td>
+                                    <a href="@subject.currentPageUrl">
+                                        @subject.courseCode
+                                    </a>
+                                </td>
+                                <td>@subject.courseName</td>
+                                <td>@subject.programme</td>
+                                <td>
+                                    <div class="progress">
+                                        <div class="progress-bar" role="progressbar" style="width: @subject.completedPercent%;" aria-valuenow="@subject.completedPercent" aria-valuemin="0" aria-valuemax="100">@subject.completedPercent%</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    }
+</body>
+</html>

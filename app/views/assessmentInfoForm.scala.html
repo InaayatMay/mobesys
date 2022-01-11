@@ -334,12 +334,12 @@ viewModels.BreadCrumbViewModel.build
 
             <!-- Modal body -->
             <div class="modal-body">
-                <form method="post">
+                <form method="post" id="newForm">
                     <label>Assessments</label>
                     <input type="text" class="form-control" name="assessment" required>
 
                     <label>Assessment Type</label>
-                    <select class="form-control" name="assessmentType">
+                    <select class="form-control" name="assessmentType" id="assessmentType">
                         <option value="Assignment">Assignment</option>
                         <option value="Quiz">Quiz</option>
                         <option value="Test-1">Test-1</option>
@@ -352,7 +352,7 @@ viewModels.BreadCrumbViewModel.build
                     <input type="number" class="form-control" name="fullMarks" min="10" max="100" required>
 
                     <label>Weightage</label>
-                    <input type="number" class="form-control" name="weightage" min="0" max="50" step="0.01" required>
+                    <input type="number" class="form-control" name="weightage" id="weightage" min="0" max="50" step="0.01" required>
 
                     <label>CLO</label>
                     <select class="form-control" name="cloTitle">
@@ -364,7 +364,7 @@ viewModels.BreadCrumbViewModel.build
 
                     </select>
 
-                    <button type="submit" class="btn btn-secondary mt-3">Save Assignment</button>
+                    <button type="button" id="submitBtn" class="btn btn-secondary mt-3">Save Assignment</button>
                 </form>
             </div>
 
@@ -378,5 +378,6 @@ viewModels.BreadCrumbViewModel.build
 </div>
 
 <script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
+
 </body>
 </html>

@@ -1,19 +1,13 @@
-@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
-assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
-assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
+@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation,
+studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
 subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
-.add(essentials.programme, "")
-.add(essentials.courseName, "")
-.add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, courseInformation.id).url)
-.add("Assignment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, courseInformation.id).url)
-.add("Marks Entry", routes.CourseInformationController.showStudentInformationForm(essentials.userId, courseInformation.id).url)
+.add("Manage Students", "")
 .toList()
 }
 
-@import viewModels.StudentMarksViewModel
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -100,100 +94,6 @@ viewModels.BreadCrumbViewModel.build
                 </table>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                Marks Entry
-            </div>
-            <div class="card-body">
-                <table class="table table-bordered">
-                    <thead>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <td>Assessment Type</td>
-                        @for(order <- assessmentOrders) {
-                        <th colspan="@assessmentMap.get(order.assessmentType).size()" class="text-center">
-                            @order.assessmentType
-                        </th>
-                        }
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <td>Assessments</td>
-                        @for(order <- assessmentOrders) {
-                        @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                        <th>
-                            @assessment.assessment
-                        </th>
-                        }
-                        }
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <td>Full Marks</td>
-                        @for(order <- assessmentOrders) {
-                        @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                        <th>@assessment.fullMarks</th>
-                        }
-                        }
-                    </tr>
-                    <tr>
-                        <th></th>
-                        <th></th>
-                        <td>Weightage 100%</td>
-                        @for(order <- assessmentOrders) {
-                        @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                        <th>@assessment.weightage</th>
-                        }
-                        }
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <th>No</th>
-                        <th>Student ID</th>
-                        <th>Full Name</th>
-                    </tr>
-                    @for((std, index) <- marksViewModel.view.zipWithIndex) {
-                        <tr>
-                            <td>@{index+1}</td>
-                            <td>@std.studentCode</td>
-                            <td>@std.studentName</td>
-                            @for(order <- assessmentOrders) {
-                                @for(assessment <- assessmentMap.get(order.assessmentType)) {
-                                    @for(marks <- std.studentMarks) {
-                                        @if(marks.assessmentId == assessment.id) {
-                                            <form method="post" id="uniqueForm@marks.id" action="@routes.CourseInformationController.saveStudentMarksForAssessment(essentials.userId, assessment.courseInformationId, assessment.id, std.studentId, marks.id)">
-                                                <input id="marksInput@marks.id" name="marks" data-max="@assessment.fullMarks" hidden>
-                                                @if(marks.marks == 0.0) {
-                                                    <td class="bg-secondary editable" data-marksId="@marks.id" data-original-value="@marks.marks" data-lecturerId="@essentials.userId" data-courseId="@assessment.courseInformationId" data-assessmentId="@assessment.id" data-studentId="@std.studentId" data-max="@assessment.fullMarks" id="@marks.id">@marks.marks</td>
-                                                } else {
-                                                    <td class="editable" data-marksId="@marks.id" data-max="@assessment.fullMarks" data-original-value="@marks.marks" data-lecturerId="@essentials.userId" data-courseId="@assessment.courseInformationId" data-assessmentId="@assessment.id" data-studentId="@std.studentId" id="@marks.id">@marks.marks</td>
-                                                }
-                                            </form>
-                                        }
-                                    }
-                                }
-                            }
-                        </tr>
-                    }
-                    </tbody>
-                </table>
-            </div>
-            <div class="card-footer">
-                <div class="row">
-                    <div class="col text-right">
-                        <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
-                            Generate Reports
-                        </a>
-                    </div>
-                </div>
-
-            </div>
-        </div>
     </div>
 }
 
@@ -215,7 +115,7 @@ viewModels.BreadCrumbViewModel.build
                 <form method="post" id="studentForm" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" pattern=".{10}" title="Must be of length 10." required>
+                    <input type="text" class="form-control" name="codeNumber" maxlength="10" required>
 
                     <label>First Name</label>
                     <input type="text" class="form-control" minlength="3" name="firstName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
@@ -259,7 +159,6 @@ viewModels.BreadCrumbViewModel.build
 </div>
 
 <script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
-<script src='@routes.Assets.versioned("javascripts/table-cell-edit.js")'></script>
 
 </body>
 </html>

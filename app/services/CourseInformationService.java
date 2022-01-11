@@ -42,7 +42,14 @@ public class CourseInformationService {
     }
 
     public List<CourseInformation> getCourseInformationByDept(String programme) {
-        return Ebean.find(CourseInformation.class).where().eq("programme", programme).findList();
+        String sql = "select course_information.*\n" +
+                "from course_information\n" +
+                "left join lecturer_course_map on lecturer_course_map.course_information_id = course_information.id\n" +
+                "where programme = :programme and lecturer_course_map.id is null;";
+
+        return Ebean.findNative(CourseInformation.class, sql)
+                .setParameter("programme", programme)
+                .findList();
     }
 
     public CourseInformation getCourseInformationById(Long courseInformationId) {
@@ -296,18 +303,18 @@ public class CourseInformationService {
         return weightage == null ? 0.0 : Double.parseDouble(String.valueOf(weightage));
     }
 
-    public boolean isWeightageExceed(String assessmentType, Double totalWeightage, Double newWeightage) {
-        if(assessmentType.equals("Assignment")) {
-            return (totalWeightage + newWeightage) > 30;
+    public boolean isWeightageExceed(String assessmentType, Double newWeightage) {
+        if(assessmentType.equals("Assignment") || assessmentType.equals("Mini Project")) {
+            return newWeightage > 30;
         }
-        else if(assessmentType.equals("Test")) {
-            return (totalWeightage + newWeightage) > 20;
+        else if(assessmentType.equals("Test-1") || assessmentType.equals("Test-2")) {
+            return newWeightage > 20;
         }
         else if(assessmentType.equals("Quiz")) {
-            return (totalWeightage + newWeightage) > 15;
+            return newWeightage > 15;
         }
         else if(assessmentType.equals("Final Exam")) {
-            return (totalWeightage + newWeightage) > 50;
+            return newWeightage > 50;
         }
         else return false;
     }

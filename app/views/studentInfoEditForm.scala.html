@@ -34,15 +34,16 @@ viewModels.BreadCrumbViewModel.build
                     }
                 </div>
                 }
-                <form method="post">
+                <form method="post" id="studentForm" autocomplete="off">
+                    <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" value="@student.codeNumber" required>
+                    <input type="text" class="form-control" name="codeNumber" minlength="10" maxlength="10" value="@student.codeNumber" required>
 
                     <label>First Name</label>
-                    <input type="text" class="form-control" minlength="3" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" minlength="3" value="@student.firstName" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Last Name</label>
-                    <input type="text" class="form-control" name="lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" name="lastName" value="@student.lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Gender</label>
                     <select name="gender" class="form-control">
@@ -71,9 +72,9 @@ viewModels.BreadCrumbViewModel.build
                     </select>
 
                     <label class="mt-2">Email</label>
-                    <input type="email" class="form-control" name="email" value="@student.email" required>
+                    <input type="email" class="form-control" id="email" name="email" value="@student.email" required>
 
-                    <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Student</button>
+                    <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3 mr-2">Save Student</button>
                     <a href="/lecturer/@essentials.userId/courseInformation/@student.courseInformationId/details/assessmentInformation/studentInformation" class="btn btn-outline-secondary mt-3">Cancel</a>
                 </form>
             </div>
@@ -81,6 +82,7 @@ viewModels.BreadCrumbViewModel.build
     </div>
 }
 
+<script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
 
 </body>
 </html>
