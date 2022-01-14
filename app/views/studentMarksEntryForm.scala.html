@@ -1,7 +1,10 @@
-@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation, studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
+@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation,
+studentList: List[models.Student],
 assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
 assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
-subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], unmappedStudentList: List[models.Student],
+assessmentColSize: Integer
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
@@ -9,7 +12,7 @@ viewModels.BreadCrumbViewModel.build
 .add(essentials.courseName, "")
 .add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, courseInformation.id).url)
 .add("Assignment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, courseInformation.id).url)
-.add("Marks Entry", routes.CourseInformationController.showStudentInformationForm(essentials.userId, courseInformation.id).url)
+.add("Marks Entry", "routes.CourseInformationController.showStudentInformationForm(essentials.userId, courseInformation.id).url")
 .toList()
 }
 
@@ -32,19 +35,12 @@ viewModels.BreadCrumbViewModel.build
                     </div>
                     <div class="col text-right">
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                            Add New Student
+                            Add Student
                         </button>
                     </div>
                 </div>
             </div>
             <div class="card-body">
-                @if(form.hasGlobalErrors){
-                <div class="alert alert-warning">
-                    @for(error <- form.globalErrors){
-                    <span>@error.message</span>
-                    }
-                </div>
-                }
                 <table class="table">
                     <thead>
                     <th>Student ID</th>
@@ -53,7 +49,6 @@ viewModels.BreadCrumbViewModel.build
                     <th>Programme</th>
                     <th>Current Semester</th>
                     <th>Email</th>
-                    <th></th>
                     <th></th>
                     </thead>
                     <tbody>
@@ -66,35 +61,38 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.currentSemester</td>
                         <td>@std.email</td>
                         <td>
-                            <a href="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/editStudent"
-                               class="btn btn-link" >
-                                        <span class="text-secondary">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </span>
-                            </a>
-                        </td>
-                        <td>
-                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName" action="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/deleteStudent">
+                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName" action="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/details/assessmentInformation/studentCourseMap/@std.id/removeStudent">
                                 <button type="submit" class="btn btn-link">
                                             <span class="text-secondary">
-                                                <i class="fas fa-trash-alt"></i>
+                                                <i class="fas fa-user-minus"></i>
                                             </span>
                                 </button>
                             </form>
                         </td>
                     </tr>
                     }
-                    @if(studentList.size == 0) {
-                    <tr>
-                        <td colspan="8" class="text-center">
-                            <div class="alert alert-secondary" role="alert">
-                                There is no student yet. <br><br>
-                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                                    Add New Student
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @if(studentList.size == 0 && unmappedStudentList.size == 0) {
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-secondary" role="alert">
+                                    There is no student at all . Go to 'Manage Students' to add new students.<br><br>
+                                    <a href="/lecturer/@essentials.userId/studentList" type="button" class="btn btn-sm btn-secondary">
+                                        Manage Students
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    } else if(studentList.size == 0) {
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="alert alert-secondary" role="alert">
+                                    There is no student defined for this course. Click the button below to select student.<br><br>
+                                    <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                                        Add Student
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     }
                     </tbody>
                 </table>
@@ -156,6 +154,7 @@ viewModels.BreadCrumbViewModel.build
                         <th>No</th>
                         <th>Student ID</th>
                         <th>Full Name</th>
+                        <th colspan="@assessmentColSize" class="text-center">Full Marks Achieved By A Student</th>
                     </tr>
                     @for((std, index) <- marksViewModel.view.zipWithIndex) {
                         <tr>
@@ -206,47 +205,43 @@ viewModels.BreadCrumbViewModel.build
 
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 class="modal-title">Student's Information</h4>
+                <h4 class="modal-title">Add Student</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 
             <!-- Modal body -->
             <div class="modal-body">
-                <form method="post" id="studentForm" autocomplete="off">
-                    <input autocomplete="false" name="hidden" type="text" style="display:none;">
+                <form method="post">
+
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" pattern=".{10}" title="Must be of length 10." required>
+                    <input name="studentId" id="studentId" hidden>
+                    <select type="select" class="form-control" name="codeNumber" id="codeNumber">
+                            <option value="0" class="text-muted">Select Student ID</option>
+                            @for(std <- unmappedStudentList) {
+                                <option value="@std.id"
+                                        data-first="@std.firstName"
+                                        data-last="@std.lastName"
+                                        data-gender="@std.gender"
+                                        data-email="@std.email">@std.codeNumber</option>
+                            }
+                    </select>
 
                     <label>First Name</label>
-                    <input type="text" class="form-control" minlength="3" name="firstName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" id="firstName" disabled>
 
                     <label>Last Name</label>
-                    <input type="text" class="form-control" name="lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" id="lastName" disabled>
 
-                    <label>Gender</label>
-                    <select name="gender" class="form-control">
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                    </select>
-
-                    <label>Current Semester</label>
-                    <select name="currentSemester" class="form-control">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        @if(!courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                        }
-                    </select>
-
+                    <!--<label>Gender</label>
+                    <input type="text" class="form-control" id="gender" disabled>
+-->
                     <label>Email</label>
-                    <input type="email" class="form-control" name="email" id="email" required>
+                    <input type="email" class="form-control" id="email" disabled>
+<!--
+                    <label>Current Semester</label>
+                    <input type="text" class="form-control" id="currentSemester" disabled>-->
 
-                    <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3">Save Student</button>
+                    <button type="submit" class="btn btn-secondary mt-3">Save Student</button>
                 </form>
             </div>
 
@@ -258,8 +253,6 @@ viewModels.BreadCrumbViewModel.build
     </div>
 </div>
 
-<script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
-<script src='@routes.Assets.versioned("javascripts/table-cell-edit.js")'></script>
-
+<script type="application/javascript" src='@routes.Assets.versioned("javascripts/table-cell-edit.js")'></script>
 </body>
 </html>

@@ -1,10 +1,11 @@
-@(essentials: viewModels.EssentialFieldsViewModel, courseInformation: models.CourseInformation,
-studentList: List[models.Student], form: Form[forms.StudentInfoFormData],
-subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+@(userId: Long, username: String, studentList: List[models.Student],
+form: Form[forms.StudentInfoFormData],
+subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
-.add("Manage Students", "")
+.add("Student List", "")
 .toList()
 }
 
@@ -14,7 +15,7 @@ viewModels.BreadCrumbViewModel.build
     @views.html.common.headMeta("Course Information Details")
 </head>
 <body>
-@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+@views.html.common.sideBar(userId, username, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
     <div class="container mt-5 p-0">
@@ -44,9 +45,9 @@ viewModels.BreadCrumbViewModel.build
                     <th>Student ID</th>
                     <th>Full Name</th>
                     <th>Gender</th>
-                    <th>Programme</th>
-                    <th>Current Semester</th>
                     <th>Email</th>
+                    <th>Current Semester</th>
+                    <th>Number of Subjects</th>
                     <th></th>
                     <th></th>
                     </thead>
@@ -56,11 +57,11 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.codeNumber</td>
                         <td>@std.firstName @std.lastName</td>
                         <td>@std.gender</td>
-                        <td>@std.program</td>
-                        <td>@std.currentSemester</td>
                         <td>@std.email</td>
+                        <td>@std.currentSemester</td>
+                        <td>0</td>
                         <td>
-                            <a href="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/editStudent"
+                            <a href="/lecturer/@userId/studentList/@std.id/editStudent"
                                class="btn btn-link" >
                                         <span class="text-secondary">
                                             <i class="fas fa-pencil-alt"></i>
@@ -68,7 +69,8 @@ viewModels.BreadCrumbViewModel.build
                             </a>
                         </td>
                         <td>
-                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName" action="/lecturer/@essentials.userId/courseInformation/@std.courseInformationId/details/assessmentInformation/studentInformation/@std.id/deleteStudent">
+                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName"
+                                  action="/lecturer/@userId/studentList/@std.id/deleteStudent">
                                 <button type="submit" class="btn btn-link">
                                             <span class="text-secondary">
                                                 <i class="fas fa-trash-alt"></i>
@@ -112,16 +114,16 @@ viewModels.BreadCrumbViewModel.build
 
             <!-- Modal body -->
             <div class="modal-body">
-                <form method="post" id="studentForm" autocomplete="off">
+                <form method="post" id="studentForm" action="/lecturer/@userId/studentList" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" maxlength="10" required>
+                    <input type="text" class="form-control" name="codeNumber" id="codeNumber" maxlength="10" required>
 
                     <label>First Name</label>
-                    <input type="text" class="form-control" minlength="3" name="firstName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" minlength="3" name="firstName" id="firstName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Last Name</label>
-                    <input type="text" class="form-control" name="lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" name="lastName" minlength="3" id="lastName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Gender</label>
                     <select name="gender" class="form-control">
@@ -129,22 +131,11 @@ viewModels.BreadCrumbViewModel.build
                         <option value="Female">Female</option>
                     </select>
 
-                    <label>Current Semester</label>
-                    <select name="currentSemester" class="form-control">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        @if(!courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                        }
-                    </select>
-
                     <label>Email</label>
                     <input type="email" class="form-control" name="email" id="email" required>
+
+                    <label>Current Semester</label>
+                    <input type="text" class="form-control" name="currentSemester" id="currentSemester" required>
 
                     <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3">Save Student</button>
                 </form>

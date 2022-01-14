@@ -6,38 +6,62 @@ import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class StudentService {
     private final Logger logger = LoggerFactory.getLogger("application");
 
-    public List<Student> getStudentList(Long lecturerId, Long courseId) {
-        return Ebean.find(Student.class).where().and().eq("lecturer_id", lecturerId)
-                .eq("course_information_id", courseId).endAnd().orderBy().asc("id").findList();
+    public List<Student> getStudentList(Long lecturerId) {
+        return Ebean.find(Student.class).where().eq("lecturer_id", lecturerId)
+                .orderBy().desc("id").findList();
     }
 
-    @Transactional
-    public Long saveStudent(String codeNumber, String firstName, String lastName, String gender, String program,
-                            String currentSemester, String email, Long lecturerId, Long courseInformationId,
-                            List<AssessmentInfo> assessmentInfoList) {
+    public List<Student> getStudentListByLecturerAndCourse(Long lecturerId, Long courseInformationId) {
+        String sql = "SELECT student.*\n" +
+                "FROM student_course_map\n" +
+                "left join student on student.id = student_course_map.student_id\n" +
+                "where course_information_id = :courseInformationId and student.lecturer_id = :lecturerId;";
+
+        return Ebean.findNative(Student.class, sql)
+                .setParameter("courseInformationId", courseInformationId)
+                .setParameter("lecturerId", lecturerId)
+                .findList();
+    }
+
+    public Long saveStudent(String codeNumber, String firstName, String lastName, String gender, String currentSemester,
+                            String email, Long lecturerId) {
 
         Student student = new Student();
         student.codeNumber = codeNumber;
         student.firstName = firstName;
         student.lastName = lastName;
         student.gender = gender;
-        student.program = program;
         student.currentSemester = currentSemester;
         student.email = email;
         student.lecturerId = lecturerId;
-        student.courseInformationId = courseInformationId;
 
         Ebean.save(student);
-
-        saveStudentMarks(student.id, lecturerId, courseInformationId, assessmentInfoList);
-
         return student.id;
+    }
+
+    @Transactional
+    public void saveStudentToCourseInformationMap(Long lecturerId, Long studentId, CourseInformation courseInformation,
+                                               List<AssessmentInfo> assessmentInfoList) {
+
+        Student student = getStudent(studentId);
+        student.program = courseInformation.programme;
+        Ebean.save(student);
+
+        StudentToCourseMap map = new StudentToCourseMap();
+        map.courseInformationId = courseInformation.id;
+        map.studentId = studentId;
+        Ebean.save(map);
+
+        saveStudentMarks(studentId, lecturerId, courseInformation.id, assessmentInfoList);
     }
 
     public void saveStudentMarks(Long studentId, Long lecturerId, Long courseInformationId, List<AssessmentInfo> assessmentInfoList) {
@@ -53,41 +77,60 @@ public class StudentService {
         }
     }
 
-    public int hasDuplicateCodeNumber(String codeNumber, Long courseInformationId) {
+    public int hasDuplicateCodeNumber(String codeNumber, Long lecturerId) {
         int count = Ebean.find(Student.class).where()
                 .and()
+                .eq("lecturer_id", lecturerId)
                 .eq("code_number", codeNumber)
-                .eq("course_information_id", courseInformationId)
                 .endAnd()
                 .findCount();
         return count;
     }
 
-    public int hasDuplicateName(String firstName, String lastName, Long courseInformationId) {
+    public int hasDuplicateName(String firstName, String lastName, Long lecturerId) {
         int count = Ebean.find(Student.class).where()
                 .and()
+                .eq("lecturer_id", lecturerId)
                 .eq("first_name", firstName)
                 .eq("last_name", lastName)
-                .eq("course_information_id", courseInformationId)
                 .endAnd()
                 .findCount();
         return count;
     }
 
-    public int hasDuplicateEmail(String email, Long courseInformationId) {
+    public int hasDuplicateEmail(String email, Long lecturerId) {
         int count = Ebean.find(Student.class).where()
+                .and()
+                .eq("lecturer_id", lecturerId)
                 .eq("email", email)
-                .eq("course_information_id", courseInformationId)
+                .endAnd()
                 .findCount();
         return count;
     }
 
     public void deleteStudent(Long studentId) {
-        String sql = "delete from student_marks where student_id = :studentId;";
-        int deleteMarks = Ebean.createSqlUpdate(sql).setParameter("studentId", studentId).execute();
+        String sqlMarks = "delete from student_marks where student_id = :studentId;";
+        int deleteMarks = Ebean.createSqlUpdate(sqlMarks).setParameter("studentId", studentId).execute();
+
+        String sqlNumberOfAttempt = "delete from student_number_of_attempt where student_id = :studentId;";
+        int deleteNumberOfAttempt = Ebean.createSqlUpdate(sqlNumberOfAttempt).setParameter("studentId", studentId).execute();
+
+        String sqlCourse = "delete from student_course_map where student_id = :studentId;";
+        int deleteCourse = Ebean.createSqlUpdate(sqlCourse).setParameter("studentId", studentId).execute();
+
         int deleteStudent = Ebean.delete(Student.class, studentId);
 
-        logger.debug("Deleted Marks rows : " + deleteMarks + " Deleted student rows : " + deleteMarks);
+        logger.debug("Deleted : " + deleteStudent);
+    }
+
+    public void deleteStudentCourseMap(Long studentId, Long courseInformationId) {
+        String sqlMarks = "delete from student_marks where student_id = :studentId and course_information_id = :courseId;";
+        int deleteMarks = Ebean.createSqlUpdate(sqlMarks).setParameter("studentId", studentId)
+                .setParameter("courseId", courseInformationId).execute();
+
+        String sql = "delete from student_course_map where student_id = :studentId and course_information_id = :courseId";
+        int deleteMap = Ebean.createSqlUpdate(sql).setParameter("studentId", studentId)
+                .setParameter("courseId", courseInformationId).execute();
     }
 
     public void updateStudent(Student student) {
@@ -200,4 +243,27 @@ public class StudentService {
                 .setParameter("courseInformationId", courseInformationId)
                 .findList();
     }
+
+    public List<StudentToCourseMap> getStudentToCourseMapList(Long courseId) {
+        return Ebean.find(StudentToCourseMap.class).where().eq("course_information_id", courseId).findList();
+    }
+
+    public List<Student> getUnmappedStudentList(Long lecturerId, Long courseId) {
+        List<Student> studentList = getStudentList(lecturerId);
+        List<StudentToCourseMap> studentToCourseMapList = getStudentToCourseMapList(courseId);
+        List<Long> mappedStudentIdList = studentToCourseMapList.stream().map(std -> std.studentId).collect(Collectors.toList());
+
+        List<Student> unmappedList = new ArrayList<>();
+        for(int i=0; i<studentList.size(); i++) {
+            if(!mappedStudentIdList.contains(studentList.get(i).id)) {
+                unmappedList.add(studentList.get(i));
+            }
+        }
+
+        return unmappedList;
+    }
+
+    /*public Map<Long, Integer> getStudentNumberOfCourse(Long lecturerId) {
+
+    }*/
 }

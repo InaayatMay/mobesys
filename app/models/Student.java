@@ -32,7 +32,4 @@ public class Student {
 
     @Column(name = "lecturer_id")
     public Long lecturerId;
-
-    @Column(name = "course_information_id")
-    public Long courseInformationId;
 }

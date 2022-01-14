@@ -1,12 +1,17 @@
 package forms;
 
 public class StudentInfoFormData {
+    protected Long studentId;
     protected String codeNumber;
     protected String firstName;
     protected String lastName;
     protected String gender;
     protected String currentSemester;
     protected String email;
+
+    public Long getId() {
+        return studentId;
+    }
 
     public String getCodeNumber() {
         return codeNumber;

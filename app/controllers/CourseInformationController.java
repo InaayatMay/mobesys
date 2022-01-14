@@ -123,6 +123,7 @@ public class CourseInformationController extends Controller {
                 }
                 List<ProgrammeLearningOutcome> programmeLearningOutcomeList = courseInformationService.getProgrammeLearningOutcomeList();
                 List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
+                List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
 
                 logger.debug("plo size : " + programmeLearningOutcomeList.size());
                 logger.debug("unlinked list : " + unlinkedPloList.size());
@@ -143,7 +144,7 @@ public class CourseInformationController extends Controller {
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel, form, unlinkedPloList,
-                        numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
+                        numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, unlinkedCloList, request, messages));
             }
         }
 
@@ -208,6 +209,9 @@ public class CourseInformationController extends Controller {
                         logger.debug("unlinked list : " + unlinkedPloList.size());
                         List<CourseLearningOutcome> courseLearningOutcomes = courseInformationService.getCourseLearningOutcomeList(courseId, lecturerId);
 
+                        List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
+
+
                         CoursePlanViewModel viewModel = CoursePlanViewModel.build(courseInformation, lecturer, programmeLearningOutcomeList,
                                 courseLearningOutcomes);
                         int numberOfCloToPloMaps = courseInformationService.countCloToPloMaps(lecturerId, courseId);
@@ -220,7 +224,8 @@ public class CourseInformationController extends Controller {
 
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel,
-                                form, unlinkedPloList, numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels, request, messages));
+                                form, unlinkedPloList, numberOfCloToPloMaps, courseActivationViewModels, subjectsStateViewModels,
+                                unlinkedCloList, request, messages));
                     }
                     else {
                         courseInformationService.saveCloToPloMap(cloCode, cloTitle, ploCode, lecturerId, courseId);
@@ -257,6 +262,8 @@ public class CourseInformationController extends Controller {
                 CourseLearningOutcome courseLearningOutcome = courseInformationService.getCourseLearningOutcome(cloToPloMapId);
                 List<ProgrammeLearningOutcome> unlinkedPloList = courseInformationService.getUnlinkedPloList(courseId);
                 ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
+                List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
+
 
                 Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
@@ -264,7 +271,7 @@ public class CourseInformationController extends Controller {
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
-                        courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, request, messages));
+                        courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, unlinkedCloList, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -317,10 +324,11 @@ public class CourseInformationController extends Controller {
 
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+                        List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
 
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
-                                courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, request, messages));
+                                courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, unlinkedCloList, request, messages));
                     }
                     else {
                         courseInformationService.updateCloToPloMap(cloTitle, ploCode, cloToPloMapId);
@@ -670,18 +678,104 @@ public class CourseInformationController extends Controller {
     }
 
     public Result showStudentList(Http.Request request, Long lecturerId) {
-        //return ok(views.html.studentList.render());
-        return ok();
-    }
-
-    public Result showStudentInformationForm(Http.Request request, Long lecturerId, Long courseId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
 
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
+                List<Student> studentList = studentService.getStudentList(lecturerId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
+                Messages messages = messagesApi.preferred(request);
+
+                return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), studentList, form,
+                        subjectsStateViewModels, request, messages));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result addNewStudent(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if (optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Form<StudentInfoFormData> fromRequest = formFactory.form(StudentInfoFormData.class).bindFromRequest(request);
+                if (fromRequest.hasGlobalErrors()) {
+                    return redirect(routes.CourseInformationController.showStudentList(lecturerId));
+                } else {
+                    StudentInfoFormData formData = fromRequest.get();
+                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), lecturerId);
+                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(),
+                            lecturerId);
+                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), lecturerId);
+
+                    boolean hasDuplicate = countIdDuplicate > 0 || countNameDuplicate > 0 || countEmailDuplicate > 0;
+
+                    if (!hasDuplicate) {
+                        studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
+                                formData.getLastName(), formData.getGender(), formData.getCurrentSemester(), formData.getEmail(), lecturerId);
+
+                        return redirect(routes.CourseInformationController.showStudentList(lecturerId));
+                    } else {
+                        Form<StudentInfoFormData> form;
+                        if (countIdDuplicate > 0) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with ID Number - " + formData.getCodeNumber() + " is already exists. Please try again.");
+                        } else if (countEmailDuplicate > 0) {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Email - " + formData.getEmail() + " is already exists. Please try again.");
+                        } else {
+                            form = formFactory.form(StudentInfoFormData.class)
+                                    .withGlobalError("Student with Name - " + formData.getFirstName() + " " +
+                                            formData.getLastName() + " is already exists. Please try again.");
+
+                            List<Student> studentList = studentService.getStudentList(lecturerId);
+                            List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                            List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                            Messages messages = messagesApi.preferred(request);
+
+                            return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), studentList, form,
+                                    subjectsStateViewModels, request, messages));
+                        }
+
+                    }
+                }
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result deleteStudentInformation(Http.Request request, Long lecturerId, Long studentId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                studentService.deleteStudent(studentId);
+                return redirect(routes.CourseInformationController.showStudentList(lecturerId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+
+    public Result showStudentMarksEntryForm(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
                 List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
                 LinkedHashMap<String, List<AssessmentInfo>> assessmentMap = new LinkedHashMap<>();
                 List<StudentMarksViewModel.AssessmentOrder> assessmentOrders = new ArrayList<>();
@@ -701,6 +795,10 @@ public class CourseInformationController extends Controller {
                     logger.debug("Assessment type : " + info.assessmentType + " Assessment Id : " + info.id);
                 }
 
+                int assessmentColSize = 0;
+                for (List<AssessmentInfo> value : assessmentMap.values()) {
+                    assessmentColSize += value.size();
+                }
 
                 List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
                 for(Student student: studentList) {
@@ -711,10 +809,12 @@ public class CourseInformationController extends Controller {
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
 
                 if(studentMarksViewModels.size() > 0) {
+                    logger.debug("Completed : true");
                     lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
                             "Student");
                 }
                 else {
+                    logger.debug("Completed : false");
                     lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                             "Student");
                 }
@@ -727,120 +827,55 @@ public class CourseInformationController extends Controller {
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
                         courseInformation.programme, courseInformation.courseName);
 
-                Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoForm.render(essentialFieldsViewModel, courseInformation, studentList, form,
-                        assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels,  request, messages));
+                List<Student> unmappedStudentList = studentService.getUnmappedStudentList(lecturerId, courseId);
+
+                return ok(views.html.studentMarksEntryForm.render(essentialFieldsViewModel, courseInformation, studentList,
+                        assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, unmappedStudentList,
+                        assessmentColSize, request, messages));
             }
         }
 
         return unauthorized("You are unauthorized to access this page!");
     }
 
-    public Result handleStudentInformationForm(Http.Request request, Long lecturerId, Long courseId) {
+    public Result handleStudentMarksEntryForm(Http.Request request, Long lecturerId, Long courseId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
 
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                Form<StudentInfoFormData> fromRequest = formFactory.form(StudentInfoFormData.class).bindFromRequest(request);
-                if(fromRequest.hasGlobalErrors()) {
-                    return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
-                }
-                else {
-                    StudentInfoFormData formData = fromRequest.get();
-                    CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                    List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
-                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), courseId);
-                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(), courseId);
-                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), courseId);
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                Long studentId = Long.parseLong(requestData.get("studentId").trim());
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
 
-                    boolean hasDuplicate = countIdDuplicate > 0 || countNameDuplicate > 0 || countEmailDuplicate > 0;
-
-                    if(!hasDuplicate) {
-                        studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
-                                formData.getLastName(), formData.getGender(), courseInformation.programme,
-                                formData.getCurrentSemester(), formData.getEmail(), lecturerId, courseId, assessmentInfos);
-
-                        lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
-                                "Student");
-
-                        return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
-                    }
-                    else {
-                        List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
-                        Map<String, List<AssessmentInfo>> assessmentMap = new LinkedHashMap<>();
-                        List<StudentMarksViewModel.AssessmentOrder> assessmentOrders = new ArrayList<>();
-                        int order = 0;
-                        for(AssessmentInfo info: assessmentInfos) {
-                            if(assessmentMap.containsKey(info.assessmentType)) {
-                                List<AssessmentInfo> infoList = assessmentMap.get(info.assessmentType);
-                                infoList.add(info);
-                                assessmentMap.replace(info.assessmentType, infoList);
-                            }
-                            else {
-                                List<AssessmentInfo> infoList = new ArrayList<>();
-                                infoList.add(info);
-                                assessmentMap.put(info.assessmentType, infoList);
-                                assessmentOrders.add(new StudentMarksViewModel.AssessmentOrder(order++, info.assessmentType));
-                            }
-                        }
-
-                        List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
-                        for(Student student: studentList) {
-                            List<StudentMarks> studentMarks = studentService.getStudentMarksList(student.id, lecturerId, courseId);
-                            studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
-                        }
-
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
-
-                        Form<StudentInfoFormData> form;
-                        if(countIdDuplicate > 0) {
-                            form = formFactory.form(StudentInfoFormData.class)
-                                    .withGlobalError("Student with ID Number - " + formData.getCodeNumber() + " is already exists. Please try again.");
-                        }
-                        else if(countEmailDuplicate > 0) {
-                            form = formFactory.form(StudentInfoFormData.class)
-                                    .withGlobalError("Student with Email - " + formData.getEmail() + " is already exists. Please try again.");
-                        }
-                        else {
-                            form = formFactory.form(StudentInfoFormData.class)
-                                    .withGlobalError("Student with Name - " + formData.getFirstName() + " " +
-                                            formData.getLastName() + " is already exists. Please try again.");
-                        }
-
-                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                courseInformation.programme, courseInformation.courseName);
-
-                        Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoForm.render(essentialFieldsViewModel, courseInformation, studentList,
-                                form, assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, request, messages));
-                    }
-                }
+                studentService.saveStudentToCourseInformationMap(lecturerId, studentId, courseInformation, assessmentInfos);
+                return redirect(routes.CourseInformationController.showStudentMarksEntryForm(lecturerId, courseId));
             }
         }
 
         return unauthorized("You are unauthorized to access this page!");
     }
 
-    public Result deleteStudentInformation(Http.Request request, Long lecturerId, Long courseId, Long studentId) {
+    public Result removeStudentFromCourse(Http.Request request, Long lecturerId, Long courseId, Long studentId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
 
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                studentService.deleteStudent(studentId);
-                return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
+                studentService.deleteStudentCourseMap(studentId, courseId);
+                return redirect(routes.CourseInformationController.showStudentMarksEntryForm(lecturerId, courseId));
             }
         }
 
         return unauthorized("You are unauthorized to access this page!");
     }
 
-    public Result showEditStudentForm(Http.Request request, Long lecturerId, Long courseId, Long studentId) {
+
+    public Result showEditStudentForm(Http.Request request, Long lecturerId, Long studentId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
 
@@ -852,20 +887,16 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
-
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoEditForm.render(essentialFieldsViewModel, form, student,
-                        subjectsStateViewModels, courseInformation, request, messages));
+                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
+                        subjectsStateViewModels, request, messages));
             }
         }
 
         return unauthorized("You are unauthorized to access this page!");
     }
 
-    public Result handleEditStudentForm(Http.Request request, Long lecturerId, Long courseId, Long studentId) {
+    public Result handleEditStudentForm(Http.Request request, Long lecturerId, Long studentId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
 
@@ -874,16 +905,16 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Form<StudentInfoFormData> fromRequest = formFactory.form(StudentInfoFormData.class).bindFromRequest(request);
                 if(fromRequest.hasGlobalErrors()) {
-                    return redirect(routes.CourseInformationController.showEditStudentForm(lecturerId, courseId, studentId));
+                    return redirect(routes.CourseInformationController.showEditStudentForm(lecturerId, studentId));
                 }
                 else {
                     StudentInfoFormData formData = fromRequest.get();
-
-                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), courseId);
-                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(), courseId);
-                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), courseId);
-
                     Student student = studentService.getStudent(studentId);
+                    int countIdDuplicate = studentService.hasDuplicateCodeNumber(formData.getCodeNumber(), lecturerId);
+                    int countNameDuplicate = studentService.hasDuplicateName(formData.getFirstName(), formData.getLastName(),
+                            lecturerId);
+                    int countEmailDuplicate = studentService.hasDuplicateEmail(formData.getEmail(), lecturerId);
+
                     boolean hasDuplicate = (countIdDuplicate > 0 && !student.codeNumber.equals(formData.getCodeNumber()))
                             || (countNameDuplicate > 0 && !student.firstName.equals(formData.getFirstName())
                             && !student.lastName.equals(formData.getLastName()) )
@@ -910,24 +941,20 @@ public class CourseInformationController extends Controller {
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                        CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                        EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                courseInformation.programme, courseInformation.courseName);
-
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoEditForm.render(essentialFieldsViewModel, form, student,
-                                subjectsStateViewModels, courseInformation, request, messages));
+                        return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), fromRequest, student,
+                                subjectsStateViewModels, request, messages));
                     }
                     else {
                         student.firstName = formData.getFirstName();
                         student.lastName = formData.getLastName();
                         student.codeNumber = formData.getCodeNumber();
-                        student.currentSemester = formData.getCurrentSemester();
+                        //student.currentSemester = formData.getCurrentSemester();
                         student.email = formData.getEmail();
                         student.gender = formData.getGender();
                         studentService.updateStudent(student);
 
-                        return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
+                        return redirect(routes.CourseInformationController.showStudentList(lecturerId));
                     }
                 }
             }
@@ -947,7 +974,8 @@ public class CourseInformationController extends Controller {
                 Double marks = Double.parseDouble(requestData.get("marks").trim());
                 logger.debug("Marks : " + marks);
                 studentService.updateStudentMarks(marksEntryId, marks);
-                return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId, courseId));
+                //return redirect(routes.CourseInformationController.showStudentInformationForm(lecturerId));
+                return ok();
             }
         }
 
@@ -963,13 +991,14 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Messages messages = messagesApi.preferred(request);
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
                 List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
                 List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
 
                 logger.debug("statisticsReports : " + statisticsReports.size());
                 logger.debug("Student statistic : " + studentStatisticsReports.size());
-                Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
+                Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList,
+                        statisticsReports, studentStatisticsReports);
 
                 return either.fold(
                         error -> ok(error.toString()),
@@ -1018,7 +1047,7 @@ public class CourseInformationController extends Controller {
 
     public Result calculateGradeDistribution(Http.Request request, Long lecturerId, Long courseId) {
         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-        List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
         List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
         List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
         Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
@@ -1033,7 +1062,7 @@ public class CourseInformationController extends Controller {
     }
 
     public Result generateClassCloAttainment(Http.Request request, Long lecturerId, Long courseId) {
-        List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
         List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
         List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
         List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);
@@ -1043,7 +1072,7 @@ public class CourseInformationController extends Controller {
     }
 
     public Result generateClassPloAttainment(Http.Request request, Long lecturerId, Long courseId) {
-        List<Student> studentList = studentService.getStudentList(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
         List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
         List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
         List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);

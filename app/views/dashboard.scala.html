@@ -23,11 +23,21 @@ viewModels.BreadCrumbViewModel.build
 <body>
 
 @views.html.common.sideBar(userId, username, subjectStateList) {
+@views.html.common.breadcrumb(link)
 
     <div class="container">
         <div class="card">
             <div class="card-header">
-                Courses
+                <div class="row">
+                    <div class="col">
+                        Courses
+                    </div>
+                    <div class="col text-right">
+                        <a type="button" href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
+                            Add New Course
+                        </a>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
                 <table class="table">
@@ -38,6 +48,18 @@ viewModels.BreadCrumbViewModel.build
                         <th>Completed Percentage</th>
                     </thead>
                     <tbody>
+                        @if(subjectStateList.size == 0) {
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-secondary" role="alert">
+                                        There is no courses yet. <br><br>
+                                        <a type="button" href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
+                                            Add New Course
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
                         @for(subject <- subjectStateList) {
                             <tr>
                                 <td>

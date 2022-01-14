@@ -1,6 +1,6 @@
 @(userId: Long, username: String, form : Form[forms.CloToPloMapFormData], unlinkedPloList: List[ProgrammeLearningOutcome],
 clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseId: Long
-, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], unlinkedCloList: List[String])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 <!DOCTYPE html>
 <html lang="en">
@@ -34,9 +34,14 @@ clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseI
                     </select>
 
                     <label class="mt-3">Clo Code</label>
-                    <input type="text" class="form-control" name="cloCode" value="@clo.code" required>
+                    <select class="form-control" name="cloCode">
+                        <option value="@clo.code">@clo.code</option>
+                        @for(clo <- unlinkedCloList){
+                            <option value="@clo">@clo</option>
+                        }
+                    </select>
 
-                    <label class="mt-3">Clo Title</label>
+                    <label class="mt-3">Clo Description</label>
                     <input type="text" class="form-control" name="cloTitle" value="@clo.title" required>
 
                     <button type="submit" class="btn btn-secondary mt-3 mr-2">Save Map</button>

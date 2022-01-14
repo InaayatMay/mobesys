@@ -1,6 +1,6 @@
 @(linkList : List[viewModels.LinkViewModel])
 
-<nav aria-label="breadcrumb">
+<!--<nav aria-label="breadcrumb">
     <ol class="breadcrumb">
         @for(link <- linkList){
             @if(link.url.equals("")) {
@@ -15,4 +15,16 @@
 
         }
     </ol>
-</nav>
+</nav>-->
+
+<div class="row mb-5">
+    <div class="col">
+        @for(link <- linkList){
+            @if(link.url.equals("")) {
+                @link.label &#62;
+            } else {
+                <a href="@link.url"> @link.label &#62;</a>
+            }
+        }
+    </div>
+</div>

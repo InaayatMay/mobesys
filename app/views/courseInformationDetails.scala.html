@@ -1,6 +1,7 @@
 @(essentials: viewModels.EssentialFieldsViewModel, info: viewModels.CoursePlanViewModel, form : Form[forms.CloToPloMapFormData],
 unlinkedPloList: List[ProgrammeLearningOutcome], numberOfCloToPloMaps: Integer, navList: List[viewModels.CourseActivationViewModel]
-, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], unlinkedCloList: List[String]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
@@ -230,9 +231,13 @@ viewModels.BreadCrumbViewModel.build
                     </select>
 
                     <label>Clo Code</label>
-                    <input type="text" class="form-control" name="cloCode" required>
+                    <select class="form-control" name="cloCode">
+                        @for(clo <- unlinkedCloList){
+                            <option value="@clo">@clo</option>
+                        }
+                    </select>
 
-                    <label>Clo Title</label>
+                    <label>Clo Description</label>
                     <input type="text" class="form-control" name="cloTitle" required>
 
                     <button type="submit" class="btn btn-secondary mt-3">Save Map</button>

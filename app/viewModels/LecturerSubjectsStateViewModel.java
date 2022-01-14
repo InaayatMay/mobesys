@@ -42,7 +42,7 @@ public class LecturerSubjectsStateViewModel {
             case "Assessment":
                 return routes.CourseInformationController.showAssessmentInformationForm(lecturerId, courseInformationId);
             case "Student":
-                return routes.CourseInformationController.showStudentInformationForm(lecturerId, courseInformationId);
+                return routes.CourseInformationController.showStudentMarksEntryForm(lecturerId, courseInformationId);
             default:
                 return routes.CourseInformationController.showReports(lecturerId, courseInformationId);
         }

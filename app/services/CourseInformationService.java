@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CourseInformationService {
     private final Logger logger = LoggerFactory.getLogger("application");
@@ -87,6 +88,24 @@ public class CourseInformationService {
         else {
             return new ArrayList<>();
         }
+    }
+
+    public List<String> getUnlinkedCloList(Long courseInformationId) {
+        List<String> list = Arrays.asList("CLO1", "CLO2", "CLO3", "CLO4", "CLO5", "CLO6", "CLO7", "CLO8");
+
+        String sql = "SELECT code\n" +
+                "FROM course_learning_outcome\n" +
+                "WHERE course_information_id = :courseInformationId";
+
+        List<CourseLearningOutcome> linkedCloList = Ebean.find(CourseLearningOutcome.class).where()
+                .eq("course_information_id", courseInformationId).findList();
+
+        List<String> linkedCloCodeList = linkedCloList.stream().map(clo -> clo.code).collect(Collectors.toList());
+
+        List<String> differences = new ArrayList<>(list);
+        differences.removeAll(linkedCloCodeList);
+
+        return differences;
     }
 
     public List<Long> cloToPloDuplicateList(String cloCode, String cloTitle, String ploCode, Long lecturerId,

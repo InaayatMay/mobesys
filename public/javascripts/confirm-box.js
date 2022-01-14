@@ -77,18 +77,54 @@ $( "#submitBtn" ).click(function() {
 });
 
 $("#saveStudentBtn").click(function() {
-    var email = $('#email').val();
-    if(email.includes("@scholar.miu.edu.my") || email.includes("@gmail.com") || email.includes("@yahoo.com") || email.includes("@hotmail.com")) {
-        $('#studentForm').submit();
+    var codeNumber = $('#codeNumber').val();
+    if(codeNumber.length >= 6 && codeNumber.length <= 10) {
+        var firstName = $('#firstName').val();
+        if(firstName.length >= 3) {
+            var lastName = $('#lastName').val();
+            if(lastName.length >= 3) {
+                var email = $('#email').val();
+                if(email.includes("@scholar.miu.edu.my") || email.includes("@gmail.com") || email.includes("@yahoo.com") || email.includes("@hotmail.com")) {
+                    $('#studentForm').submit();
+                }
+                else {
+                    var input = $('#email');
+                    setTimeout(function() {
+                        // this focus on last character if input isn't empty
+                        tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
+                    }, 200);
+
+                    alert("Invalid email address!");
+                }
+            }
+            else {
+                var input = $('#lastName');
+                setTimeout(function() {
+                    // this focus on last character if input isn't empty
+                    tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
+                }, 200);
+
+                alert("Last name must contain at least 3 characters.");
+            }
+        }
+        else {
+            var input = $('#firstName');
+            setTimeout(function() {
+                // this focus on last character if input isn't empty
+                tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
+            }, 200);
+
+            alert("First name must contain at least 3 characters.");
+        }
     }
     else {
-        var input = $('#weightage');
+        var input = $('#codeNumber');
         setTimeout(function() {
             // this focus on last character if input isn't empty
             tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
         }, 200);
 
-        alert("Invalid email address!");
+        alert("Student ID length must be between 6 and 10!");
     }
 });
 

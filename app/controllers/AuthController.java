@@ -41,7 +41,7 @@ public class AuthController extends Controller {
                 Map<String, String> sessionValuesMap = new HashMap<>();
                 sessionValuesMap.put("id", String.valueOf(lecturer.id));
                 sessionValuesMap.put("username", lecturer.firstName + " " + lecturer.lastName);
-                return redirect(routes.CourseInformationController.showCourseInformationForm(lecturer.id)).addingToSession(request, sessionValuesMap);
+                return redirect(routes.CourseInformationController.showDashboard(lecturer.id)).addingToSession(request, sessionValuesMap);
             }
         }
 

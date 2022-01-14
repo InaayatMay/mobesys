@@ -1,14 +1,10 @@
-@(essentials: viewModels.EssentialFieldsViewModel, form : Form[forms.StudentInfoFormData], student: models.Student
-, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], courseInformation: models.CourseInformation
+@(userId: Long, username: String, form : Form[forms.StudentInfoFormData], student: models.Student
+, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
-.add(essentials.programme, "")
-.add(essentials.courseName, "")
-.add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, courseInformation.id).url)
-.add("Assignment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, courseInformation.id).url)
-.add("Marks Entry", routes.CourseInformationController.showStudentInformationForm(essentials.userId, courseInformation.id).url)
+.add("Student List", routes.CourseInformationController.showStudentList(userId).url)
 .add(student.codeNumber, "")
 .toList()
 }
@@ -16,10 +12,10 @@ viewModels.BreadCrumbViewModel.build
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    @views.html.common.headMeta("Course Information Details")
+    @views.html.common.headMeta("Edit Student Information")
 </head>
 <body>
-@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+@views.html.common.sideBar(userId, username, subjectStateList) {
 @views.html.common.breadcrumb(link)
     <div class="container mt-5">
         <div class="card">
@@ -37,13 +33,13 @@ viewModels.BreadCrumbViewModel.build
                 <form method="post" id="studentForm" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" minlength="10" maxlength="10" value="@student.codeNumber" required>
+                    <input type="text" class="form-control" name="codeNumber" id="codeNumber" value="@student.codeNumber" required>
 
                     <label>First Name</label>
-                    <input type="text" class="form-control" minlength="3" value="@student.firstName" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" id="firstName" value="@student.firstName" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Last Name</label>
-                    <input type="text" class="form-control" name="lastName" value="@student.lastName" minlength="3" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
+                    <input type="text" class="form-control" name="lastName" id="lastName" value="@student.lastName"  onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
 
                     <label>Gender</label>
                     <select name="gender" class="form-control">
@@ -57,25 +53,14 @@ viewModels.BreadCrumbViewModel.build
 
                     </select>
 
-                    <label>Current Semester</label>
-                    <select name="currentSemester" class="form-control">
-                        <option value="1">1</option>
-                        <option value="2">2</option>
-                        <option value="3">3</option>
-                        <option value="4">4</option>
-                        <option value="5">5</option>
-                        <option value="6">6</option>
-                        @if(!courseInformation.programme.equals("Bachelor of Computer Science (Hons)")) {
-                            <option value="7">7</option>
-                            <option value="8">8</option>
-                        }
-                    </select>
-
                     <label class="mt-2">Email</label>
                     <input type="email" class="form-control" id="email" name="email" value="@student.email" required>
 
+                    <label>Current Semester</label>
+                    <input type="text" class="form-control" name="currentSemester" value="@student.currentSemester" id="currentSemester" required>
+
                     <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3 mr-2">Save Student</button>
-                    <a href="/lecturer/@essentials.userId/courseInformation/@student.courseInformationId/details/assessmentInformation/studentInformation" class="btn btn-outline-secondary mt-3">Cancel</a>
+                    <a href="/lecturer/@userId/studentList/@student.id/editStudent" class="btn btn-outline-secondary mt-3">Cancel</a>
                 </form>
             </div>
         </div>
