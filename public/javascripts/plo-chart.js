@@ -29,6 +29,7 @@ $(document).ready(function() {
                     legend: {display: false},
                     title: {
                         display: true,
+                        padding: 25,
                         text: "Class PLO Attainment"
                     },
                     scales: {

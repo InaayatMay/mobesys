@@ -33,12 +33,29 @@ POST    /lecturer/:id/studentList/:studentId/editStudent             controllers
 +nocsrf
 POST    /lecturer/:id/studentList/:studentId/deleteStudent           controllers.CourseInformationController.deleteStudentInformation(request: Request, id: Long, studentId: Long)
 
-GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap      controllers.CourseInformationController.showStudentMarksEntryForm(request: Request, id: Long, courseId: Long)
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap                  controllers.CourseInformationController.showStudentMarksEntryForm(request: Request, id: Long, courseId: Long)
 +nocsrf
-POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap      controllers.CourseInformationController.handleStudentMarksEntryForm(request: Request, id: Long, courseId: Long)
-
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap                  controllers.CourseInformationController.handleStudentMarksEntryForm(request: Request, id: Long, courseId: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap/:studentId/removeStudent                  controllers.CourseInformationController.removeStudentFromCourse(request: Request, id: Long, courseId: Long, studentId: Long)
+
+GET     /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap/studentList                               controllers.CourseInformationController.showStudentListInCourseForm(request: Request, id: Long, courseId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap/studentList                               controllers.CourseInformationController.handleStudentListInCourseForm(request: Request, id: Long, courseId: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/details/assessmentInformation/studentCourseMap/studentList/:studentId/removeStudent                  controllers.CourseInformationController.removeStudentFromCourseInStudentList(request: Request, id: Long, courseId: Long, studentId: Long)
+
+
+
+GET     /lecturer/:id/requests/my                                    controllers.CourseInformationController.showMyRequestList(request: Request, id: Long)
+GET     /lecturer/:id/requests/others                                controllers.CourseInformationController.showOtherRequestList(request: Request, id: Long)
+
++nocsrf
+POST    /lecturer/:id/requests/others/:requestId/approve             controllers.CourseInformationController.approveRequest(request: Request, id: Long, requestId: Long)
+
+GET     /lecturer/:id/requests/create                                controllers.CourseInformationController.showCreateRequestForm(request: Request, id: Long)
++nocsrf
+POST    /lecturer/:id/requests/create                                controllers.CourseInformationController.handleCreateRequestForm(request: Request, id: Long)
 
 
 GET     /lecturer/:id/courseInformation                              controllers.CourseInformationController.showCourseInformationForm(request: Request, id: Long)
@@ -89,6 +106,8 @@ POST    /lecturer/:id/courseInformation/:courseId/reports/cloAnalysis/:cloCode/s
 +nocsrf
 POST    /lecturer/:id/courseInformation/:courseId/reports/cloAnalysis/:cloCode/saveComment       controllers.CourseInformationController.saveComment(request: Request, id: Long, courseId: Long, cloCode: String)
 
+GET     /lecturer/:id/completedSubjects                                        controllers.CourseInformationController.showSubjecListForReports(request: Request, id: Long)
+
 
 GET     /schools/:id/departments                                     controllers.CourseInformationController.showDepartmentsBySchool(request: Request, id: Long)
 GET     /schools/:schoolId/departments/:departmentId/programmes      controllers.CourseInformationController.showProgrammesByDept(request: Request, schoolId: Long, departmentId: Long)
@@ -96,3 +115,4 @@ GET     /schools/:schoolId/departments/:departmentId/programmes/:programme/cours
 GET     /lecturer/:lecturerId/courseInformation/:courseId/gradeDistribution                controllers.CourseInformationController.calculateGradeDistribution(request: Request, lecturerId: Long, courseId: Long)
 GET     /lecturer/:lecturerId/courseInformation/:courseId/classCloAttainment               controllers.CourseInformationController.generateClassCloAttainment(request: Request, lecturerId: Long, courseId: Long)
 GET     /lecturer/:lecturerId/courseInformation/:courseId/classPloAttainment               controllers.CourseInformationController.generateClassPloAttainment(request: Request, lecturerId: Long, courseId: Long)
+GET     /lecturer/:lecturerId/courseInformationList                                            controllers.CourseInformationController.getCourseListByLecturer(request: Request, lecturerId: Long)

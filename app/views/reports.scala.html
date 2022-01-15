@@ -7,6 +7,7 @@ viewModels.BreadCrumbViewModel.build
 .add(essentials.courseName, "")
 .add("Course Plan", routes.CourseInformationController.showCourseInformationDetails(essentials.userId, gradeViewModel.courseId).url)
 .add("Assessment", routes.CourseInformationController.showAssessmentInformationForm(essentials.userId, gradeViewModel.courseId).url)
+.add("Marks Entry", routes.CourseInformationController.showStudentMarksEntryForm(essentials.userId, gradeViewModel.courseId).url)
 .add("Report", routes.CourseInformationController.showReports(essentials.userId, gradeViewModel.courseId).url)
 .toList()
 }
@@ -215,7 +216,7 @@ viewModels.BreadCrumbViewModel.build
                         @if(std.status.equals("Repeat")) {
                         <td class="bg-warning">@std.status</td>
                         } else {
-                        <td>@std.status</td>
+                        <td class="bg-success">@std.status</td>
                         }
 
                     </tr>
@@ -376,7 +377,16 @@ viewModels.BreadCrumbViewModel.build
                                 @if(index == 0) {
                                 <form method="post" id="uniqueFormCloComment" action="@routes.CourseInformationController.saveComment(essentials.userId, gradeViewModel.courseId, analysis.cloCode)">
                                     <input id="marksInputCloComment" name="comment" hidden>
-                                    <td rowspan="@cloViewModel.cloAnalysisList.size()" class="editable" data-cellId="CloComment" data-input-type="text" id="CloComment">@analysis.comments</td>
+
+                                    @if(analysis.comments == null || analysis.comments.length == 0) {
+                                    <td rowspan="@cloViewModel.cloAnalysisList.size()" class="comment-editable text-muted" data-cellId="CloComment" data-input-type="text" id="CloComment">
+                                        Click to Edit
+                                    </td>
+                                    } else {
+                                    <td rowspan="@cloViewModel.cloAnalysisList.size()" class="comment-editable" data-cellId="CloComment" data-input-type="text" id="CloComment">
+                                        @analysis.comments
+                                    </td>
+                                    }
                                 </form>
                                 }
 
@@ -539,7 +549,15 @@ viewModels.BreadCrumbViewModel.build
                                 @if(index == 0) {
                                 <form method="post" id="uniqueFormploComment" action="@routes.CourseInformationController.saveComment(essentials.userId, gradeViewModel.courseId, analysis.cloCode)">
                                     <input id="marksInputploComment" name="comment" hidden>
-                                    <td rowspan="@cloViewModel.ploAnalysisList.size()" class="editable" data-cellId="ploComment" data-input-type="text" id="ploComment">@analysis.comments</td>
+                                    @if(analysis.comments == null || analysis.comments.length == 0) {
+                                            <td rowspan="@cloViewModel.ploAnalysisList.size()" class="comment-editable text-muted " data-comment="@analysis.comments" data-cellId="ploComment" data-input-type="text" id="ploComment">
+                                                Click to Edit
+                                            </td>
+                                        } else {
+                                            <td rowspan="@cloViewModel.ploAnalysisList.size()" class="comment-editable" data-comment="@analysis.comments" data-cellId="ploComment" data-input-type="text" id="ploComment">
+                                                @analysis.comments
+                                            </td>
+                                        }
                                 </form>
                                 }
 
@@ -607,6 +625,7 @@ viewModels.BreadCrumbViewModel.build
 <script src='@routes.Assets.versioned("javascripts/plo-chart.js")'></script>
 
 <script src='@routes.Assets.versioned("javascripts/edit-number-of-attempt.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/edit-comment.js")'></script>
 <script>
     function createPDFFromHTML() {
     var HTML_Width = $(".html-content").width();

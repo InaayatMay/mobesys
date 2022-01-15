@@ -20,6 +20,7 @@ import play.mvc.Http;
 import play.mvc.Result;
 import services.CourseInformationService;
 import services.LecturerService;
+import services.RequestService;
 import services.StudentService;
 import viewModels.*;
 
@@ -36,15 +37,17 @@ public class CourseInformationController extends Controller {
     private CourseInformationService courseInformationService;
     private LecturerService lecturerService;
     private StudentService studentService;
+    private RequestService requestService;
 
     @Inject
     public CourseInformationController(FormFactory formFactory, MessagesApi messagesApi, CourseInformationService courseInformationService,
-                                       LecturerService lecturerService, StudentService studentService) {
+                                       LecturerService lecturerService, StudentService studentService, RequestService requestService) {
         this.formFactory = formFactory;
         this.messagesApi = messagesApi;
         this.courseInformationService = courseInformationService;
         this.lecturerService = lecturerService;
         this.studentService = studentService;
+        this.requestService = requestService;
     }
 
     public Result index(Http.Request request) {
@@ -618,8 +621,6 @@ public class CourseInformationController extends Controller {
                 else {
                     AssessmentInfoFormData formData = fromRequest.get();
                     AssessmentInfo assessmentInfo = courseInformationService.getAssessmentInfo(assessmentId);
-                    Double totalWeightageByAssessment = courseInformationService.getTotalWeightageByAssessmentType(lecturerId,
-                            courseId, formData.getAssessmentType()) - assessmentInfo.weightage;
 
                     boolean isWeightageExceed = courseInformationService.isWeightageExceed(formData.getAssessmentType(),
                             formData.getWeightage());
@@ -634,16 +635,13 @@ public class CourseInformationController extends Controller {
                                 Optional.of(assessmentInfo), formData.getWeightage());
                     }
 
-                    logger.debug("is weightage exceed : " + isWeightageExceed);
-                    logger.debug("is weightage exceed by total : " + isWeightageExceedByTotal);
                     if(isWeightageExceed || isWeightageExceedByTotal) {
                         Form<AssessmentInfoFormData> formDataForm;
 
                         if(isWeightageExceed) {
-                            Double require = totalWeightageByAssessment - formData.getWeightage();
                             Double defaultWeightage = courseInformationService.getDefaultAssessmentWeightage(formData.getAssessmentType());
                             formDataForm = formFactory.form(AssessmentInfoFormData.class)
-                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be" + defaultWeightage + "%. Only " + require + "% is required.");
+                                    .withGlobalError("Total weightage of " + formData.getAssessmentType() + " should be maximum " + defaultWeightage + "%. Please try again.");
                         }
                         else {
                             formDataForm = formFactory.form(AssessmentInfoFormData.class)
@@ -775,7 +773,7 @@ public class CourseInformationController extends Controller {
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 3);
                 List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
                 LinkedHashMap<String, List<AssessmentInfo>> assessmentMap = new LinkedHashMap<>();
                 List<StudentMarksViewModel.AssessmentOrder> assessmentOrders = new ArrayList<>();
@@ -874,6 +872,88 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
+    public Result showStudentListInCourseForm(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
+
+
+                List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
+                for(Student student: studentList) {
+                    List<StudentMarks> studentMarks = studentService.getStudentMarksList(student.id, lecturerId, courseId);
+                    studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
+                }
+
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+
+                if(studentMarksViewModels.size() > 0) {
+                    logger.debug("Completed : true");
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                            "Student");
+                }
+                else {
+                    logger.debug("Completed : false");
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                            "Student");
+                }
+
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                logger.debug("Student list : " + studentList.size());
+
+                EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
+                        courseInformation.programme, courseInformation.courseName);
+
+                Messages messages = messagesApi.preferred(request);
+                List<Student> unmappedStudentList = studentService.getUnmappedStudentList(lecturerId, courseId);
+
+                return ok(views.html.studentListInCourse.render(essentialFieldsViewModel, courseInformation, studentList,
+                        subjectsStateViewModels, unmappedStudentList, request, messages));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleStudentListInCourseForm(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                Long studentId = Long.parseLong(requestData.get("studentId").trim());
+                CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
+
+                studentService.saveStudentToCourseInformationMap(lecturerId, studentId, courseInformation, assessmentInfos);
+                return redirect(routes.CourseInformationController.showStudentListInCourseForm(lecturerId, courseId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result removeStudentFromCourseInStudentList(Http.Request request, Long lecturerId, Long courseId, Long studentId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                studentService.deleteStudentCourseMap(studentId, courseId);
+                return redirect(routes.CourseInformationController.showStudentListInCourseForm(lecturerId, courseId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
 
     public Result showEditStudentForm(Http.Request request, Long lecturerId, Long studentId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
@@ -991,7 +1071,7 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Messages messages = messagesApi.preferred(request);
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
                 List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
                 List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
 
@@ -1047,7 +1127,7 @@ public class CourseInformationController extends Controller {
 
     public Result calculateGradeDistribution(Http.Request request, Long lecturerId, Long courseId) {
         CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
-        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
         List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
         List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
         Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList, statisticsReports, studentStatisticsReports);
@@ -1062,7 +1142,7 @@ public class CourseInformationController extends Controller {
     }
 
     public Result generateClassCloAttainment(Http.Request request, Long lecturerId, Long courseId) {
-        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
         List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
         List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
         List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);
@@ -1072,7 +1152,7 @@ public class CourseInformationController extends Controller {
     }
 
     public Result generateClassPloAttainment(Http.Request request, Long lecturerId, Long courseId) {
-        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
         List<CloWithTotalWeightage> cloWithTotalWeightageList = courseInformationService.getCloWithTotalWeights(lecturerId, courseId);
         List<CloAttainmentReport> cloAttainments = studentService.getCloAttainments(lecturerId, courseId);
         List<PreviousCloRecord> previousCloRecords = courseInformationService.getPreviousCloRecordList(lecturerId, courseId);
@@ -1138,5 +1218,129 @@ public class CourseInformationController extends Controller {
         }
         return unauthorized("You are unauthorized to access this page!");
     }
-}
 
+    public Result showCreateRequestForm(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                String username = optionalUsername.get();
+                List<Lecturer> otherCourseLecturerList = lecturerService.getOtherCourseLecturerList(lecturerId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.requestForm.render(lecturerId, username, otherCourseLecturerList, subjectsStateViewModels,
+                        request, messages));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleCreateRequestForm(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                Long toLecturerId = Long.parseLong(requestData.get("lecturerId").trim());
+                Long courseId = Long.parseLong(requestData.get("courseInformationId").trim());
+                String message = requestData.get("message").trim();
+
+                requestService.saveRequest(toLecturerId, lecturerId, courseId, message);
+
+                return redirect(routes.CourseInformationController.showMyRequestList(lecturerId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showMyRequestList(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+                List<RequestAggregate> aggregateList = requestService.getLecturerRequestAggregateList(lecturerId);
+
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                        aggregateList, true, request, messages));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showOtherRequestList(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+                List<RequestAggregate> aggregateList = requestService.getRequestAggregateListForLecturer(lecturerId);
+
+                boolean isMyRequestPage = false;
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                        aggregateList, false, request, messages));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result getCourseListByLecturer(Http.Request request, Long lecturerId) {
+        List<CourseInformation> courseInformation = courseInformationService.getCourseInformationListByLecturer(lecturerId);
+        List<CourseInformationDto> dtos = courseInformation.stream().map(CourseInformationDto::to).collect(Collectors.toList());
+
+        return ok(Json.toJson(dtos));
+    }
+
+    public Result approveRequest(Http.Request request, Long lecturerId, Long requestId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                requestService.approveRequest(requestId, lecturerId);
+                return redirect(routes.CourseInformationController.showOtherRequestList(lecturerId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showSubjecListForReports(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                List<CourseInformation> completedCourseList =
+                        courseInformationService.getCompletedCourseInformationListByLecturer(lecturerId);
+                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
+                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+
+                Messages messages = messagesApi.preferred(request);
+                return ok(views.html.subjectListForReport.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                        completedCourseList, request, messages));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+}

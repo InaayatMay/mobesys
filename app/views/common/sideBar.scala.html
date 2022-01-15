@@ -4,7 +4,7 @@
     <div class="row flex-nowrap">
         <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
             <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                <a href="/" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+                <a href="/lecturer/@userId/dashboard" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
                     <span class="fs-5 d-none d-sm-inline">MOBESys</span>
                 </a>
                 <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
@@ -48,6 +48,36 @@
                     <li class="nav-item">
                         <a href="/lecturer/@userId/studentList" class="nav-link align-middle px-0">
                             <i class="fas fa-users"></i> <span class="ms-1 d-none d-sm-inline">Manage Students</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link align-middle px-0">
+                            <i class="far fa-file"></i> <span class="ms-1 d-none d-sm-inline">Requests</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/lecturer/@userId/requests/my" class="nav-link align-middle px-0">
+                            <i class="fas fa-file-export"></i> <span class="ms-1 d-none d-sm-inline">My Requests</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/lecturer/@userId/requests/others" class="nav-link align-middle px-0">
+                            <i class="fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Others Requests</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/lecturer/@userId/completedSubjects" class="nav-link align-middle px-0">
+                            <i class="fas fa-chart-bar"></i> <span class="ms-1 d-none d-sm-inline">Reports</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/resetPassword" class="nav-link align-middle px-0">
+                            <i class="fas fa-key"></i> <span class="ms-1 d-none d-sm-inline">Reset Password</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/logout" class="nav-link align-middle px-0">
+                            <i class="fas fa-sign-out-alt"></i> <span class="ms-1 d-none d-sm-inline">Logout</span>
                         </a>
                     </li>
                 </ul>

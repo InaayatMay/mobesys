@@ -403,4 +403,26 @@ public class CourseInformationService {
             return 50.0;
         }
     }
+
+    public List<CourseInformation> getCourseInformationListByLecturer(Long lecturerId) {
+        String sql = "select course_information.*\n" +
+                "from lecturer_course_map\n" +
+                "left join course_information on course_information.id = lecturer_course_map.course_information_id\n" +
+                "where lecturer_id = :lecturerId;";
+
+        return Ebean.findDto(CourseInformation.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .findList();
+    }
+
+    public List<CourseInformation> getCompletedCourseInformationListByLecturer(Long lecturerId) {
+        String sql = "select course_information.*\n" +
+                "from lecturer_current_subject\n" +
+                "left join course_information on course_information.id = lecturer_current_subject.course_information_id\n" +
+                "where is_completed = true and lecturer_id = :lecturerId;";
+
+        return Ebean.findDto(CourseInformation.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .findList();
+    }
 }

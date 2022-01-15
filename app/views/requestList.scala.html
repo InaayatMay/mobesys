@@ -1,0 +1,98 @@
+@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel],
+requestList: List[models.RequestAggregate], isMyRequestPage: Boolean
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("Dashboard", routes.CourseInformationController.showDashboard(userId).url)
+.add("Request List", "").toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Form")
+</head>
+<body>
+
+    @views.html.common.sideBar(userId, username, subjectStateList) {
+        @views.html.common.breadcrumb(link)
+
+        <div class="container mt-5">
+            <div class="card">
+                <div class="card-header">
+                    <div class="row">
+                        <div class="col">
+                            Request List
+                        </div>
+                        <div class="col text-right">
+                            @if(isMyRequestPage) {
+                                <a href="/lecturer/@userId/requests/create" methods="get" type="button" class="btn btn-sm btn-secondary">
+                                    Create Request
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <thead>
+                            <th>Requested By</th>
+                            <th>Requested To</th>
+                            <th>Requested Course</th>
+                            <th>Status</th>
+                            <th>Requested At</th>
+                            <th>Approved At</th>
+                            <th></th>
+                        </thead>
+                        <tbody>
+                        @if(requestList.size == 0) {
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-secondary" role="alert">
+                                        There is no request yet. <br><br>
+                                        @if(isMyRequestPage) {
+                                            <a href="/lecturer/@userId/requests/create" methods="get" type="button" class="btn btn-sm btn-secondary">
+                                                Create Request
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        } else {
+                            @for(request <- requestList) {
+                                <tr>
+                                    <td>@request.requestByName</td>
+                                    <td>@request.requestToName</td>
+                                    <td>@request.courseCode @request.courseName</td>
+                                    @if(request.isApproved) {
+                                        <td class="text-success"><strong>Approved</strong></td>
+                                    } else {
+                                        <td class="text-warning"><strong>Pending</strong></td>
+                                    }
+                                    <td>@request.createdAt</td>
+                                    <td>@request.approvedAt</td>
+                                    @if(!isMyRequestPage && !request.isApproved) {
+                                        <td>
+                                            <form method="post" class="approve-confirm" action="/lecturer/@userId/requests/others/@request.id/approve">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary">
+                                                    Approve
+                                                </button>
+                                            </form>
+                                        </td>
+                                    } else {
+                                        <td></td>
+                                    }
+                                </tr>
+                            }
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+    <script src='@routes.Assets.versioned("javascripts/request-confirm-box.js")'></script>
+</body>
+</html>

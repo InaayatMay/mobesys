@@ -68,4 +68,15 @@ public class LecturerService {
             Ebean.save(lecturerCurrentSubject);
         }
     }
+
+    public List<Lecturer> getOtherCourseLecturerList(Long lecturerId) {
+        String sql = "select distinct lecturer.*\n" +
+                "from lecturer_course_map\n" +
+                "left join lecturer on lecturer_id = lecturer.id\n" +
+                "where lecturer.id <> :lecturerId;";
+
+        return Ebean.findNative(Lecturer.class, sql)
+                .setParameter("lecturerId", lecturerId)
+                .findList();
+    }
 }

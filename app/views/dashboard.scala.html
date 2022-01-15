@@ -32,11 +32,13 @@ viewModels.BreadCrumbViewModel.build
                     <div class="col">
                         Courses
                     </div>
-                    <div class="col text-right">
-                        <a type="button" href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
-                            Add New Course
-                        </a>
-                    </div>
+                    @if(subjectStateList.size() < 7) {
+                        <div class="col text-right">
+                            <a type="button" href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
+                                Add New Course
+                            </a>
+                        </div>
+                    }
                 </div>
             </div>
             <div class="card-body">

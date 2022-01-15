@@ -20,15 +20,18 @@ public class StudentService {
                 .orderBy().desc("id").findList();
     }
 
-    public List<Student> getStudentListByLecturerAndCourse(Long lecturerId, Long courseInformationId) {
+    public List<Student> getStudentListByLecturerAndCourse(Long lecturerId, Long courseInformationId, int limit) {
         String sql = "SELECT student.*\n" +
                 "FROM student_course_map\n" +
                 "left join student on student.id = student_course_map.student_id\n" +
-                "where course_information_id = :courseInformationId and student.lecturer_id = :lecturerId;";
+                "where course_information_id = :courseInformationId and student.lecturer_id = :lecturerId\n" +
+                "order by student_course_map.id desc\n" +
+                "limit :limit;";
 
         return Ebean.findNative(Student.class, sql)
                 .setParameter("courseInformationId", courseInformationId)
                 .setParameter("lecturerId", lecturerId)
+                .setParameter("limit", limit)
                 .findList();
     }
 

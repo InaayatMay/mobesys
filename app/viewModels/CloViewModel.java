@@ -156,9 +156,11 @@ public class CloViewModel {
                         }
                     }
 
-                    cloAnalysis.classAverage = Double.parseDouble(df.format(classAverage/totalStudents));
+                    cloAnalysis.classAverage = classAverage > 0.0 && totalStudents > 0
+                            ? Double.parseDouble(df.format(classAverage/totalStudents)) : 0;
                     cloAnalysis.cloCode = code;
-                    Double percentage = (numberOfPassedStudents/(totalStudents*1.0))*100.0;
+                    Double percentage = numberOfPassedStudents > 0 && totalStudents > 0
+                            ? (numberOfPassedStudents/(totalStudents*1.0))*100.0 : 0.0;
                     cloAnalysis.percentageOfPassedStudent = Double.parseDouble(df.format(percentage));
 
                     cloAnalysisMap.put(code, cloAnalysis);
@@ -185,9 +187,11 @@ public class CloViewModel {
                         }
                     }
 
-                    ploAnalysis.classAverage = Double.parseDouble(df.format(classAverage/totalStudents));
+                    ploAnalysis.classAverage = classAverage > 0.0 && totalStudents > 0
+                            ? Double.parseDouble(df.format(classAverage/totalStudents)) : 0.0;
                     ploAnalysis.cloCode = code;
-                    Double percentage = (numberOfPassedStudents/(totalStudents*1.0))*100.0;
+                    Double percentage = numberOfPassedStudents > 0 && totalStudents > 0
+                            ? (numberOfPassedStudents/(totalStudents*1.0))*100.0 : 0.0;
                     ploAnalysis.percentageOfPassedStudent = Double.parseDouble(df.format(percentage));
 
                     ploAnalysisMap.put(code, ploAnalysis);

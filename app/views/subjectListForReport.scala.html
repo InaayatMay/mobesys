@@ -1,0 +1,55 @@
+@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel],
+courseList: List[models.CourseInformation]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("Completed Course List", "").toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Form")
+</head>
+<body>
+
+    @views.html.common.sideBar(userId, username, subjectStateList) {
+        @views.html.common.breadcrumb(link)
+
+        <div class="container mt-5">
+            <div class="card">
+                <div class="card-header">
+                    Completed Course List
+                </div>
+                <div class="card-body">
+                    <table class="table">
+                        <tbody>
+                        @if(courseList.size == 0) {
+                            <tr>
+                                <td colspan="8" class="text-center">
+                                    <div class="alert alert-secondary" role="alert">
+                                        There is no report yet. <br><br>
+                                    </div>
+                                </td>
+                            </tr>
+                        } else {
+                            @for(course <- courseList) {
+                                <tr>
+                                    <td>@course.courseCode</td>
+                                    <td>@course.courseName</td>
+                                    <td class="text-right">
+                                        <a href="/lecturer/@userId/courseInformation/@course.id/reports" class="btn btn-sm btn-outline-secondary">View Report</a>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+
+</body>
+</html>

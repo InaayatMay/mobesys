@@ -1,12 +1,16 @@
 $(document).ready(function() {
-    $('.editable').on('click', function() {
-        let uniqueId = $(this).attr('data-commentId');
-        console.log('Data marks comment id: ' + uniqueId);
+    $('.comment-editable').on('click', function() {
+        let uniqueId = $(this).attr('data-cellId');
+        let inputType = $(this).attr('data-input-type');
+        let comment = $(this).attr('data-comment');
+        console.log('Data marks id: ' + uniqueId);
+        console.log('Comment : ' + comment);
         $('#'+uniqueId).on('click',function(){
             if($(this).find('input').is(':focus')) return this;
                 var cell = $(this);
                 var content = $(this).html();
-                $(this).html('<input type="text" value="' + $(this).html() + '/>')
+
+                $(this).html('<input type="'+ inputType +'" value="' + comment + '"/>')
                 .find('input')
                 .trigger('focus')
                 .on({
@@ -25,8 +29,8 @@ $(document).ready(function() {
                     },
                     'saveEditable':function(){
                         content = $(this).val();
-                        var formId = 'commentForm' + uniqueId;
-                        var inputId = 'commentInput' + uniqueId;
+                        var formId = 'uniqueForm' + uniqueId;
+                        var inputId = 'marksInput' + uniqueId;
                         $('#'+inputId).val(content);
                         console.log('Form id : ' + formId);
                         $('#'+formId).submit();

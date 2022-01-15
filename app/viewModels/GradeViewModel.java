@@ -61,7 +61,9 @@ public class GradeViewModel {
                     stat.assessmentType = assessmentType;
                     stat.totalMarks = report.totalStatisticsMarks;
                     stat.weightage = report.totalWeightage / studentList.size();
-                    stat.averageMarks = Double.parseDouble(df.format(report.totalStatisticsMarks/studentList.size()));
+                    stat.averageMarks = report.totalStatisticsMarks > 0.0 && studentList.size() > 0 ?
+                            Double.parseDouble(df.format(report.totalStatisticsMarks/studentList.size()))
+                            : 0.0;
                     statisticsList.add(stat);
 
                     courseworkTotalMarks += report.totalStatisticsMarks;
@@ -72,7 +74,9 @@ public class GradeViewModel {
                     stat.assessmentType = report.assessmentType;
                     stat.totalMarks = report.totalStatisticsMarks;
                     stat.weightage = report.totalWeightage / studentList.size();
-                    stat.averageMarks = Double.parseDouble(df.format(report.totalStatisticsMarks/studentList.size()));
+                    stat.averageMarks = report.totalStatisticsMarks > 0.0 && studentList.size() > 0 ?
+                            Double.parseDouble(df.format(report.totalStatisticsMarks/studentList.size()))
+                            : 0.0;
                     viewModel.finalExamStatistics = stat;
                 }
             }
@@ -90,18 +94,20 @@ public class GradeViewModel {
         Statistics coursework = new Statistics();
         coursework.assessmentType = "Course Work";
         coursework.totalMarks = courseworkTotalMarks;
-        coursework.weightage = courseworkTotalWeightage / studentList.size();
+        coursework.weightage = courseworkTotalWeightage > 0.0 && studentList.size() > 0
+                ? courseworkTotalWeightage / studentList.size()
+                : 0.0;
         coursework.averageMarks = studentList.size() > 0
                 ? Double.parseDouble(df.format(courseworkTotalMarks/studentList.size()))
                 : 0.0;
 
         Statistics grandTotal = new Statistics();
         grandTotal.assessmentType = "Grand Total";
-        grandTotal.totalMarks = courseworkTotalMarks > 0.0
+        grandTotal.totalMarks = courseworkTotalMarks > 0.0 && viewModel.finalExamStatistics.totalMarks > 0.0
                 ? Double.parseDouble(df.format(viewModel.finalExamStatistics.totalMarks + courseworkTotalMarks)) : 0.0;
-        grandTotal.weightage = coursework.weightage > 0.0
+        grandTotal.weightage = coursework.weightage > 0.0 && viewModel.finalExamStatistics.weightage > 0.0
                 ? Double.parseDouble(df.format(viewModel.finalExamStatistics.weightage + coursework.weightage)) : 0.0;
-        grandTotal.averageMarks = coursework.averageMarks > 0.0
+        grandTotal.averageMarks = coursework.averageMarks > 0.0 && viewModel.finalExamStatistics.averageMarks > 0.0
                 ? Double.parseDouble(df.format(viewModel.finalExamStatistics.averageMarks + coursework.averageMarks)) : 0.0;
 
         viewModel.courseworkStatistics = coursework;
