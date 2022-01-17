@@ -1,0 +1,66 @@
+@(userId: Long, username: String, image: String, lecturer: models.Lecturer,
+subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("My Profile", "").toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Form")
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <style>
+        .select2-container .select2-choice {
+            display: block!important;
+            height: 36px!important;
+            white-space: nowrap!important;
+            line-height: 26px!important;
+        }
+    </style>
+</head>
+<body id="body-pd">
+
+@views.html.common.sideBar(userId, username, image, subjectStateList) {
+@views.html.common.breadcrumb(link)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            My Profile
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col text-right">
+                    <image src="@image" id="profile-image" style="width:300px;height:300px;"></image>
+                </div>
+                <div class="col">
+                    <h4>@username</h4>
+                    <h5 class="mt-2">@lecturer.codeNumber</h5>
+                    <h5 class="mt-2">@lecturer.email</h5>
+                </div>
+            </div>
+            <!--<form method="post" typeof="multipart/form-data">
+                <div class="row">
+                    <div class="col">
+                        <input type="file" id="file-upload" name="picture" onchange="imageUploaded()" hidden/>
+                        <label for="file-upload">Edit profile image</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary mt-3">Save Profile</button>
+            </form>-->
+        </div>
+    </div>
+</div>
+}
+
+
+<script type="application/javascript" src="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script type="application/javascript" src='@routes.Assets.versioned("javascripts/select2-request.js")'></script>
+<script type="application/javascript" src='@routes.Assets.versioned("javascripts/image-upload.js")'></script>
+
+</body>
+</html>

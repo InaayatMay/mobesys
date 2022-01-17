@@ -23,8 +23,21 @@ public class CourseInformationService {
         return lecturerCourseMap;
     }
 
+    public LecturerCourseMap getLecturerCourseMap(Long lecturerId, Long courseId) {
+        return Ebean.find(LecturerCourseMap.class).where()
+                .and()
+                .eq("lecturer_id", lecturerId)
+                .eq("course_information_id", courseId)
+                .endAnd()
+                .findOne();
+    }
+
     public List<School> getSchoolList() {
         return Ebean.find(School.class).findList();
+    }
+
+    public Department getDepartment(Long id) {
+        return Ebean.find(Department.class, id);
     }
 
     public List<Department> getDepartmentListBySchool(Long schoolId) {

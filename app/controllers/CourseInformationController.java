@@ -68,12 +68,13 @@ public class CourseInformationController extends Controller {
                 String username = optionalUsername.get();
                 Messages messages = messagesApi.preferred(request);
 
+                Lecturer lecturer = lecturerService.getLecturerById(id);
                 Form<LecturerCourseMapFormData> form = formFactory.form(LecturerCourseMapFormData.class);
                 List<School> schoolList = courseInformationService.getSchoolList();
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(id);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
-                return ok(views.html.courseInformationForm.render(id, username, form, schoolList, subjectsStateViewModels, request, messages));
+                return ok(views.html.courseInformationForm.render(id, username, lecturer.image, form, schoolList, subjectsStateViewModels, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -143,7 +144,7 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
+                        courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel, form, unlinkedPloList,
@@ -223,7 +224,7 @@ public class CourseInformationController extends Controller {
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                courseInformation.programme, courseInformation.courseName);
+                                courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                         Messages messages = messagesApi.preferred(request);
                         return ok(views.html.courseInformationDetails.render(essentialFieldsViewModel, viewModel,
@@ -231,6 +232,12 @@ public class CourseInformationController extends Controller {
                                 unlinkedCloList, request, messages));
                     }
                     else {
+                        LecturerCourseMap lecturerCourseMap = courseInformationService.getLecturerCourseMap(lecturerId, courseId);
+                        if(lecturerCourseMap == null) {
+                            CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                            Department department = courseInformationService.getDepartment(courseInformation.departmentId);
+                            courseInformationService.saveLecturerCourseMap(lecturerId, courseId, courseInformation.departmentId, department.schoolId);
+                        }
                         courseInformationService.saveCloToPloMap(cloCode, cloTitle, ploCode, lecturerId, courseId);
                         return redirect(routes.CourseInformationController.showCourseInformationDetails(lecturerId, courseId));
                     }
@@ -267,13 +274,14 @@ public class CourseInformationController extends Controller {
                 ProgrammeLearningOutcome selectedPlo = courseInformationService.getProgrammeLearningOutcome(courseLearningOutcome.ploCode);
                 List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
 
-
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 Form<CloToPloMapFormData> form = formFactory.form(CloToPloMapFormData.class);
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
+                return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), lecturer.image,
+                        form, unlinkedPloList,
                         courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, unlinkedCloList, request, messages));
             }
         }
@@ -329,8 +337,10 @@ public class CourseInformationController extends Controller {
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
                         List<String> unlinkedCloList = courseInformationService.getUnlinkedCloList(courseId);
 
+                        Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), form, unlinkedPloList,
+                        return ok(views.html.courseInformationEditForm.render(lecturerId, optionalUsername.get(), lecturer.image,
+                                form, unlinkedPloList,
                                 courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, unlinkedCloList, request, messages));
                     }
                     else {
@@ -424,7 +434,7 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
+                        courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                 Messages messages = messagesApi.preferred(request);
                 return ok(views.html.assessmentInfoForm.render(essentialFieldsViewModel, viewModel, form, assessmentInfoMap,
@@ -530,7 +540,7 @@ public class CourseInformationController extends Controller {
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                courseInformation.programme, courseInformation.courseName);
+                                courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                         Messages messages = messagesApi.preferred(request);
 
@@ -596,8 +606,9 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
+                        courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                 return ok(views.html.assessmentInfoEditForm.render(essentialFieldsViewModel, form, assessmentInfo,
                         courseInformation, courseLearningOutcomes, subjectsStateViewModels));
@@ -653,8 +664,9 @@ public class CourseInformationController extends Controller {
                         List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                        Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                         EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                courseInformation.programme, courseInformation.courseName);
+                                courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                         return ok(views.html.assessmentInfoEditForm.render(essentialFieldsViewModel, formDataForm, assessmentInfo,
                                 courseInformation, courseLearningOutcomes, subjectsStateViewModels));
@@ -682,15 +694,37 @@ public class CourseInformationController extends Controller {
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                List<Student> studentList = studentService.getStudentList(lecturerId);
+                List<Student> studentList = new ArrayList<>();
+                Optional<String> searchByIdOptional = request.queryString("studentId");
+                if(searchByIdOptional.isPresent()) {
+                    logger.debug("search id : " + searchByIdOptional.get());
+                    Student student = studentService.getStudentByCodeNumber(searchByIdOptional.get());
+                    if(student == null) {
+                        logger.debug("student is null");
+                        studentList = studentService.getStudentList(lecturerId);
+                    }
+                    else {
+                        studentList.add(student);
+                    }
+                }
+                else {
+                    studentList = studentService.getStudentList(lecturerId);
+                }
+
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
+                Map<Long, List<String>> studentWithCourseMap = studentService.getStudentWithCourseList(lecturerId);
 
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
 
-                return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), studentList, form,
-                        subjectsStateViewModels, request, messages));
+                Optional<String> optionalSessionCourseIdString = request.session().get("courseId");
+                Long courseId;
+                courseId = optionalSessionCourseIdString.map(Long::parseLong).orElse(0l);
+
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image, studentList, form,
+                        subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -739,8 +773,16 @@ public class CourseInformationController extends Controller {
 
                             Messages messages = messagesApi.preferred(request);
 
-                            return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), studentList, form,
-                                    subjectsStateViewModels, request, messages));
+                            Optional<String> optionalSessionCourseIdString = request.session().get("courseId");
+                            Long courseId;
+                            courseId = optionalSessionCourseIdString.map(Long::parseLong).orElse(0l);
+
+                            Map<Long, List<String>> studentWithCourseMap = studentService.getStudentWithCourseList(lecturerId);
+
+                            Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                            return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image,
+                                    studentList, form,
+                                    subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
                         }
 
                     }
@@ -822,15 +864,16 @@ public class CourseInformationController extends Controller {
 
                 logger.debug("Student list : " + studentList.size());
 
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
+                        courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                 Messages messages = messagesApi.preferred(request);
                 List<Student> unmappedStudentList = studentService.getUnmappedStudentList(lecturerId, courseId);
 
                 return ok(views.html.studentMarksEntryForm.render(essentialFieldsViewModel, courseInformation, studentList,
                         assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, unmappedStudentList,
-                        assessmentColSize, request, messages));
+                        assessmentColSize, request, messages)).addingToSession(request, "courseId", String.valueOf(courseId));
             }
         }
 
@@ -906,8 +949,9 @@ public class CourseInformationController extends Controller {
 
                 logger.debug("Student list : " + studentList.size());
 
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                        courseInformation.programme, courseInformation.courseName);
+                        courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                 Messages messages = messagesApi.preferred(request);
                 List<Student> unmappedStudentList = studentService.getUnmappedStudentList(lecturerId, courseId);
@@ -968,7 +1012,8 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), form, student,
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), lecturer.image, form, student,
                         subjectsStateViewModels, request, messages));
             }
         }
@@ -1022,7 +1067,9 @@ public class CourseInformationController extends Controller {
                         List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         Messages messages = messagesApi.preferred(request);
-                        return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), fromRequest, student,
+                        Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                        return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), lecturer.image,
+                                fromRequest, student,
                                 subjectsStateViewModels, request, messages));
                     }
                     else {
@@ -1093,8 +1140,9 @@ public class CourseInformationController extends Controller {
                             List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                             List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                            Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                             EssentialFieldsViewModel essentialFieldsViewModel = new EssentialFieldsViewModel(lecturerId, optionalUsername.get(),
-                                    courseInformation.programme, courseInformation.courseName);
+                                    courseInformation.programme, courseInformation.courseName, lecturer.image);
 
                             return ok(views.html.reports.render(essentialFieldsViewModel, gradeViewModel, cloViewModel,
                                     subjectsStateViewModels, request, messages));
@@ -1213,7 +1261,9 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.dashboard.render(lecturerId, username, subjectsStateViewModels, request, messages));
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                return ok(views.html.dashboard.render(lecturerId, username, lecturer.image,
+                        subjectsStateViewModels, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -1231,8 +1281,9 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.requestForm.render(lecturerId, username, otherCourseLecturerList, subjectsStateViewModels,
+                return ok(views.html.requestForm.render(lecturerId, username, lecturer.image, otherCourseLecturerList, subjectsStateViewModels,
                         request, messages));
             }
         }
@@ -1271,8 +1322,9 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
                 List<RequestAggregate> aggregateList = requestService.getLecturerRequestAggregateList(lecturerId);
 
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), lecturer.image, subjectsStateViewModels,
                         aggregateList, true, request, messages));
             }
         }
@@ -1293,7 +1345,8 @@ public class CourseInformationController extends Controller {
 
                 boolean isMyRequestPage = false;
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                return ok(views.html.requestList.render(lecturerId, optionalUsername.get(), lecturer.image, subjectsStateViewModels,
                         aggregateList, false, request, messages));
             }
         }
@@ -1336,11 +1389,19 @@ public class CourseInformationController extends Controller {
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
-                return ok(views.html.subjectListForReport.render(lecturerId, optionalUsername.get(), subjectsStateViewModels,
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                return ok(views.html.subjectListForReport.render(lecturerId, optionalUsername.get(), lecturer.image, subjectsStateViewModels,
                         completedCourseList, request, messages));
             }
         }
 
         return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result getCourseSubjectList(Http.Request request, Long lecturerId) {
+        List<CourseWithNumberOfStudent> courseWithNumberOfStudents = studentService.getCourseWithNumberOfStudent(lecturerId);
+        List<CourseWithNumberOfStudentDto> dto = courseWithNumberOfStudents.stream().map(CourseWithNumberOfStudentDto::to)
+                .collect(Collectors.toList());
+        return ok(Json.toJson(dto));
     }
 }

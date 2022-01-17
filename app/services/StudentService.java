@@ -1,15 +1,14 @@
 package services;
 
 import io.ebean.Ebean;
+import io.ebean.RawSql;
+import io.ebean.RawSqlBuilder;
 import io.ebean.annotation.Transactional;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class StudentService {
@@ -144,6 +143,10 @@ public class StudentService {
         return Ebean.find(Student.class, studentId);
     }
 
+    public Student getStudentByCodeNumber(String codeNumber) {
+        return Ebean.find(Student.class).where().eq("code_number", codeNumber).findOne();
+    }
+
     public List<StudentMarks> getStudentMarksList(Long studentId, Long lecturerId, Long courseId) {
         return Ebean.find(StudentMarks.class).where().and()
                 .eq("student_id", studentId)
@@ -266,7 +269,52 @@ public class StudentService {
         return unmappedList;
     }
 
-    /*public Map<Long, Integer> getStudentNumberOfCourse(Long lecturerId) {
+    public List<CourseWithNumberOfStudent> getCourseWithNumberOfStudent(Long lecturerId) {
+        String sql = "select student_course_map.course_information_id, course_information.course_code, course_information.course_name,  \n" +
+                "course_information.programme, count(student_id) as number_of_student\n" +
+                "from student_course_map\n" +
+                "left join lecturer_course_map on lecturer_course_map.course_information_id = student_course_map.course_information_id\n" +
+                "left join course_information on course_information.id = student_course_map.course_information_id\n" +
+                "where lecturer_id = :lecturerId\n" +
+                "group by course_information_id;";
 
-    }*/
+        RawSql rawSql = RawSqlBuilder.parse(sql)
+                .columnMapping("student_course_map.course_information_id", "courseId")
+                .columnMapping("course_information.course_name", "courseName")
+                .columnMapping("course_information.programme", "programme")
+                .columnMapping("number_of_student", "numberOfStudents")
+                .create();
+
+        return Ebean.find(CourseWithNumberOfStudent.class)
+                .setRawSql(rawSql).setParameter("lecturerId", lecturerId).findList();
+    }
+
+    public Map<Long, List<String>> getStudentWithCourseList(Long lecturerId) {
+        String sql = "select student_id, course_code, course_name\n" +
+                "from student_course_map\n" +
+                "left join course_information as c on c.id = student_course_map.course_information_id\n" +
+                "left join student on student.id = student_course_map.student_id and lecturer_id = :lecturerId";
+
+        RawSql rawSql = RawSqlBuilder.parse(sql)
+                .create();
+
+        List<StudentWithCourse> studentWithCourseList = Ebean.find(StudentWithCourse.class)
+                .setRawSql(rawSql).setParameter("lecturerId", lecturerId).findList();
+
+        Map<Long, List<String>> studentWithCourseMap = new LinkedHashMap<>();
+        for(StudentWithCourse studentWithCourse: studentWithCourseList) {
+            if(studentWithCourseMap.containsKey(studentWithCourse.studentId)) {
+                List<String> courseList = studentWithCourseMap.get(studentWithCourse.studentId);
+                courseList.add(studentWithCourse.courseCode + " " + studentWithCourse.courseName);
+                studentWithCourseMap.put(studentWithCourse.studentId, courseList);
+            }
+            else {
+                List<String> courseList = new ArrayList<>();
+                courseList.add(studentWithCourse.courseCode + " " + studentWithCourse.courseName);
+                studentWithCourseMap.put(studentWithCourse.studentId, courseList);
+            }
+        }
+
+        return studentWithCourseMap;
+    }
 }

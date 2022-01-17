@@ -1,6 +1,6 @@
-@(userId: Long, username: String, studentList: List[models.Student],
+@(userId: Long, username: String, image: String, studentList: List[models.Student],
 form: Form[forms.StudentInfoFormData],
-subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
+subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], courseId: Long, studentWithCourse: Map[Long, List[String]]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
@@ -14,11 +14,16 @@ viewModels.BreadCrumbViewModel.build
 <head>
     @views.html.common.headMeta("Course Information Details")
 </head>
-<body>
-@views.html.common.sideBar(userId, username, subjectStateList) {
+<body id="body-pd">
+@views.html.common.sideBar(userId, username, image, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
     <div class="container mt-5 p-0">
+        @if(courseId >0) {
+            <a methods="get" href="/lecturer/@userId/courseInformation/@courseId/details/assessmentInformation/studentCourseMap" type="button" class="link mb-2">
+                <i class='bx bx-arrow-back'></i> Go To Recent Marks Entry<br>
+            </a>
+        }
         <div class="card">
             <div class="card-header">
                 <div class="row">
@@ -33,12 +38,33 @@ viewModels.BreadCrumbViewModel.build
                 </div>
             </div>
             <div class="card-body">
-                @if(form.hasGlobalErrors){
-                <div class="alert alert-warning">
-                    @for(error <- form.globalErrors){
-                    <span>@error.message</span>
-                    }
+                <div class="row mb-3">
+                    <div class="col">
+                        <div id="studentChartDiv" data-lecturerId="@userId"></div>
+                        <canvas id="studentChart"  style="width:100%;max-width:600px"></canvas>
+                    </div>
                 </div>
+
+                <hr>
+
+                <form method="get" action="/lecturer/@userId/studentList">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><i class="fas fa-search"></i></span>
+                        </div>
+                        <input type="text" name="studentId" class="form-control" placeholder="Search By Student ID" aria-label="Search By Student ID" aria-describedby="basic-addon1">
+                        <div class="input-group-append">
+                            <a href="/lecturer/@userId/studentList" class="btn btn-outline-secondary" type="button">Reset</a>
+                        </div>
+                    </div>
+                </form>
+
+                @if(form.hasGlobalErrors){
+                    <div class="alert alert-warning">
+                        @for(error <- form.globalErrors){
+                            <span>@error.message</span>
+                        }
+                    </div>
                 }
                 <table class="table">
                     <thead>
@@ -47,7 +73,7 @@ viewModels.BreadCrumbViewModel.build
                     <th>Gender</th>
                     <th>Email</th>
                     <th>Current Semester</th>
-                    <th>Number of Subjects</th>
+                    <th>Current Courses</th>
                     <th></th>
                     <th></th>
                     </thead>
@@ -59,7 +85,14 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.gender</td>
                         <td>@std.email</td>
                         <td>@std.currentSemester</td>
-                        <td>0</td>
+                        <td>
+                            <ol>
+                                @for(sub <- studentWithCourse.get(std.id)){
+                                    <li>@sub</li>
+                                }
+                            </ol>
+
+                        </td>
                         <td>
                             <a href="/lecturer/@userId/studentList/@std.id/editStudent"
                                class="btn btn-link" >
@@ -150,6 +183,7 @@ viewModels.BreadCrumbViewModel.build
 </div>
 
 <script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/student-chart.js")'></script>
 
 </body>
 </html>

@@ -1,4 +1,4 @@
-@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel],
+@(userId: Long, username: String, image: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel],
 requestList: List[models.RequestAggregate], isMyRequestPage: Boolean
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
@@ -13,9 +13,9 @@ viewModels.BreadCrumbViewModel.build
 <head>
     @views.html.common.headMeta("Course Information Form")
 </head>
-<body>
+<body id="body-pd">
 
-    @views.html.common.sideBar(userId, username, subjectStateList) {
+    @views.html.common.sideBar(userId, username, image, subjectStateList) {
         @views.html.common.breadcrumb(link)
 
         <div class="container mt-5">

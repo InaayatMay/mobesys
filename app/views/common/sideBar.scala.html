@@ -1,107 +1,87 @@
-@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(content: Html)
+@(userId: Long, username: String, image: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(content: Html)
 
-<div class="container-fluid">
-    <div class="row flex-nowrap">
-        <div class="col-auto col-md-3 col-xl-2 px-sm-2 px-0 bg-dark">
-            <div class="d-flex flex-column align-items-center align-items-sm-start px-3 pt-2 text-white min-vh-100">
-                <a href="/lecturer/@userId/dashboard" class="d-flex align-items-center pb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-                    <span class="fs-5 d-none d-sm-inline">MOBESys</span>
+<header class="header" id="header">
+    <div class="header_toggle"> <i class='bx bx-menu' id="header-toggle"></i> </div>
+</header>
+<div class="l-navbar" id="nav-bar">
+    <nav class="nav">
+        <div>
+            <a href="#" class="nav_logo">
+                <i class='bx bx-layer nav_logo-icon'></i> <span class="nav_logo-name">MOBESys</span>
+            </a>
+
+            <div class="nav_list">
+                <a href="/lecturer/@userId/profile" class="nav_link">
+                    <img src="@image" alt="" class="nav_icon header_img"><span class="nav_name">@username</span>
                 </a>
-                <ul class="nav nav-pills flex-column mb-sm-auto mb-0 align-items-center align-items-sm-start" id="menu">
-                    <li class="nav-item">
-                        <a href="/lecturer/@userId/dashboard" class="nav-link align-middle px-0">
-                            <i class="fas fa-chart-line"></i> <span class="ms-1 d-none d-sm-inline">Dashboard</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="#submenu1" data-bs-toggle="collapse" class="nav-link px-0 align-middle">
-                            <i class="far fa-folder-open"></i> <span class="ms-1 d-none d-sm-inline">Courses</span> </a>
-                        <ul class="collapse show nav flex-column ms-1" id="submenu1" data-bs-parent="#menu">
-                            <li>
-                                <a href="#submenu2" data-bs-toggle="collapse" class="nav-link px-0 align-middle ">
-                                    <i class="fas fa-tasks"></i> <span class="ms-1 d-none d-sm-inline">Uncompleted Courses</span></a>
-                                <ul class="collapse nav flex-column ms-1" id="submenu2" data-bs-parent="#menu">
-                                    @for(subject <- subjectStateList) {
-                                        @if(!subject.isCompleted) {
-                                            <li class="w-100">
-                                                <a href="@subject.currentPageUrl" class="nav-link px-0"> <span class="d-none d-sm-inline">@subject.courseName <span class="badge bg-secondary">@subject.courseCode</span></span></a>
-                                            </li>
-                                        }
-                                    }
-                                </ul>
-                            </li>
-                            <li>
-                                <a href="#submenu3" data-bs-toggle="collapse" class="nav-link px-0 align-middle ">
-                                    <i class="fas fa-check"></i> <span class="ms-1 d-none d-sm-inline">Completed Courses</span></a>
-                                <ul class="collapse nav flex-column ms-1" id="submenu3" data-bs-parent="#menu">
-                                    @for(subject <- subjectStateList) {
-                                        @if(subject.isCompleted) {
-                                            <li class="w-100">
-                                                <a href="@subject.currentPageUrl" class="nav-link px-0"> <span class="d-none d-sm-inline">@subject.courseName <span class="badge bg-secondary">@subject.courseCode</span></span></a>
-                                            </li>
-                                        }
-                                    }
-                                </ul>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/lecturer/@userId/studentList" class="nav-link align-middle px-0">
-                            <i class="fas fa-users"></i> <span class="ms-1 d-none d-sm-inline">Manage Students</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="#" class="nav-link align-middle px-0">
-                            <i class="far fa-file"></i> <span class="ms-1 d-none d-sm-inline">Requests</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/lecturer/@userId/requests/my" class="nav-link align-middle px-0">
-                            <i class="fas fa-file-export"></i> <span class="ms-1 d-none d-sm-inline">My Requests</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/lecturer/@userId/requests/others" class="nav-link align-middle px-0">
-                            <i class="fas fa-file-import"></i> <span class="ms-1 d-none d-sm-inline">Others Requests</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/lecturer/@userId/completedSubjects" class="nav-link align-middle px-0">
-                            <i class="fas fa-chart-bar"></i> <span class="ms-1 d-none d-sm-inline">Reports</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/resetPassword" class="nav-link align-middle px-0">
-                            <i class="fas fa-key"></i> <span class="ms-1 d-none d-sm-inline">Reset Password</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="/logout" class="nav-link align-middle px-0">
-                            <i class="fas fa-sign-out-alt"></i> <span class="ms-1 d-none d-sm-inline">Logout</span>
-                        </a>
-                    </li>
-                </ul>
-                <hr>
-                <div class="dropdown">
-                    <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser1" data-bs-toggle="dropdown" aria-expanded="false">
-                        <img src="https://github.com/mdo.png" alt="hugenerd" width="30" height="30" class="rounded-circle">
-                        <span class="d-none d-sm-inline mx-1">@username</span>
+                <a href="/lecturer/@userId/dashboard" class="nav_link">
+                    <i class='bx bx-grid-alt nav_icon'></i> <span class="nav_name">Dashboard</span>
+                </a>
+                <a href="#sub1" class="nav_link" data-bs-toggle="collapse" >
+                    <i class='bx bx-list-ul bx-sm nav_icon'></i> <span class="nav_name">Courses</span>
+                </a>
+                <div class="nav_list collapse" id="sub1">
+                    <a href="#sub2" class="nav_link" data-bs-toggle="collapse" >
+                        <i class='bx bx-list-check bx-sm nav_icon'></i> <span class="nav_name">Completed</span>
                     </a>
-                    <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-                        <li><a class="dropdown-item" methods="get" href="/resetPassword">Reset Password</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item" href="/logout">Logout</a></li>
-                    </ul>
+                    <div class="nav_list collapse" id="sub2">
+                        @for(subject <- subjectStateList) {
+                            @if(subject.isCompleted) {
+                                <a href="@subject.currentPageUrl" class="nav_link active">
+                                    <i class='bx bx-subdirectory-right nav_icon'></i> <span class="nav_name">
+                                            <span class="d-inline-block float-right" tabindex="0" data-bs-toggle="tooltip" title="@subject.courseName">
+                                                    @subject.courseCode<br><small>@subject.courseName</small>
+                                            </span>
+                                    </span>
+                                </a>
+                            }
+                        }
+                    </div>
+                    <a href="#sub3" class="nav_link" data-bs-toggle="collapse" >
+                        <i class='bx bx-list-plus bx-sm nav_icon'></i> <span class="nav_name">Uncompleted</span>
+                    </a>
+                    <div class="nav_list collapse" id="sub3">
+                        @for(subject <- subjectStateList) {
+                            @if(!subject.isCompleted) {
+                                <a href="@subject.currentPageUrl" class="nav_link active">
+                                    <i class='bx bx-subdirectory-right nav_icon'></i> <span class="nav_name">
+                                                <span class="d-inline-block float-right" tabindex="0" data-bs-toggle="tooltip" title="@subject.courseName">
+                                                    @subject.courseCode<br><small>@subject.courseName</small>
+                                                </span>
+                                     </span>
+                                </a>
+                            }
+                        }
+                    </div>
                 </div>
+                <a href="/lecturer/@userId/studentList" class="nav_link">
+                    <i class='bx bx-user nav_icon'></i> <span class="nav_name">Manage Students</span>
+                </a>
+                <a href="#sub4" class="nav_link" data-bs-toggle="collapse" >
+                    <i class='bx bx-message-square-detail nav_icon'></i> <span class="nav_name">Requests</span>
+                </a>
+                <div class="nav_list collapse" id="sub4">
+                    <a href="/lecturer/@userId/requests/my" class="nav_link">
+                        <i class='bx bx-subdirectory-right nav_icon'></i> <span class="nav_name">My Requests</span>
+                    </a>
+                    <a href="/lecturer/@userId/requests/others" class="nav_link">
+                        <i class='bx bx-subdirectory-right nav_icon'></i> <span class="nav_name">Others Requests</span>
+                    </a>
+                </div>
+                <a href="/lecturer/@userId/completedSubjects" class="nav_link">
+                    <i class='bx bxs-report nav_icon'></i> <span class="nav_name">Reports</span>
+                </a>
+                <a href="/resetPassword" class="nav_link">
+                    <i class='bx bx-key nav_icon'></i> <span class="nav_name">Reset Password</span>
+                </a>
+                <a href="/logout" class="nav_link">
+                    <i class='bx bx-log-out nav_icon'></i> <span class="nav_name">Logout</span>
+                </a>
             </div>
         </div>
-        <div class="col py-3">
-            @content
-        </div>
-    </div>
+    </nav>
 </div>
-
-
-
+<!--Container Main start-->
+<div class="height-100 bg-light">
+    @content
+</div>

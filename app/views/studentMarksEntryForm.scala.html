@@ -22,8 +22,8 @@ viewModels.BreadCrumbViewModel.build
 <head>
     @views.html.common.headMeta("Course Information Details")
 </head>
-<body>
-@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+<body id="body-pd">
+@views.html.common.sideBar(essentials.userId, essentials.username, essentials.image, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
     <div class="container mt-5 p-0">
@@ -35,7 +35,7 @@ viewModels.BreadCrumbViewModel.build
                     </div>
                     <div class="col text-right">
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                            Add Student
+                            Select Student
                         </button>
                     </div>
                 </div>
@@ -74,10 +74,10 @@ viewModels.BreadCrumbViewModel.build
                     @if(studentList.size == 0 && unmappedStudentList.size == 0) {
                         <tr>
                             <td colspan="8" class="text-center">
-                                <div class="alert alert-secondary" role="alert">
+                                <div>
                                     There is no student at all . Go to 'Manage Students' to add new students.<br><br>
-                                    <a href="/lecturer/@essentials.userId/studentList" type="button" class="btn btn-sm btn-secondary">
-                                        Manage Students
+                                    <a methods="get" href="/lecturer/@essentials.userId/studentList" type="button" class="link">
+                                        Manage Students <i class='bx bx-arrow-back bx-flip-horizontal'></i>
                                     </a>
                                 </div>
                             </td>
@@ -88,7 +88,7 @@ viewModels.BreadCrumbViewModel.build
                                 <div class="alert alert-secondary" role="alert">
                                     There is no student defined for this course. Click the button below to select student.<br><br>
                                     <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
-                                        Add Student
+                                        Select Student
                                     </button>
                                 </div>
                             </td>
@@ -99,7 +99,7 @@ viewModels.BreadCrumbViewModel.build
             </div>
             <div class="card-footer">
                 <div class="text-right">
-                    <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/details/assessmentInformation/studentCourseMap/studentList">
+                    <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/details/assessmentInformation/studentCourseMap/studentList" class="link">
                         View All Students In This Course ->
                     </a>
                 </div>
@@ -212,7 +212,7 @@ viewModels.BreadCrumbViewModel.build
 
             <!-- Modal Header -->
             <div class="modal-header">
-                <h4 class="modal-title">Add Student</h4>
+                <h4 class="modal-title">Select Student</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
 

@@ -1,4 +1,4 @@
-@(userId: Long, username: String, lecturerList: List[models.Lecturer],
+@(userId: Long, username: String, image: String, lecturerList: List[models.Lecturer],
 subjectStateList: List[viewModels.LecturerSubjectsStateViewModel]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
@@ -23,9 +23,9 @@ viewModels.BreadCrumbViewModel.build
         }
     </style>
 </head>
-<body>
+<body id="body-pd">
 
-    @views.html.common.sideBar(userId, username, subjectStateList) {
+    @views.html.common.sideBar(userId, username, image, subjectStateList) {
         @views.html.common.breadcrumb(link)
 
         <div class="container mt-5">

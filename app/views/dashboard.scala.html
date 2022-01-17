@@ -1,4 +1,4 @@
-@(userId: Long, username: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+@(userId: Long, username: String, image: String, subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
@@ -10,6 +10,7 @@ viewModels.BreadCrumbViewModel.build
 <head>
     @views.html.common.headMeta("Course Information Form")
 
+
     <link href="https://cdn.jsdelivr.net/npm/select2@@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <style>
         .select2-container .select2-choice {
@@ -19,10 +20,11 @@ viewModels.BreadCrumbViewModel.build
             line-height: 26px!important;
         }
     </style>
-</head>
-<body>
 
-@views.html.common.sideBar(userId, username, subjectStateList) {
+</head>
+<body id="body-pd">
+
+@views.html.common.sideBar(userId, username, image, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
     <div class="container">
@@ -65,8 +67,8 @@ viewModels.BreadCrumbViewModel.build
                         @for(subject <- subjectStateList) {
                             <tr>
                                 <td>
-                                    <a href="@subject.currentPageUrl">
-                                        @subject.courseCode
+                                    <a href="@subject.currentPageUrl" class="link">
+                                        <b>@subject.courseCode</b>
                                     </a>
                                 </td>
                                 <td>@subject.courseName</td>
@@ -84,5 +86,6 @@ viewModels.BreadCrumbViewModel.build
         </div>
     </div>
     }
+
 </body>
 </html>

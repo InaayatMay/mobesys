@@ -26,4 +26,6 @@ public class Lecturer {
     public String email;
 
     public String password;
+
+    public String image;
 }

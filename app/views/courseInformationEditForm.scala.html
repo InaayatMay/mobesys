@@ -1,4 +1,4 @@
-@(userId: Long, username: String, form : Form[forms.CloToPloMapFormData], unlinkedPloList: List[ProgrammeLearningOutcome],
+@(userId: Long, username: String, image: String, form : Form[forms.CloToPloMapFormData], unlinkedPloList: List[ProgrammeLearningOutcome],
 clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseId: Long
 , subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], unlinkedCloList: List[String])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
@@ -7,8 +7,8 @@ clo: models.CourseLearningOutcome, plo: models.ProgrammeLearningOutcome, courseI
 <head>
     @views.html.common.headMeta("Course Information Details")
 </head>
-<body>
-@views.html.common.sideBar(userId, username, subjectStateList) {
+<body id="body-pd">
+@views.html.common.sideBar(userId, username, image, subjectStateList) {
     <div class="container mt-5">
         <div class="card">
             <div class="card-header">

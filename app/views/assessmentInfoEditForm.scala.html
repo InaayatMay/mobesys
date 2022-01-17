@@ -17,8 +17,8 @@ viewModels.BreadCrumbViewModel.build
 <head>
     @views.html.common.headMeta("Course Information Details")
 </head>
-<body>
-@views.html.common.sideBar(essentials.userId, essentials.username, subjectStateList) {
+<body id="body-pd">
+@views.html.common.sideBar(essentials.userId, essentials.username, essentials.image, subjectStateList) {
 @views.html.common.breadcrumb(link)
     <div class="container mt-5">
         <div class="card">

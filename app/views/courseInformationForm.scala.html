@@ -1,10 +1,10 @@
-@(userId: Long, username: String, myForm : Form[forms.LecturerCourseMapFormData], schoolList: List[models.School]
+@(userId: Long, username: String, image: String, myForm : Form[forms.LecturerCourseMapFormData], schoolList: List[models.School]
 , subjectStateList: List[viewModels.LecturerSubjectsStateViewModel])(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
 viewModels.BreadCrumbViewModel.build
 .add("Dashboard", routes.CourseInformationController.showDashboard(userId).url)
-.add("Course Information", "").toList()
+.add("Add New Course", "").toList()
 }
 
 <!DOCTYPE html>
@@ -22,9 +22,9 @@ viewModels.BreadCrumbViewModel.build
         }
     </style>
 </head>
-<body>
+<body id="body-pd">
 
-    @views.html.common.sideBar(userId, username, subjectStateList) {
+    @views.html.common.sideBar(userId, username, image, subjectStateList) {
         @views.html.common.breadcrumb(link)
 
         <div class="container mt-5">

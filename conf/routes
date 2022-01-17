@@ -19,6 +19,10 @@ GET     /resetPassword                                               controllers
 +nocsrf
 POST    /resetPassword                                               controllers.AuthController.handleResetPassword(request: Request)
 
+GET     /lecturer/:id/profile                                        controllers.AuthController.showProfile(request: Request, id: Long)
++nocsrf
+POST    /lecturer/:id/profile                                        controllers.AuthController.handleProfile(request: Request, id: Long)
+
 GET     /lecturer/:id/dashboard                                      controllers.CourseInformationController.showDashboard(request: Request, id: Long)
 
 GET     /lecturer/:id/studentList                                    controllers.CourseInformationController.showStudentList(request: Request, id: Long)
@@ -115,4 +119,5 @@ GET     /schools/:schoolId/departments/:departmentId/programmes/:programme/cours
 GET     /lecturer/:lecturerId/courseInformation/:courseId/gradeDistribution                controllers.CourseInformationController.calculateGradeDistribution(request: Request, lecturerId: Long, courseId: Long)
 GET     /lecturer/:lecturerId/courseInformation/:courseId/classCloAttainment               controllers.CourseInformationController.generateClassCloAttainment(request: Request, lecturerId: Long, courseId: Long)
 GET     /lecturer/:lecturerId/courseInformation/:courseId/classPloAttainment               controllers.CourseInformationController.generateClassPloAttainment(request: Request, lecturerId: Long, courseId: Long)
-GET     /lecturer/:lecturerId/courseInformationList                                            controllers.CourseInformationController.getCourseListByLecturer(request: Request, lecturerId: Long)
+GET     /lecturer/:lecturerId/courseInformationList                                        controllers.CourseInformationController.getCourseListByLecturer(request: Request, lecturerId: Long)
+GET     /lecturer/:lecturerId/studentCourseList                                            controllers.CourseInformationController.getCourseSubjectList(request: Request, lecturerId: Long)
