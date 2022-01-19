@@ -20,10 +20,7 @@ import viewModels.LecturerSubjectsStateViewModel;
 import javax.inject.Inject;
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class AuthController extends Controller {
     private final Logger logger = LoggerFactory.getLogger("application");
@@ -99,9 +96,25 @@ public class AuthController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
+                List<Integer> dayList = new ArrayList<>();
+                for(int i=1; i<=31; i++) {
+                    dayList.add(i);
+                }
+
+                List<Integer> monthList = new ArrayList<>();
+                for(int i=1; i<=12; i++) {
+                    monthList.add(i);
+                }
+
+                List<Integer> yearList = new ArrayList<>();
+                for(int i=1940; i<=2005; i++) {
+                    yearList.add(i);
+                }
+
                 Messages messages = messagesApi.preferred(request);
                 Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
-                return ok(views.html.profile.render(lecturerId, optionalUsername.get(), lecturer.image, lecturer, subjectsStateViewModels,
+                return ok(views.html.profile.render(lecturerId, optionalUsername.get(), lecturer.image, lecturer,
+                        subjectsStateViewModels, dayList, monthList, yearList,
                         request, messages));
             }
         }
@@ -115,18 +128,21 @@ public class AuthController extends Controller {
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                Http.MultipartFormData<Files.TemporaryFile> body = request.body().asMultipartFormData();
-                Http.MultipartFormData.FilePart<Files.TemporaryFile> picture = body.getFile("picture");
-                if (picture != null) {
-                    String fileName = picture.getFilename();
-                    long fileSize = picture.getFileSize();
-                    String contentType = picture.getContentType();
-                    Files.TemporaryFile file = picture.getRef();
-                    file.copyTo(Paths.get("/tmp/picture/destination.jpg"), true);
-                    return ok("File uploaded");
-                } else {
-                    return badRequest().flashing("error", "Missing file");
-                }
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                lecturer.codeNumber = requestData.get("codeNumber").trim();
+                lecturer.firstName = requestData.get("firstName").trim();
+                lecturer.lastName = requestData.get("lastName").trim();
+                lecturer.gender = requestData.get("gender").trim();
+                lecturer.email = requestData.get("email").trim();
+                lecturer.phoneNumber = requestData.get("phoneNumber").trim();
+                lecturer.birthMonth = Integer.parseInt(requestData.get("month").trim());
+                lecturer.birthDay = Integer.parseInt(requestData.get("day").trim());
+                lecturer.birthYear = Integer.parseInt(requestData.get("year").trim());
+
+                lecturerService.updateLecturer(lecturer);
+                return redirect(routes.AuthController.showProfile(lecturerId));
             }
         }
         return unauthorized("You are unauthorized to access this page!");

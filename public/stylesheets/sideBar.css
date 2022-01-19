@@ -88,8 +88,8 @@ a {
 }
 
 .header_img {
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
     display: flex;
     justify-content: center;
     border-radius: 50%;
@@ -97,7 +97,7 @@ a {
 }
 
 .header_img img {
-    width: 20px
+    width: 10px
 }
 
 .l-navbar {
@@ -166,11 +166,11 @@ a {
     padding-left: calc(var(--nav-width) + 1rem)
 }
 
-.active {
+.l-navbar.active {
     color: var(--white-color)
 }
 
-.active::before {
+.l-navbar.active::before {
     content: '';
     position: absolute;
     left: 0;

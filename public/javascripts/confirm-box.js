@@ -124,7 +124,7 @@ $("#saveStudentBtn").click(function() {
             tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
         }, 200);
 
-        alert("Student ID length must be between 6 and 10!");
+        alert("ID length must be between 6 and 10!");
     }
 });
 

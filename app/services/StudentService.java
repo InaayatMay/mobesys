@@ -293,7 +293,7 @@ public class StudentService {
         String sql = "select student_id, course_code, course_name\n" +
                 "from student_course_map\n" +
                 "left join course_information as c on c.id = student_course_map.course_information_id\n" +
-                "left join student on student.id = student_course_map.student_id and lecturer_id = :lecturerId";
+                "left join student on student.id = student_course_map.student_id and student.lecturer_id = :lecturerId";
 
         RawSql rawSql = RawSqlBuilder.parse(sql)
                 .create();

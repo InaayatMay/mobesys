@@ -3,7 +3,7 @@ studentList: List[models.Student],
 assessmentMap: Map[String, List[AssessmentInfo]], marksViewModel: List[viewModels.StudentMarksViewModel],
 assessmentOrders: List[viewModels.StudentMarksViewModel.AssessmentOrder],
 subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], unmappedStudentList: List[models.Student],
-assessmentColSize: Integer
+assessmentColSize: Integer, isReadyForReport: Boolean
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
@@ -192,9 +192,13 @@ viewModels.BreadCrumbViewModel.build
             <div class="card-footer">
                 <div class="row">
                     <div class="col text-right">
-                        <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
-                            Generate Reports
-                        </a>
+                        @if(isReadyForReport){
+                            <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
+                                Generate Reports
+                            </a>
+                        }else{
+                            <button class="btn btn-secondary" disabled>Generate Reports</button>
+                        }
                     </div>
                 </div>
 
@@ -223,7 +227,12 @@ viewModels.BreadCrumbViewModel.build
                     <label>Student ID</label>
                     <input name="studentId" id="studentId" hidden>
                     <select type="select" class="form-control" name="codeNumber" id="codeNumber">
-                            <option value="0" class="text-muted">Select Student ID</option>
+                        @if(unmappedStudentList.size() > 0){
+                            <option class="text-muted" disabled>Select Student ID</option>
+                        }else{
+                            <option class="text-muted" disabled>Empty Student</option>
+                        }
+                            <option class="text-muted" disabled>Select Student ID</option>
                             @for(std <- unmappedStudentList) {
                                 <option value="@std.id"
                                         data-first="@std.firstName"

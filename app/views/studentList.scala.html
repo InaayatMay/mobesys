@@ -87,8 +87,10 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.currentSemester</td>
                         <td>
                             <ol>
-                                @for(sub <- studentWithCourse.get(std.id)){
-                                    <li>@sub</li>
+                                @if(studentWithCourse.size() > 0){
+                                    @for(sub <- studentWithCourse.get(std.id)){
+                                        <li>@sub</li>
+                                    }
                                 }
                             </ol>
 

@@ -32,7 +32,7 @@ public class CourseInformationController extends Controller {
 
     private final Logger logger = LoggerFactory.getLogger("application");
 
-    private FormFactory formFactory;
+    @Inject FormFactory formFactory;
     private MessagesApi messagesApi;
     private CourseInformationService courseInformationService;
     private LecturerService lecturerService;
@@ -51,11 +51,8 @@ public class CourseInformationController extends Controller {
     }
 
     public Result index(Http.Request request) {
-        return request
-                .session()
-                .get("name")
-                .map(user -> ok("Hello " + user))
-                .orElseGet(() -> unauthorized("Oops, something wrong!"));
+        Messages messages = messagesApi.preferred(request);
+        return ok(views.html.index.render(request, messages));
     }
 
     public Result showCourseInformationForm(Http.Request request, Long id){
@@ -714,6 +711,7 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
                 Map<Long, List<String>> studentWithCourseMap = studentService.getStudentWithCourseList(lecturerId);
+                logger.debug("Map : " + studentWithCourseMap.values().toString());
 
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
@@ -723,6 +721,16 @@ public class CourseInformationController extends Controller {
                 courseId = optionalSessionCourseIdString.map(Long::parseLong).orElse(0l);
 
                 Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+                logger.debug("lecturerId : " + lecturerId);
+                logger.debug("image " + lecturer.image);
+                logger.debug("studentList : " + studentList.size());
+                logger.debug("form : " + form);
+                logger.debug("state : " + subjectsStateViewModels.size());
+                logger.debug("courseId : " + courseId);
+                logger.debug("studentCourse : " + studentWithCourseMap);
+                logger.debug("request : " + request);
+                logger.debug("msg : " + messages);
+
                 return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image, studentList, form,
                         subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
             }
@@ -807,7 +815,6 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
-
     public Result showStudentMarksEntryForm(Http.Request request, Long lecturerId, Long courseId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");
@@ -840,22 +847,34 @@ public class CourseInformationController extends Controller {
                     assessmentColSize += value.size();
                 }
 
+                int countMarkRow = 0;
+                int countZeroMarkRow = 0;
+
                 List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
                 for(Student student: studentList) {
                     List<StudentMarks> studentMarks = studentService.getStudentMarksList(student.id, lecturerId, courseId);
+                    for(StudentMarks stdMark: studentMarks) {
+                        ++countMarkRow;
+                        if(stdMark.marks == 0.0) {
+                            ++countZeroMarkRow;
+                        }
+                    }
                     studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
                 }
 
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+                boolean isReadyForReport = false;
 
-                if(studentMarksViewModels.size() > 0) {
-                    logger.debug("Completed : true");
-                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                if(countMarkRow == countZeroMarkRow) {
+                    logger.debug("Completed : false");
+
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                             "Student");
                 }
                 else {
-                    logger.debug("Completed : false");
-                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                    isReadyForReport = true;
+                    logger.debug("Completed : true");
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
                             "Student");
                 }
 
@@ -873,7 +892,7 @@ public class CourseInformationController extends Controller {
 
                 return ok(views.html.studentMarksEntryForm.render(essentialFieldsViewModel, courseInformation, studentList,
                         assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, unmappedStudentList,
-                        assessmentColSize, request, messages)).addingToSession(request, "courseId", String.valueOf(courseId));
+                        assessmentColSize, isReadyForReport, request, messages)).addingToSession(request, "courseId", String.valueOf(courseId));
             }
         }
 
@@ -924,23 +943,34 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
 
-
                 List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
+                int countZeroMarkRow = 0;
+                int countMarkRow = 0;
+
                 for(Student student: studentList) {
                     List<StudentMarks> studentMarks = studentService.getStudentMarksList(student.id, lecturerId, courseId);
+                    for(StudentMarks stdMark: studentMarks) {
+                        ++countMarkRow;
+                        if(stdMark.marks == 0.0) {
+                            ++countZeroMarkRow;
+                        }
+                    }
                     studentMarksViewModels.add(StudentMarksViewModel.build(student, studentMarks));
                 }
 
+                logger.debug("count mark row : " + countMarkRow);
+                logger.debug("zero mark row : " + countZeroMarkRow);
+
                 CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
 
-                if(studentMarksViewModels.size() > 0) {
-                    logger.debug("Completed : true");
-                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
+                if(countMarkRow == countZeroMarkRow) {
+                    logger.debug("Completed : false");
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
                             "Student");
                 }
                 else {
-                    logger.debug("Completed : false");
-                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, false,
+                    logger.debug("Completed : true");
+                    lecturerService.saveLecturerCurrentSubjectState(lecturerId, courseId, courseInformation.courseName, true,
                             "Student");
                 }
 

@@ -79,4 +79,23 @@ public class LecturerService {
                 .setParameter("lecturerId", lecturerId)
                 .findList();
     }
+
+    public void updateLecturer(Lecturer lecturer) {
+        String sql = "update lecturer\n" +
+                "set first_name=:first_name , last_name=:last_name , gender=:gender , code_number=:code_number , " +
+                "email=:email , phone_number=:phone_number, birth_month =:birth_month, birth_day=:birth_day , birth_year=:birth_year\n" +
+                "where id = 1;";
+        int updatedRow = Ebean.createSqlUpdate(sql)
+                .setParameter("first_name", lecturer.firstName)
+                .setParameter("last_name", lecturer.lastName)
+                .setParameter("gender", lecturer.gender)
+                .setParameter("code_number", lecturer.codeNumber)
+                .setParameter("email", lecturer.email)
+                .setParameter("phone_number", lecturer.phoneNumber)
+                .setParameter("birth_month",lecturer.birthMonth )
+                .setParameter("birth_day", lecturer.birthDay)
+                .setParameter("birth_year", lecturer.birthYear)
+                .execute();
+        Ebean.update(lecturer);
+    }
 }

@@ -1,0 +1,1 @@
+alter table lecturer modify image blob;

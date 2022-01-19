@@ -28,4 +28,16 @@ public class Lecturer {
     public String password;
 
     public String image;
+
+    @Column(name = "phone_number")
+    public String phoneNumber;
+
+    @Column(name = "birth_day")
+    public int birthDay;
+
+    @Column(name = "birth_month")
+    public int birthMonth;
+
+    @Column(name = "birth_year")
+    public int birthYear;
 }

@@ -27,7 +27,7 @@ viewModels.BreadCrumbViewModel.build
 @views.html.common.sideBar(userId, username, image, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
-    <div class="container">
+    <div class="container mt-5 p-0">
         <div class="card">
             <div class="card-header">
                 <div class="row">
@@ -36,7 +36,7 @@ viewModels.BreadCrumbViewModel.build
                     </div>
                     @if(subjectStateList.size() < 7) {
                         <div class="col text-right">
-                            <a type="button" href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
+                            <a href="/lecturer/@userId/courseInformation" class="btn btn-sm btn-secondary">
                                 Add New Course
                             </a>
                         </div>
