@@ -1,6 +1,8 @@
 package services;
 
 import io.ebean.Ebean;
+import io.ebean.RawSql;
+import io.ebean.RawSqlBuilder;
 import models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -423,19 +425,27 @@ public class CourseInformationService {
                 "left join course_information on course_information.id = lecturer_course_map.course_information_id\n" +
                 "where lecturer_id = :lecturerId;";
 
-        return Ebean.findDto(CourseInformation.class, sql)
-                .setParameter("lecturerId", lecturerId)
-                .findList();
+        RawSql rawSql = RawSqlBuilder.parse(sql)
+                .columnMapping("course_information.id", "id")
+                .create();
+
+        return Ebean.find(CourseInformation.class).setRawSql(rawSql)
+                .setParameter("lecturerId", lecturerId).findList();
     }
 
     public List<CourseInformation> getCompletedCourseInformationListByLecturer(Long lecturerId) {
-        String sql = "select course_information.*\n" +
+        String sql = "select course_information.id, course_information.programme, course_information.course_code, " +
+                "course_information.course_name, course_information.semester, course_information.intake_batch," +
+                "course_information.course_type, course_information.department_id\n" +
                 "from lecturer_current_subject\n" +
                 "left join course_information on course_information.id = lecturer_current_subject.course_information_id\n" +
-                "where is_completed = true and lecturer_id = :lecturerId;";
+                "where is_completed = true and lecturer_current_subject.lecturer_id = :lecturerId;";
 
-        return Ebean.findDto(CourseInformation.class, sql)
-                .setParameter("lecturerId", lecturerId)
-                .findList();
+        RawSql rawSql = RawSqlBuilder.parse(sql)
+                .columnMapping("course_information.id", "id")
+                .create();
+
+        return Ebean.find(CourseInformation.class).setRawSql(rawSql)
+                .setParameter("lecturerId", lecturerId).findList();
     }
 }

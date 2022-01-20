@@ -347,7 +347,7 @@ public class StudentService {
             if(studentWithCourseMap.containsKey(studentWithCourse.studentId)) {
                 List<String> courseList = studentWithCourseMap.get(studentWithCourse.studentId);
                 courseList.add(studentWithCourse.courseCode + " " + studentWithCourse.courseName);
-                studentWithCourseMap.put(studentWithCourse.studentId, courseList);
+                studentWithCourseMap.replace(studentWithCourse.studentId, courseList);
             }
             else {
                 List<String> courseList = new ArrayList<>();

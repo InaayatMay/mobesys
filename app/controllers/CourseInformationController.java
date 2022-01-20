@@ -32,7 +32,7 @@ public class CourseInformationController extends Controller {
 
     private final Logger logger = LoggerFactory.getLogger("application");
 
-    @Inject FormFactory formFactory;
+    private FormFactory formFactory;
     private MessagesApi messagesApi;
     private CourseInformationService courseInformationService;
     private LecturerService lecturerService;
@@ -693,6 +693,7 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 List<Student> studentList = new ArrayList<>();
                 Optional<String> searchByIdOptional = request.queryString("studentId");
+                logger.debug("search by id optional : " + searchByIdOptional.isPresent());
                 if(searchByIdOptional.isPresent()) {
                     logger.debug("search id : " + searchByIdOptional.get());
                     Student student = studentService.getStudentByCodeNumber(searchByIdOptional.get());
@@ -711,7 +712,7 @@ public class CourseInformationController extends Controller {
                 List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
                 List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
                 Map<Long, List<String>> studentWithCourseMap = studentService.getStudentWithCourseList(lecturerId);
-                logger.debug("Map : " + studentWithCourseMap.values().toString());
+                logger.debug("Map : " + studentWithCourseMap.size());
 
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Messages messages = messagesApi.preferred(request);
@@ -726,12 +727,12 @@ public class CourseInformationController extends Controller {
                 logger.debug("form : " + form);
                 logger.debug("state : " + subjectsStateViewModels.size());
                 logger.debug("courseId : " + courseId);
-                logger.debug("studentCourse : " + studentWithCourseMap);
+                logger.debug("studentCourse : " + studentWithCourseMap.values());
                 logger.debug("request : " + request);
                 logger.debug("msg : " + messages);
 
-                return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image, studentList, form,
-                        subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
+                return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image, studentList,
+                        form, subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -791,8 +792,6 @@ public class CourseInformationController extends Controller {
                             return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image,
                                     studentList, form,
                                     subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
-
-
                     }
                 }
             }

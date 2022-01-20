@@ -220,6 +220,8 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.point</td>
 
                         @if(std.status.equals("Repeat")) {
+                        <td class="bg-danger">@std.status</td>
+                        } else if(std.status.equals("Reset")){
                         <td class="bg-warning">@std.status</td>
                         } else {
                         <td class="bg-success">@std.status</td>
@@ -427,9 +429,9 @@ viewModels.BreadCrumbViewModel.build
                         <th>@clo.marks</th>
                         }
                     </tr>
-                    @for(attainment <- cloViewModel.cloAttainmentList) {
+                    @for((attainment,index) <- cloViewModel.cloAttainmentList.view.zipWithIndex) {
                     <tr>
-                        <td>@attainment.serialNo</td>
+                        <td>@{index+1}</td>
                         <td>@attainment.studentCode</td>
                         <td>@attainment.studentName</td>
                         @for(attainmentMark <- attainment.cloAttainmentMarks) {
@@ -595,9 +597,9 @@ viewModels.BreadCrumbViewModel.build
                             <th>@clo.marks</th>
                             }
                         </tr>
-                        @for(attainment <- cloViewModel.ploAttainmentList) {
+                        @for((attainment,index) <- cloViewModel.ploAttainmentList.view.zipWithIndex) {
                         <tr>
-                            <td rowspan="2">@attainment.serialNo</td>
+                            <td rowspan="2">@{index+1}</td>
                             <td rowspan="2">@attainment.studentCode</td>
                             <td rowspan="2">@attainment.studentName</td>
                             @for(attainmentMark <- attainment.cloAttainmentMarks) {
@@ -607,9 +609,9 @@ viewModels.BreadCrumbViewModel.build
                         <tr>
                             @for(attainmentPercent <- attainment.cloAttainmentPercentage) {
                                 @if(attainmentPercent.marks <50 && attainmentPercent.marks != null) {
-                                    <td class="text-white bg-danger">@attainmentPercent.marks</td>
+                                    <td class="text-white bg-danger">@attainmentPercent.marks%</td>
                                 } else {
-                                    <td>@attainmentPercent.marks</td>
+                                    <td>@attainmentPercent.marks%</td>
                                 }
                             }
                         </tr>

@@ -18,11 +18,13 @@ viewModels.BreadCrumbViewModel.build
 @views.html.common.sideBar(userId, username, image, subjectStateList) {
 @views.html.common.breadcrumb(link)
 
-    <div class="container mt-5 p-0">
+    <div class="container p-0">
         @if(courseId >0) {
-            <a methods="get" href="/lecturer/@userId/courseInformation/@courseId/details/assessmentInformation/studentCourseMap" type="button" class="link mb-2">
-                <i class='bx bx-arrow-back'></i> Go To Recent Marks Entry<br>
-            </a>
+            <div class="mb-2 mt-2">
+                <a methods="get" href="/lecturer/@userId/courseInformation/@courseId/details/assessmentInformation/studentCourseMap" type="button" class="link">
+                    <i class='bx bx-arrow-back'></i> Go To Recent Marks Entry<br>
+                </a>
+            </div>
         }
         <div class="card">
             <div class="card-header">
@@ -87,13 +89,16 @@ viewModels.BreadCrumbViewModel.build
                             <td>@std.email</td>
                             <td>@std.currentSemester</td>
                             <td>
-                                <ol>
-                                    @if(studentWithCourse != null && studentWithCourse.size() > 0){
-                                    @for(sub <- studentWithCourse.get(std.id)){
-                                    <li>@sub</li>
-                                    }
-                                    }
-                                </ol>
+                                @if(studentWithCourse.containsKey(std.id)){
+                                    <ol>
+                                        @for(sub <- studentWithCourse.get(std.id)){
+                                        <li>@sub</li>
+                                        }
+                                    </ol>
+                                } else {
+                                    <span class="text-muted">No Course</span>
+                                }
+
                             </td>
                             <td>
                                 <a href="/lecturer/@userId/studentList/@std.id/editStudent"

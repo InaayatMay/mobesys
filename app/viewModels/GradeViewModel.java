@@ -166,7 +166,15 @@ public class GradeViewModel {
                 statistics.grandTotal = Double.parseDouble(df.format(statistics.finalExamTotal + statistics.courseworkTotal));
                 statistics.grade = StudentStatistics.getGrade(statistics.grandTotal);
                 statistics.point = StudentStatistics.getPoint(statistics.grade);
-                statistics.status = statistics.grade.equals("F") ? "Repeat" : "Pass";
+                if(statistics.grade.equals("F")) {
+                    statistics.status = "Repeat";
+                }
+                else if(statistics.grade.equals("D")){
+                    statistics.status = "Reset";
+                }
+                else {
+                    statistics.status = "Pass";
+                }
 
                 studentStatistics.add(statistics);
                 studentIds.add(studentStatisticsReports.get(i).studentId);
