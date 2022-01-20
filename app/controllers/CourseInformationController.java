@@ -722,7 +722,6 @@ public class CourseInformationController extends Controller {
 
                 Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 logger.debug("lecturerId : " + lecturerId);
-                logger.debug("image " + lecturer.image);
                 logger.debug("studentList : " + studentList.size());
                 logger.debug("form : " + form);
                 logger.debug("state : " + subjectsStateViewModels.size());
@@ -774,6 +773,7 @@ public class CourseInformationController extends Controller {
                             form = formFactory.form(StudentInfoFormData.class)
                                     .withGlobalError("Student with Name - " + formData.getFirstName() + " " +
                                             formData.getLastName() + " is already exists. Please try again.");
+                        }
 
                             List<Student> studentList = studentService.getStudentList(lecturerId);
                             List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
@@ -791,7 +791,7 @@ public class CourseInformationController extends Controller {
                             return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image,
                                     studentList, form,
                                     subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
-                        }
+
 
                     }
                 }
@@ -822,7 +822,7 @@ public class CourseInformationController extends Controller {
         if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
             Long sessionId = Long.parseLong(optionalSessionIdString.get());
             if (sessionId == lecturerId) {
-                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 3);
+                List<Student> lastThreeStudentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 3);
                 List<AssessmentInfo> assessmentInfos = courseInformationService.getAssessmentInfoList(lecturerId, courseId);
                 LinkedHashMap<String, List<AssessmentInfo>> assessmentMap = new LinkedHashMap<>();
                 List<StudentMarksViewModel.AssessmentOrder> assessmentOrders = new ArrayList<>();
@@ -850,6 +850,7 @@ public class CourseInformationController extends Controller {
                 int countMarkRow = 0;
                 int countZeroMarkRow = 0;
 
+                List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
                 List<StudentMarksViewModel> studentMarksViewModels = new ArrayList<>();
                 for(Student student: studentList) {
                     List<StudentMarks> studentMarks = studentService.getStudentMarksList(student.id, lecturerId, courseId);
@@ -890,7 +891,7 @@ public class CourseInformationController extends Controller {
                 Messages messages = messagesApi.preferred(request);
                 List<Student> unmappedStudentList = studentService.getUnmappedStudentList(lecturerId, courseId);
 
-                return ok(views.html.studentMarksEntryForm.render(essentialFieldsViewModel, courseInformation, studentList,
+                return ok(views.html.studentMarksEntryForm.render(essentialFieldsViewModel, courseInformation, lastThreeStudentList,
                         assessmentMap, studentMarksViewModels, assessmentOrders, subjectsStateViewModels, unmappedStudentList,
                         assessmentColSize, isReadyForReport, request, messages)).addingToSession(request, "courseId", String.valueOf(courseId));
             }

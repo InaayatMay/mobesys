@@ -13,7 +13,7 @@ $(document).ready(function() {
             {
                 xValues.push(data[i].grade);
                 yValues.push(data[i].numberOfStudent);
-                barColors.push("#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "yellow", "red");
+                barColors.push("#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "orange", "red");
             }
 
             new Chart("myChart", {

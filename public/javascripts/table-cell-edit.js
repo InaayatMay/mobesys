@@ -4,6 +4,9 @@ console.log('Ready ;: ' + $('#generateReport').attr('data-ready'));
 if($('#generateReport').attr('data-ready') == 'false') {
     document.getElementById('generateReport').style.display = "none";
 }
+else {
+    document.getElementById('generateReport').style.display = "block";
+}
 
 
     $('.editable').on('click', function() {
@@ -64,6 +67,7 @@ if($('#generateReport').attr('data-ready') == 'false') {
                                 data: dataString,
                                 success: function () {
                                     if (content > 0.0) {
+                                        console.log('content > 0.0');
                                         document.getElementById('generateReport').style.display = "block";
                                         document.getElementById(uniqueId).classList.remove("bg-secondary");
                                     }
