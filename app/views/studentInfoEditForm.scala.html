@@ -13,6 +13,20 @@ viewModels.BreadCrumbViewModel.build
 <html lang="en">
 <head>
     @views.html.common.headMeta("Edit Student Information")
+
+    <style>
+        /* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+    </style>
 </head>
 <body id="body-pd">
 @views.html.common.sideBar(userId, username, image, subjectStateList) {
@@ -33,7 +47,7 @@ viewModels.BreadCrumbViewModel.build
                 <form method="post" id="studentForm" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" id="codeNumber" value="@student.codeNumber" required>
+                    <input type="number" class="form-control" name="codeNumber" id="codeNumber" value="@student.codeNumber" required>
 
                     <label>First Name</label>
                     <input type="text" class="form-control" id="firstName" value="@student.firstName" name="firstName"onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
@@ -57,7 +71,56 @@ viewModels.BreadCrumbViewModel.build
                     <input type="email" class="form-control" id="email" name="email" value="@student.email" required>
 
                     <label>Current Semester</label>
-                    <input type="text" class="form-control" name="currentSemester" value="@student.currentSemester" id="currentSemester" required>
+                    <select name="currentSemester" class="form-control" id="currentSemester">
+                        @if(student.currentSemester == 1){
+                        <option value="1" selected>1</option>
+                        }else{
+                        <option value="1">1</option>
+                        }
+
+                        @if(student.currentSemester == 2){
+                        <option value="2" selected>2</option>
+                        }else{
+                        <option value="2">2</option>
+                        }
+
+                        @if(student.currentSemester == 3){
+                        <option value="3" selected>3</option>
+                        }else{
+                        <option value="3">3</option>
+                        }
+
+                        @if(student.currentSemester == 4){
+                        <option value="4" selected>4</option>
+                        }else{
+                        <option value="4">4</option>
+                        }
+
+                        @if(student.currentSemester == 5){
+                        <option value="5" selected>5</option>
+                        }else{
+                        <option value="5">5</option>
+                        }
+
+                        @if(student.currentSemester == 6){
+                        <option value="6" selected>6</option>
+                        }else{
+                        <option value="6">6</option>
+                        }
+
+                        @if(student.currentSemester == 7){
+                        <option value="7" selected>7</option>
+                        }else{
+                        <option value="7">7</option>
+                        }
+
+                        @if(student.currentSemester == 8){
+                            <option value="8" selected>8</option>
+                        }else{
+                            <option value="8">8</option>
+                        }
+
+                    </select>
 
                     <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3 mr-2">Save Student</button>
                     <a href="/lecturer/@userId/studentList/@student.id/editStudent" class="btn btn-outline-secondary mt-3">Cancel</a>

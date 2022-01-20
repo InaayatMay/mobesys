@@ -78,7 +78,8 @@ $( "#submitBtn" ).click(function() {
 
 $("#saveStudentBtn").click(function() {
     var codeNumber = $('#codeNumber').val();
-    if(codeNumber.length >= 6 && codeNumber.length <= 10) {
+    console.log(typeof codeNumber);
+    if(codeNumber.length >= 6 && codeNumber.length <= 10 && !isNaN( parseInt(codeNumber))) {
         var firstName = $('#firstName').val();
         if(firstName.length >= 3) {
             var lastName = $('#lastName').val();
@@ -124,7 +125,7 @@ $("#saveStudentBtn").click(function() {
             tmp = input.val(); input.focus().val("").blur().focus().val(tmp);
         }, 200);
 
-        alert("ID length must be between 6 and 10!");
+        alert("ID must be between 6 and 10 numbers!");
     }
 });
 

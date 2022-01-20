@@ -182,8 +182,9 @@ public class CourseInformationService {
         Ebean.save(courseLearningOutcome);
     }
 
-    public void updateCloToPloMap(String cloTitle, String ploCode, Long courseLearningOutcomeId) {
+    public void updateCloToPloMap(String cloCode, String cloTitle, String ploCode, Long courseLearningOutcomeId) {
         CourseLearningOutcome courseLearningOutcome = getCourseLearningOutcome(courseLearningOutcomeId);
+        courseLearningOutcome.code = cloCode;
         courseLearningOutcome.title = cloTitle;
         courseLearningOutcome.ploCode = ploCode;
         Ebean.update(courseLearningOutcome);
@@ -420,7 +421,9 @@ public class CourseInformationService {
     }
 
     public List<CourseInformation> getCourseInformationListByLecturer(Long lecturerId) {
-        String sql = "select course_information.*\n" +
+        String sql = "select course_information.id, course_information.programme, course_information.course_code, " +
+                "course_information.course_name, course_information.semester, course_information.intake_batch," +
+                "course_information.course_type, course_information.department_id\n" +
                 "from lecturer_course_map\n" +
                 "left join course_information on course_information.id = lecturer_course_map.course_information_id\n" +
                 "where lecturer_id = :lecturerId;";

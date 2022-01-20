@@ -341,7 +341,7 @@ public class CourseInformationController extends Controller {
                                 courseLearningOutcome, selectedPlo, courseId, subjectsStateViewModels, unlinkedCloList, request, messages));
                     }
                     else {
-                        courseInformationService.updateCloToPloMap(cloTitle, ploCode, cloToPloMapId);
+                        courseInformationService.updateCloToPloMap(cloCode, cloTitle, ploCode, cloToPloMapId);
                         return redirect(routes.CourseInformationController.showCourseInformationDetails(lecturerId, courseId));
                     }
                 }
@@ -1115,14 +1115,14 @@ public class CourseInformationController extends Controller {
                         Messages messages = messagesApi.preferred(request);
                         Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                         return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), lecturer.image,
-                                fromRequest, student,
+                                form, student,
                                 subjectsStateViewModels, request, messages));
                     }
                     else {
                         student.firstName = formData.getFirstName();
                         student.lastName = formData.getLastName();
                         student.codeNumber = formData.getCodeNumber();
-                        //student.currentSemester = formData.getCurrentSemester();
+                        student.currentSemester = formData.getCurrentSemester();
                         student.email = formData.getEmail();
                         student.gender = formData.getGender();
                         studentService.updateStudent(student);

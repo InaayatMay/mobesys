@@ -13,6 +13,19 @@ viewModels.BreadCrumbViewModel.build
 <html lang="en">
 <head>
     @views.html.common.headMeta("Course Information Details")
+    <style>
+        /* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+  -moz-appearance: textfield;
+}
+    </style>
 </head>
 <body id="body-pd">
 @views.html.common.sideBar(userId, username, image, subjectStateList) {
@@ -157,7 +170,7 @@ viewModels.BreadCrumbViewModel.build
                 <form method="post" id="studentForm" action="/lecturer/@userId/studentList" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
-                    <input type="text" class="form-control" name="codeNumber" id="codeNumber" maxlength="10" required>
+                    <input type="number" class="form-control" name="codeNumber" id="codeNumber" maxlength="10" required>
 
                     <label>First Name</label>
                     <input type="text" class="form-control" minlength="3" name="firstName" id="firstName" onkeypress='return ((event.charCode >= 65 && event.charCode <= 90) || (event.charCode >= 97 && event.charCode <= 122) || (event.charCode == 32))' required>
@@ -175,7 +188,16 @@ viewModels.BreadCrumbViewModel.build
                     <input type="email" class="form-control" name="email" id="email" required>
 
                     <label>Current Semester</label>
-                    <input type="text" class="form-control" name="currentSemester" id="currentSemester" required>
+                    <select name="currentSemester" class="form-control">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                    </select>
 
                     <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3">Save Student</button>
                 </form>
