@@ -118,7 +118,7 @@ viewModels.BreadCrumbViewModel.build
                     <label>Student ID</label>
                     <input name="studentId" id="studentId" hidden>
                     <select type="select" class="form-control" name="codeNumber" id="codeNumber">
-                            <option value="0" class="text-muted">Select Student ID</option>
+                            <option disabled>Select Student ID</option>
                             @for(std <- unmappedStudentList) {
                                 <option value="@std.id"
                                         data-first="@std.firstName"

@@ -65,6 +65,8 @@ POST    /lecturer/:id/requests/create                                controllers
 GET     /lecturer/:id/courseInformation                              controllers.CourseInformationController.showCourseInformationForm(request: Request, id: Long)
 +nocsrf
 POST    /lecturer/:id/courseInformation                              controllers.CourseInformationController.handleCourseInformationForm(request: Request, id: Long)
++nocsrf
+POST    /lecturer/:id/courseInformation/:courseId/delete             controllers.CourseInformationController.removeCourseInformationFromLecturer(request: Request, id: Long, courseId: Long)
 
 GET     /lecturer/:id/courseInformation/:courseId/details            controllers.CourseInformationController.showCourseInformationDetails(request: Request, id: Long, courseId: Long)
 +nocsrf

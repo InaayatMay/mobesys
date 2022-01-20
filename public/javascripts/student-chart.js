@@ -12,7 +12,7 @@ $(document).ready(function() {
             {
                 xValues.push(data[i].courseCode + '_' + data[i].courseName);
                 yValues.push(data[i].numberOfStudents);
-                barColors.push("grey");
+                barColors.push("#4723D9");
             }
 
             new Chart("studentChart", {

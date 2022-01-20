@@ -1029,6 +1029,22 @@ public class CourseInformationController extends Controller {
         return unauthorized("You are unauthorized to access this page!");
     }
 
+
+    public Result removeCourseInformationFromLecturer(Http.Request request, Long lecturerId, Long courseId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                studentService.deleteLecturerCourseMap(lecturerId, courseId);
+                return redirect(routes.CourseInformationController.showDashboard(lecturerId));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
     public Result showEditStudentForm(Http.Request request, Long lecturerId, Long studentId) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");

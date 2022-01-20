@@ -13,7 +13,7 @@ $(document).ready(function() {
             {
                 xValues.push(data[i].cloCode + '_' + data[i].classAverage);
                 yValues.push(data[i].percentageOfPassedStudent);
-                barColors.push("grey");
+                barColors.push("#4723D9");
             }
 
             new Chart("ploChart", {
@@ -47,7 +47,8 @@ $(document).ready(function() {
                         }]
                     },
                     tooltips: {
-                        enabled: true
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 1)'
                     },
                     hover: {
                         animationDuration: 1

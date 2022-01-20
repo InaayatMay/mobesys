@@ -78,43 +78,45 @@ viewModels.BreadCrumbViewModel.build
                     <th></th>
                     </thead>
                     <tbody>
-                    @for(std <- studentList) {
-                    <tr>
-                        <td>@std.codeNumber</td>
-                        <td>@std.firstName @std.lastName</td>
-                        <td>@std.gender</td>
-                        <td>@std.email</td>
-                        <td>@std.currentSemester</td>
-                        <td>
-                            <ol>
-                                @if(studentWithCourse.size() > 0){
+                    @if(studentList.size() > 0 ){
+                        @for(std <- studentList) {
+                        <tr>
+                            <td>@std.codeNumber</td>
+                            <td>@std.firstName @std.lastName</td>
+                            <td>@std.gender</td>
+                            <td>@std.email</td>
+                            <td>@std.currentSemester</td>
+                            <td>
+                                <ol>
+                                    @if(studentWithCourse != null && studentWithCourse.size() > 0){
                                     @for(sub <- studentWithCourse.get(std.id)){
-                                        <li>@sub</li>
+                                    <li>@sub</li>
                                     }
-                                }
-                            </ol>
-
-                        </td>
-                        <td>
-                            <a href="/lecturer/@userId/studentList/@std.id/editStudent"
-                               class="btn btn-link" >
-                                        <span class="text-secondary">
-                                            <i class="fas fa-pencil-alt"></i>
-                                        </span>
-                            </a>
-                        </td>
-                        <td>
-                            <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName"
-                                  action="/lecturer/@userId/studentList/@std.id/deleteStudent">
-                                <button type="submit" class="btn btn-link">
+                                    }
+                                </ol>
+                            </td>
+                            <td>
+                                <a href="/lecturer/@userId/studentList/@std.id/editStudent"
+                                   class="btn btn-link" >
                                             <span class="text-secondary">
-                                                <i class="fas fa-trash-alt"></i>
+                                                <i class="fas fa-pencil-alt"></i>
                                             </span>
-                                </button>
-                            </form>
-                        </td>
-                    </tr>
+                                </a>
+                            </td>
+                            <td>
+                                <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName"
+                                      action="/lecturer/@userId/studentList/@std.id/deleteStudent">
+                                    <button type="submit" class="btn btn-link">
+                                                <span class="text-secondary">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        }
                     }
+
                     @if(studentList.size == 0) {
                     <tr>
                         <td colspan="8" class="text-center">

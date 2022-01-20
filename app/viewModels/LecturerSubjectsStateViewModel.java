@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 public class LecturerSubjectsStateViewModel {
 
+    public Long courseId;
     public String courseName;
     public String programmeShortForm;
     public String programme;
@@ -22,6 +23,7 @@ public class LecturerSubjectsStateViewModel {
     public static List<LecturerSubjectsStateViewModel> to(List<LecturerCurrentSubject> list) {
         return list.stream().map(item -> {
             LecturerSubjectsStateViewModel viewModel = new LecturerSubjectsStateViewModel();
+            viewModel.courseId = item.courseInformationId;
             viewModel.courseName = item.courseName;
             viewModel.isCompleted = item.isCompleted;
 

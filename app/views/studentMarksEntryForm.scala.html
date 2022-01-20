@@ -37,6 +37,9 @@ viewModels.BreadCrumbViewModel.build
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
                             Select Student
                         </button>
+                        <a methods="get" href="/lecturer/@essentials.userId/studentList" type="button" class="btn btn-sm btn-outline-secondary">
+                            Add New Student
+                        </a>
                     </div>
                 </div>
             </div>
@@ -189,15 +192,13 @@ viewModels.BreadCrumbViewModel.build
                     </tbody>
                 </table>
             </div>
-            <div class="card-footer">
+            <div class="card-footer" id="generateReport" data-ready="@isReadyForReport">
                 <div class="row">
                     <div class="col text-right">
                         @if(isReadyForReport){
                             <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
                                 Generate Reports
                             </a>
-                        }else{
-                            <button class="btn btn-secondary" disabled>Generate Reports</button>
                         }
                     </div>
                 </div>
@@ -232,7 +233,6 @@ viewModels.BreadCrumbViewModel.build
                         }else{
                             <option class="text-muted" disabled>Empty Student</option>
                         }
-                            <option class="text-muted" disabled>Select Student ID</option>
                             @for(std <- unmappedStudentList) {
                                 <option value="@std.id"
                                         data-first="@std.firstName"

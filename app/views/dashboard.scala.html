@@ -50,6 +50,7 @@ viewModels.BreadCrumbViewModel.build
                         <th>Course Name</th>
                         <th>Programme</th>
                         <th>Completed Percentage</th>
+                        <th></th>
                     </thead>
                     <tbody>
                         @if(subjectStateList.size == 0) {
@@ -78,6 +79,16 @@ viewModels.BreadCrumbViewModel.build
                                         <div class="progress-bar" role="progressbar" style="width: @subject.completedPercent%;" aria-valuenow="@subject.completedPercent" aria-valuemin="0" aria-valuemax="100">@subject.completedPercent%</div>
                                     </div>
                                 </td>
+                                <td>
+                                    <form method="post" class="show-confirm" data-file="@subject.courseCode @subject.courseName"
+                                          action="/lecturer/@userId/courseInformation/@subject.courseId/delete">
+                                        <button type="submit" class="btn btn-link">
+                                            <span class="text-secondary">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </span>
+                                        </button>
+                                    </form>
+                                </td>
                             </tr>
                         }
                     </tbody>
@@ -87,5 +98,7 @@ viewModels.BreadCrumbViewModel.build
     </div>
     }
 
+
+<script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
 </body>
 </html>

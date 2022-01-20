@@ -125,6 +125,47 @@ public class StudentService {
         logger.debug("Deleted : " + deleteStudent);
     }
 
+    public void deleteLecturerCourseMap(Long lecturerId, Long courseId) {
+        Ebean.beginTransaction();
+        {
+            String sql1 = "delete from assessment_info where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+            String sql3 = "delete from lecturer_course_map where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+            String sql4 = "delete from lecturer_current_subject where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+            String sql5 = "delete from previous_clo_record where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+            String sql6 = "delete from student_course_map where course_information_id = :courseId;\n";
+            String sql7 = "delete from student_marks where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+            String sql8 = "delete from student_number_of_attempt where lecturer_id = :lecturerId and course_information_id = :courseId;";
+            String sql2 = "delete from course_learning_outcome where lecturer_id = :lecturerId and course_information_id = :courseId;\n";
+
+            Ebean.createSqlUpdate(sql1).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql2).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql3).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql4).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql5).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql6).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql7).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.createSqlUpdate(sql8).setParameter("lecturerId", lecturerId)
+                    .setParameter("courseId", courseId).execute();
+
+            Ebean.commitTransaction();
+        }
+        Ebean.endTransaction();
+    }
+
     public void deleteStudentCourseMap(Long studentId, Long courseInformationId) {
         String sqlMarks = "delete from student_marks where student_id = :studentId and course_information_id = :courseId;";
         int deleteMarks = Ebean.createSqlUpdate(sqlMarks).setParameter("studentId", studentId)

@@ -16,6 +16,13 @@ viewModels.BreadCrumbViewModel.build
 <html lang="en">
 <head>
     @views.html.common.headMeta("Course Information Details")
+    <style>
+        .tab-pane{
+            height: 200px;
+            background-color: #AFA5D9; /* For browsers that do not support gradients */
+            background-image: linear-gradient(#AFA5D9, #F7F6FB);
+        }
+    </style>
 </head>
 <body id="body-pd">
 @views.html.common.sideBar(essentials.userId, essentials.username, essentials.image, subjectStateList) {
@@ -42,12 +49,12 @@ viewModels.BreadCrumbViewModel.build
         </nav>
         <div class="tab-content html-content" id="nav-tabContent">
             <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
-                <div class="row mb-4 mt-2">
+                <div class="row mb-4 mt-2 pt-3">
                     <div class="col text-center">
                         <strong>Course Information</strong>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row pl-3 pr-3">
                     <div class="col border-end">
                         <div class="row mb-2">
                             <div class="col col-4">
@@ -164,7 +171,7 @@ viewModels.BreadCrumbViewModel.build
                         <th rowspan="3"></th>
                         <th rowspan="3">Student ID</th>
                         <th rowspan="3">Student Name</th>
-                        <th rowspan="3">Number of Attempt</th>
+                        <!--<th rowspan="3">Number of Attempt</th>-->
                         <th colspan="@gradeViewModel.statistics.size()" class="text-center">Total Coursework Weightage(%)</th>
                         <th colspan="2" class="text-center">Grand Total Weight(%)</th>
                         <th colspan="4" class="text-center">Grades</th>
@@ -194,14 +201,14 @@ viewModels.BreadCrumbViewModel.build
                         <td>@std.studentCodeNumber</td>
                         <td>@std.studentName</td>
 
-                        <form method="post" id="uniqueForm@std.studentId" action="@routes.CourseInformationController.saveStudentAttemptNumber(essentials.userId, gradeViewModel.courseId, std.studentId)">
+                        <!--<form method="post" id="uniqueForm@std.studentId" action="@routes.CourseInformationController.saveStudentAttemptNumber(essentials.userId, gradeViewModel.courseId, std.studentId)">
                             <input id="marksInput@std.studentId" name="numberOfAttempt" hidden>
                             @if(std.numberOfAttempt == null) {
                             <td class="bg-secondary editable" data-marksId="@std.studentId" id="@std.studentId">X</td>
                             } else {
                             <td class="editable" data-marksId="@std.studentId" id="@std.studentId">@std.numberOfAttempt</td>
                             }
-                        </form>
+                        </form>-->
 
                         @for(marks <- std.totalAssessmentMarks) {
                         <td>@marks</td>
@@ -268,12 +275,12 @@ viewModels.BreadCrumbViewModel.build
                 </div>
             </div>
             <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                <div class="row mb-4 mt-2">
+                <div class="row mb-4 mt-2 pt-3">
                     <div class="col text-center">
                         <strong>Course Information</strong>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row pl-3 pr-3">
                     <div class="col border-end">
                         <div class="row mb-2">
                             <div class="col col-4">
@@ -440,12 +447,12 @@ viewModels.BreadCrumbViewModel.build
                 </table>
             </div>
             <div class="tab-pane fade" id="nav-contact" role="tabpanel" aria-labelledby="nav-contact-tab">
-                <div class="row mb-4 mt-2">
+                <div class="row mb-4 mt-2 pt-3">
                     <div class="col text-center">
                         <strong>Course Information</strong>
                     </div>
                 </div>
-                <div class="row">
+                <div class="row pl-3 pr-3">
                     <div class="col border-end">
                         <div class="row mb-2">
                             <div class="col col-4">
@@ -575,15 +582,11 @@ viewModels.BreadCrumbViewModel.build
                             <th rowspan="3">No</th>
                             <th rowspan="3">ID</th>
                             <th rowspan="2">Name</th>
-                            <th colspan="12" class="text-center">PLO Attainment (Marks)</th>
-                            <th colspan="12" class="text-center">PLO Attainment (%)</th>
+                            <th colspan="12" class="text-center">PLO Attainment (Marks / Weightage %)</th>
                         </tr>
                         <tr>
                             @for(clo <- cloViewModel.ploMaxMarkList) {
                             <th>@clo.cloCode</th>
-                            }
-                            @for(clo <- cloViewModel.ploMaxMarkList) {
-                            <th rowspan="2">@clo.cloCode</th>
                             }
                         </tr>
                         <tr>
@@ -594,12 +597,14 @@ viewModels.BreadCrumbViewModel.build
                         </tr>
                         @for(attainment <- cloViewModel.ploAttainmentList) {
                         <tr>
-                            <td>@attainment.serialNo</td>
-                            <td>@attainment.studentCode</td>
-                            <td>@attainment.studentName</td>
+                            <td rowspan="2">@attainment.serialNo</td>
+                            <td rowspan="2">@attainment.studentCode</td>
+                            <td rowspan="2">@attainment.studentName</td>
                             @for(attainmentMark <- attainment.cloAttainmentMarks) {
                                 <td>@attainmentMark.marks</td>
                             }
+                        </tr>
+                        <tr>
                             @for(attainmentPercent <- attainment.cloAttainmentPercentage) {
                                 @if(attainmentPercent.marks <50 && attainmentPercent.marks != null) {
                                     <td class="text-white bg-danger">@attainmentPercent.marks</td>

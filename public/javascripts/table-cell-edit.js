@@ -1,5 +1,11 @@
 $(document).ready(function() {
 
+console.log('Ready ;: ' + $('#generateReport').attr('data-ready'));
+if($('#generateReport').attr('data-ready') == 'false') {
+    document.getElementById('generateReport').style.display = "none";
+}
+
+
     $('.editable').on('click', function() {
         let uniqueId = $(this).attr('data-marksId');
         let maxLimit = $(this).attr('data-max');
@@ -58,6 +64,7 @@ $(document).ready(function() {
                                 data: dataString,
                                 success: function () {
                                     if (content > 0.0) {
+                                        document.getElementById('generateReport').style.display = "block";
                                         document.getElementById(uniqueId).classList.remove("bg-secondary");
                                     }
                                 }
@@ -69,7 +76,7 @@ $(document).ready(function() {
             });
     });
 
-    $('#codeNumber').on('change', function() {
+    $('#codeNumber').on('click', function() {
         console.log($('option:selected',this).data("first"));
         $('#firstName').val($('option:selected',this).data("first"));
         $('#lastName').val($('option:selected',this).data("last"));
