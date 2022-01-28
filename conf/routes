@@ -123,3 +123,4 @@ GET     /lecturer/:lecturerId/courseInformation/:courseId/classCloAttainment    
 GET     /lecturer/:lecturerId/courseInformation/:courseId/classPloAttainment               controllers.CourseInformationController.generateClassPloAttainment(request: Request, lecturerId: Long, courseId: Long)
 GET     /lecturer/:lecturerId/courseInformationList                                        controllers.CourseInformationController.getCourseListByLecturer(request: Request, lecturerId: Long)
 GET     /lecturer/:lecturerId/studentCourseList                                            controllers.CourseInformationController.getCourseSubjectList(request: Request, lecturerId: Long)
+GET     /lecturer/:lecturerId/courseInformation/:courseId/studentAnalysis                  controllers.CourseInformationController.getStudentAnalysis(request: Request, lecturerId: Long, courseId: Long)

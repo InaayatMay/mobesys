@@ -1255,6 +1255,26 @@ public class CourseInformationController extends Controller {
         return ok(Json.toJson(cloViewModel.ploAnalysisList));
     }
 
+    public Result getStudentAnalysis(Http.Request request, Long lecturerId, Long courseId) {
+        CourseInformation courseInformation = courseInformationService.getCourseInformationById(courseId);
+        List<Student> studentList = studentService.getStudentListByLecturerAndCourse(lecturerId, courseId, 1000);
+        List<StatisticsReport> statisticsReports = studentService.getStatisticsMarks(lecturerId, courseId);
+        List<StudentStatisticsReport> studentStatisticsReports = studentService.getStudentStatisticsReport(lecturerId, courseId);
+
+        logger.debug("statisticsReports : " + statisticsReports.size());
+        logger.debug("Student statistic : " + studentStatisticsReports.size());
+        Either<GradeViewModel.ErrorType, GradeViewModel> either = GradeViewModel.build(courseInformation, studentList,
+                statisticsReports, studentStatisticsReports);
+
+        return either.fold(
+                error -> ok(error.toString()),
+                gradeViewModel -> {
+                    StudentAnalysisDto dto = new StudentAnalysisDto(gradeViewModel.failPercentage, gradeViewModel.passPercentage);
+                    return ok(Json.toJson(dto));
+                }
+        );
+    }
+
     public Result saveCloPreviousSemClassAvgRecord(Http.Request request, Long lecturerId, Long courseId, String cloCode) {
         Optional<String> optionalSessionIdString = request.session().get("id");
         Optional<String> optionalUsername = request.session().get("username");

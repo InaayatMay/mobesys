@@ -1,6 +1,6 @@
 $(document).ready(function() {
-    let lecturerId = $('#myDiv').attr('data-lecturerId');
-    let courseId = $('#myDiv').attr('data-courseId');
+    let lecturerId = $('#grade-div').attr('data-lecturerId');
+    let courseId = $('#grade-div').attr('data-courseId');
 
     fetch('/lecturer/' + lecturerId + '/courseInformation/' + courseId + '/gradeDistribution')
     .then(response => response.json())
@@ -16,7 +16,7 @@ $(document).ready(function() {
                 barColors.push("#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "#4723D9", "orange", "red");
             }
 
-            new Chart("myChart", {
+            new Chart("grade-chart", {
                 type: "bar",
                 data: {
                 labels: xValues,
@@ -73,40 +73,4 @@ $(document).ready(function() {
             });
         }
     );
-
-    /*var xValues = ["A+", "A", "A-", "B+", "B", "B-", "C+", "C", "D", "F"];
-    var yValues = [1, 2, 3, 4, 5];
-    var barColors = ["grey", "grey", "grey", "grey", "grey", "grey", "grey", "grey", "grey", "grey"];
-
-    new Chart("myChart", {
-        type: "bar",
-        data: {
-        labels: xValues,
-        datasets: [{
-        backgroundColor: barColors,
-        data: yValues
-        }]
-        },
-        options: {
-            legend: {display: false},
-            title: {
-                display: true,
-                text: "Grade Distribution"
-            },
-            scales: {
-                yAxes: [{
-                scaleLabel: {
-                        display: true,
-                        labelString: 'Student Number'
-                    }
-                }],
-                xAxes: [{
-                scaleLabel: {
-                        display: true,
-                        labelString: 'Grades'
-                    }
-                }]
-            }
-        }
-    });*/
 });

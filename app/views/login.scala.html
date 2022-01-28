@@ -22,23 +22,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/1.5.3/jspdf.min.js"></script>
     <script type="text/javascript" src="https://html2canvas.hertzen.com/dist/html2canvas.js"></script>
-    <style>
-        .top-left {
-            position: absolute;
-            top: 50px;
-            left: 100px;
-        }
 
-        .bottom-left {
-            position: absolute;
-            top: 250px;
-            left: 100px;
-        }
-    </style>
+    <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/login.css")' />
 </head>
-<body class="hold-transition login-page">
+<body>
+<!--
 <div class="login-box">
-    <!-- /.login-logo -->
+    &lt;!&ndash; /.login-logo &ndash;&gt;
     <div class="card mt-5">
         <div class="card-body login-card-body">
             <img class="rounded mx-auto d-block" src='@routes.Assets.versioned("images/logo-small.png")' style="width:100px;" alt="...">
@@ -72,11 +62,11 @@
                     </div>
                 </div>
                 <div class="row">
-                    <!-- /.col -->
+                    &lt;!&ndash; /.col &ndash;&gt;
                     <div class="col">
                         <button type="submit" class="btn btn-primary btn-block float-right">Sign In</button>
                     </div>
-                    <!-- /.col -->
+                    &lt;!&ndash; /.col &ndash;&gt;
                 </div>
             </form>
 
@@ -84,13 +74,54 @@
                 <a href="/resetPassword" class="text-muted">Forgot password?</a>
             </p>
         </div>
-        <!-- /.login-card-body -->
+        &lt;!&ndash; /.login-card-body &ndash;&gt;
+    </div>
+</div>
+-->
+
+<div class="wrapper fadeInDown">
+    <div id="formContent">
+        <!-- Tabs Titles -->
+
+        <!-- Icon -->
+        <div class="fadeIn first mt-3 mb-3">
+            <img class="rounded mx-auto d-block" src='@routes.Assets.versioned("images/logo-small.png")' style="width:100px;" alt="...">
+            <h4 class="mt-2" style="color:#4b9fca">Welcome To MOBE System</h4>
+
+            @if(myform.hasGlobalErrors){
+                <div class="alert alert-warning ml-4 mr-4">
+                    @for(error <- myform.globalErrors){
+                        <span>@error.message</span>
+                    }
+                </div>
+            }
+
+        </div>
+
+
+        <!-- Login Form -->
+        <form method="post">
+            <input type="text" id="login" class="fadeIn second" name="email" placeholder="Email">
+            <input type="password" id="password" class="fadeIn third" name="password" placeholder="Password">
+            <input type="submit" class="fadeIn fourth" value="Log In">
+        </form>
+
+        <!-- Remind Passowrd -->
+        <div id="formFooter">
+            <a class="underlineHover" href="#">Forgot Password?</a>
+        </div>
+
     </div>
 </div>
 
-<footer class="mt-5">
+
+
+<footer>
     @views.html.common.footer()
 </footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"></script>
 
 
 </body>

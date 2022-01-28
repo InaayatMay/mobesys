@@ -271,8 +271,18 @@ viewModels.BreadCrumbViewModel.build
                         </table>
                     </div>
                     <div class="col">
-                        <div id="myDiv" data-lecturerId="@essentials.userId" data-courseId="@gradeViewModel.courseId"></div>
-                        <canvas id="myChart"  style="width:100%;max-width:600px"></canvas>
+                        <div class="row">
+                            <div class="col">
+                                <div id="grade-div" data-lecturerId="@essentials.userId" data-courseId="@gradeViewModel.courseId"></div>
+                                <canvas id="grade-chart"  style="width:100%;max-width:600px"></canvas>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row">
+                            <div class="col">
+                                <canvas id="total-std-chart" width="350" height="350"></canvas>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -632,6 +642,7 @@ viewModels.BreadCrumbViewModel.build
 
 <script src='@routes.Assets.versioned("javascripts/edit-number-of-attempt.js")'></script>
 <script src='@routes.Assets.versioned("javascripts/edit-comment.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/student-doughnut-chart.js")'></script>
 <script>
     function createPDFFromHTML() {
     var HTML_Width = $(".html-content").width();
