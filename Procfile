@@ -1,1 +1,1 @@
-web: target/universal/stage/bin/mobe-sys -Dhttp.port=$PORT
+web: target/universal/stage/bin/mobe-sys -Dhttp.port=$PORT -Dplay.http.secret.key='rLa4PbRTJ7vva@^01:_C/ft:aSFk?Srynfv@Vr5:0Li3Qt9F<0?9?0`3gF9VMdi='
