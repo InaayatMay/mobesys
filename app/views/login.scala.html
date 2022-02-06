@@ -26,61 +26,9 @@
     <link rel="stylesheet" href='@routes.Assets.versioned("stylesheets/login.css")' />
 </head>
 <body>
-<!--
-<div class="login-box">
-    &lt;!&ndash; /.login-logo &ndash;&gt;
-    <div class="card mt-5">
-        <div class="card-body login-card-body">
-            <img class="rounded mx-auto d-block" src='@routes.Assets.versioned("images/logo-small.png")' style="width:100px;" alt="...">
 
-            <p class="login-box-msg mt-3">
-                Welcome To MOBE System
-            </p>
-            @if(myform.hasGlobalErrors){
-                <div class="alert alert-warning">
-                    @for(error <- myform.globalErrors){
-                    <span>@error.message</span>
-                    }
-                </div>
-            }
-
-            <form method="post">
-                <div class="input-group mb-3">
-                    <input type="text" name="email" class="form-control" placeholder="Email">
-                    <div class="input-group-append">
-                        <div class="input-group-text">
-                            <span class="fas fa-at"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="input-group mb-3">
-                    <input type="password" name="password" class="form-control" placeholder="Password">
-                    <div class="input-group-append">
-                        <div class="input-group-text">
-                            <span class="fas fa-lock"></span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
-                    &lt;!&ndash; /.col &ndash;&gt;
-                    <div class="col">
-                        <button type="submit" class="btn btn-primary btn-block float-right">Sign In</button>
-                    </div>
-                    &lt;!&ndash; /.col &ndash;&gt;
-                </div>
-            </form>
-
-            <p class="mb-2 text-center">
-                <a href="/resetPassword" class="text-muted">Forgot password?</a>
-            </p>
-        </div>
-        &lt;!&ndash; /.login-card-body &ndash;&gt;
-    </div>
-</div>
--->
-
-<div class="wrapper fadeInDown">
-    <div id="formContent">
+<div class="wrapper fadeInDown" >
+    <div id="formContent" style="background-color:#1a1a1a">
         <!-- Tabs Titles -->
 
         <!-- Icon -->
@@ -107,7 +55,7 @@
         </form>
 
         <!-- Remind Passowrd -->
-        <div id="formFooter">
+        <div id="formFooter" style="background-color:#1a1a1a">
             <a class="underlineHover" href="#">Forgot Password?</a>
         </div>
 
