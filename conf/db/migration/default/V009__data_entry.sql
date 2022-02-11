@@ -1,13 +1,7 @@
-DELETE FROM school;
-
-DELETE FROM department;
-
-DELETE FROM course_information;
-
 ALTER TABLE course_information
-MODIFY course_name VARCHAR(100);
+ALTER COLUMN course_name TYPE VARCHAR(100);
 
-INSERT INTO school(id, school_name) VALUE(1, 'School of Engineering and Computing');
+INSERT INTO school(id, school_name) VALUES(1, 'School of Engineering and Computing');
 
 INSERT INTO department(id, department_name, school_id)
 VALUES

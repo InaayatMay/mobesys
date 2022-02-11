@@ -1,5 +1,5 @@
 CREATE TABLE course_information(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     programme VARCHAR(30),
     course_code VARCHAR(30),
     course_name VARCHAR(50),

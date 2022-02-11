@@ -1,5 +1,5 @@
 CREATE TABLE programme_learning_outcome(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     title VARCHAR(100),
     code VARCHAR(5),
     course_information_id INT REFERENCES course_information(id),
@@ -7,7 +7,7 @@ CREATE TABLE programme_learning_outcome(
 );
 
 CREATE TABLE course_learning_outcome(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     title VARCHAR(30),
     plo_code VARCHAR(5),
     course_information_id INT REFERENCES course_information(id),

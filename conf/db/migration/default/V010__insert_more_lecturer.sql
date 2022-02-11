@@ -9,7 +9,7 @@ VALUES
 DROP TABLE lecturer_student_subject;
 
 CREATE TABLE lecturer_student_course (
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     lecturer_id INT REFERENCES lecturer(id),
     course_information_id INT REFERENCES course_information(id),
     student_id INT REFERENCES student(id)

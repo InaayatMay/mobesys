@@ -1,1 +1,1 @@
-alter table lecturer modify image blob;
+--ALTER table lecturer modify image blob;

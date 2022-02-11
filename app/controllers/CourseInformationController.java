@@ -759,7 +759,8 @@ public class CourseInformationController extends Controller {
 
                     if (!hasDuplicate) {
                         studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
-                                formData.getLastName(), formData.getGender(), formData.getCurrentSemester(), formData.getEmail(), lecturerId);
+                                formData.getLastName(), formData.getGender(), Integer.parseInt(formData.getCurrentSemester()),
+                                formData.getEmail(), lecturerId);
 
                         return redirect(routes.CourseInformationController.showStudentList(lecturerId));
                     } else {
@@ -1122,7 +1123,7 @@ public class CourseInformationController extends Controller {
                         student.firstName = formData.getFirstName();
                         student.lastName = formData.getLastName();
                         student.codeNumber = formData.getCodeNumber();
-                        student.currentSemester = formData.getCurrentSemester();
+                        student.currentSemester = Integer.parseInt(formData.getCurrentSemester());
                         student.email = formData.getEmail();
                         student.gender = formData.getGender();
                         studentService.updateStudent(student);

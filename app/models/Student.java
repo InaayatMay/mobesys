@@ -26,7 +26,7 @@ public class Student {
     public String program;
 
     @Column(name = "current_semester")
-    public String currentSemester;
+    public int currentSemester;
 
     public String email;
 

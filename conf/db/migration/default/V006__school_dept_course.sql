@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS school(
-     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+     id serial PRIMARY KEY,
      school_name VARCHAR(100)
 );
 
 CREATE TABLE IF NOT EXISTS department(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     department_name VARCHAR(100),
     school_id INT REFERENCES school(id)
 );

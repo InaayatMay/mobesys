@@ -34,7 +34,7 @@ public class StudentService {
                 .findList();
     }
 
-    public Long saveStudent(String codeNumber, String firstName, String lastName, String gender, String currentSemester,
+    public Long saveStudent(String codeNumber, String firstName, String lastName, String gender, int currentSemester,
                             String email, Long lecturerId) {
 
         Student student = new Student();

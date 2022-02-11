@@ -198,7 +198,10 @@ public class CourseInformationService {
     public List<CourseLearningOutcome> getCourseLearningOutcomeList(Long courseInformationId, Long lecturerId) {
         return Ebean.find(CourseLearningOutcome.class).where().and().eq("lecturerId", lecturerId)
                 .eq("courseInformationId", courseInformationId)
-                .endAnd().orderBy("substr(plo_code from 1 for 3), cast(substr(plo_code from 4) AS UNSIGNED)").findList();
+                .endAnd()
+                //.orderBy("substr(plo_code from 1 for 3), cast(substr(plo_code from 4) AS UNSIGNED)")
+                .orderBy("substring(plo_code, 1, 3), CAST(substring(plo_code, 4) AS INTEGER)")
+                .findList();
     }
 
     public CourseLearningOutcome getCourseLearningOutcome(Long id) {

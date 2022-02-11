@@ -1,5 +1,5 @@
 CREATE TABLE lecturer(
-     id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+     id serial PRIMARY KEY,
      first_name VARCHAR(50),
      last_name VARCHAR(50),
      gender VARCHAR(6),
@@ -10,7 +10,7 @@ CREATE TABLE lecturer(
 );
 
 CREATE TABLE student(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     first_name VARCHAR(50),
     last_name VARCHAR(50),
     gender VARCHAR(6),
@@ -21,7 +21,7 @@ CREATE TABLE student(
 );
 
 CREATE TABLE lecturer_student_subject(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id serial PRIMARY KEY,
     subject_name VARCHAR(50),
     subject_code VARCHAR(30),
     lecturer_id INT REFERENCES lecturer(id),

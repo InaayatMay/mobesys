@@ -9,7 +9,8 @@ lazy val root = (project in file("."))
       // Test Database
       "com.h2database" % "h2" % "1.4.199",
       javaJdbc, 
-      "mysql" % "mysql-connector-java" % "8.0.27",
+      //"mysql" % "mysql-connector-java" % "8.0.27",
+      "org.postgresql" % "postgresql" % "42.1.4",
       
       // Testing libraries for dealing with CompletionStage...
       "org.assertj" % "assertj-core" % "3.14.0" % Test,

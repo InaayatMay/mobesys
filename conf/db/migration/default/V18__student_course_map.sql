@@ -1,5 +1,5 @@
 CREATE TABLE IF NOT EXISTS student_course_map(
-    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     student_id int REFERENCES student(id),
     course_information_id int REFERENCES course_information(id)
 );

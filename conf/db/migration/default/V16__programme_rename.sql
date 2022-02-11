@@ -1,5 +1,5 @@
 alter table course_information
-modify column programme varchar(100);
+ALTER COLUMN programme TYPE varchar(100);
 
 update course_information
 set programme = 'Bachelor of Computer Science (Hons)'
