@@ -232,7 +232,7 @@ public class StudentService {
                 "left join student as std on std.id = sm.student_id\n" +
                 "left join student_number_of_attempt as attempt on attempt.student_id = sm.student_id\n" +
                 "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId and std.code_number is not null\n" +
-                "group by ai.assessment_type, sm.student_id;";
+                "group by ai.assessment_type, sm.student_id, std.code_number;";
 
         return Ebean.findDto(StudentStatisticsReport.class, sql)
                 .setParameter("lecturerId", lecturerId)
