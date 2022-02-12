@@ -261,7 +261,7 @@ public class CourseInformationService {
                 "FROM assessment_info as aif\n" +
                 "left join course_learning_outcome as clo on clo.course_information_id = :courseInformationId and clo.lecturer_id = :lecturerId and aif.clo_code = clo.code\n" +
                 "WHERE aif.lecturer_id = :lecturerId AND aif.course_information_id = :courseInformationId\n" +
-                "GROUP BY clo_code;";
+                "GROUP BY clo_code, clo.plo_code;";
 
         return Ebean.findDto(CloWithTotalWeightage.class, sql)
                 .setParameter("lecturerId", lecturerId)
