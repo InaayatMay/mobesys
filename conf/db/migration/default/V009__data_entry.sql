@@ -1,3 +1,9 @@
+DELETE FROM course_information;
+
+DELETE FROM department;
+
+DELETE FROM school;
+
 ALTER TABLE course_information
 ALTER COLUMN course_name TYPE VARCHAR(100);
 
