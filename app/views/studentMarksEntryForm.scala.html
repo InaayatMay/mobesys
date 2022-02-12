@@ -33,7 +33,7 @@ viewModels.BreadCrumbViewModel.build
                     <div class="col">
                         Students
                     </div>
-                    <div class="col text-right">
+                    <div class="col text-end">
                         <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
                             Select Student
                         </button>
@@ -101,7 +101,7 @@ viewModels.BreadCrumbViewModel.build
                 </table>
             </div>
             <div class="card-footer">
-                <div class="text-right">
+                <div class="text-end">
                     <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/details/assessmentInformation/studentCourseMap/studentList" class="link">
                         View All Students In This Course ->
                     </a>
@@ -194,7 +194,7 @@ viewModels.BreadCrumbViewModel.build
             </div>
             <div class="card-footer" id="generateReport" data-ready="@isReadyForReport">
                 <div class="row">
-                    <div class="col text-right">
+                    <div class="col text-end">
                         @if(isReadyForReport){
                             <a href="/lecturer/@essentials.userId/courseInformation/@courseInformation.id/reports" class="btn btn-sm btn-secondary">
                                 Generate Reports

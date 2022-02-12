@@ -128,7 +128,7 @@ viewModels.BreadCrumbViewModel.build
                     <div class="col">
                         Assessment To CLO Mapping
                     </div>
-                    <div class="col text-right">
+                    <div class="col text-end">
                         @if(totalAssessmentWeights == 100) {
                         <button type="button" class="btn btn-sm btn-secondary" disabled>
                             Add Assignment
@@ -156,7 +156,7 @@ viewModels.BreadCrumbViewModel.build
                         <div class="col">
                             <p>You've successfully filled up assessment information and the total weightage of assessments is 100% now. Click the button to continue to fill up student information.</p>
                         </div>
-                        <div class="col text-right">
+                        <div class="col text-end">
                             <a methods="get" href="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/studentCourseMap" type="button" class="btn btn-sm btn-secondary">
                                 Continue to Fill Up Students Information
                             </a>
@@ -295,7 +295,7 @@ viewModels.BreadCrumbViewModel.build
             </div>
             <div class="card-footer">
                 <div class="row">
-                    <div class="col text-right">
+                    <div class="col text-end">
                         @if(totalAssessmentWeights == 100) {
                         <a methods="get" href="/lecturer/@essentials.userId/courseInformation/@info.courseId/details/assessmentInformation/studentCourseMap" type="button" class="btn btn-sm btn-secondary mr-2">
                             Continue to Fill Up Students Information
