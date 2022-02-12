@@ -321,7 +321,7 @@ public class StudentService {
                 "from student_course_map\n" +
                 "left join lecturer_course_map on lecturer_course_map.course_information_id = student_course_map.course_information_id\n" +
                 "left join course_information on course_information.id = student_course_map.course_information_id\n" +
-                "where lecturer_id = :lecturerId\n" +
+                "where lecturer_course_map.lecturer_id = :lecturerId\n" +
                 "group by student_course_map.course_information_id, course_information.course_code, course_information.course_name," +
                 "course_information.programme;";
 
