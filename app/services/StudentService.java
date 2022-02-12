@@ -322,7 +322,8 @@ public class StudentService {
                 "left join lecturer_course_map on lecturer_course_map.course_information_id = student_course_map.course_information_id\n" +
                 "left join course_information on course_information.id = student_course_map.course_information_id\n" +
                 "where lecturer_id = :lecturerId\n" +
-                "group by course_information_id;";
+                "group by student_course_map.course_information_id, course_information.course_code, course_information.course_name," +
+                "course_information.programme;";
 
         RawSql rawSql = RawSqlBuilder.parse(sql)
                 .columnMapping("student_course_map.course_information_id", "courseId")
