@@ -226,13 +226,16 @@ public class StudentService {
     }
 
     public List<StudentStatisticsReport> getStudentStatisticsReport(Long lecturerId, Long courseInformationId) {
-        String sql = "select sm.student_id, std.code_number, concat(std.first_name, ' ', std.last_name) as student_name, attempt.number_of_attempt, ai.assessment_type, round(sum(round((sm.marks/ai.full_marks)*ai.weightage, 2)), 2) as total_statistics_marks\n" +
+        String sql = "select sm.student_id, std.code_number, concat(std.first_name, ' ', std.last_name) as student_name, " +
+                "attempt.number_of_attempt, ai.assessment_type, " +
+                "round(sum(round((sm.marks/ai.full_marks)*ai.weightage, 2)), 2) as total_statistics_marks\n" +
                 "FROM student_marks as sm\n" +
                 "left join assessment_info as ai on sm.assessment_id = ai.id\n" +
                 "left join student as std on std.id = sm.student_id\n" +
                 "left join student_number_of_attempt as attempt on attempt.student_id = sm.student_id\n" +
                 "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId and std.code_number is not null\n" +
-                "group by ai.assessment_type, sm.student_id, std.code_number;";
+                "group by ai.assessment_type, sm.student_id, std.code_number," +
+                "std.first_name, std.last_name, attempt.number_of_attempt;";
 
         return Ebean.findDto(StudentStatisticsReport.class, sql)
                 .setParameter("lecturerId", lecturerId)
