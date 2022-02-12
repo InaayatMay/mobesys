@@ -278,15 +278,17 @@ public class StudentService {
     }
 
     public List<CloAttainmentReport> getCloAttainments(Long lecturerId, Long courseInformationId) {
-        String sql = "select sm.student_id, std.code_number, concat(std.first_name, ' ', std.last_name) as student_name, ai.clo_code, clo.plo_code,\n" +
-                "round(sum(round((sm.marks/ai.full_marks)*ai.weightage, 2))/2, 2) as total_weightage, sum(ai.weightage)/2 as total_clo_weightage,\n" +
+        String sql = "select sm.student_id, std.code_number, concat(std.first_name, ' ', std.last_name) as student_name, " +
+                "ai.clo_code, clo.plo_code,\n" +
+                "round(sum(round((sm.marks/ai.full_marks)*ai.weightage, 2))/2, 2) as total_weightage, s" +
+                "um(ai.weightage)/2 as total_clo_weightage,\n" +
                 "round((round(sum(round((sm.marks/ai.full_marks)*ai.weightage, 2)), 2)/sum(ai.weightage))*100, 2) as clo_attainment\n" +
                 "FROM student_marks as sm\n" +
                 "left join assessment_info as ai on sm.assessment_id = ai.id\n" +
                 "left join student as std on std.id = sm.student_id\n" +
                 "left join course_learning_outcome as clo on clo.code = ai.clo_code\n" +
                 "where sm.lecturer_id = :lecturerId and sm.course_information_id = :courseInformationId\n" +
-                "group by ai.clo_code, sm.student_id;";
+                "group by ai.clo_code, sm.student_id, std.code_number, std.first_name, std.last_name, clo.plo_code;";
 
         return Ebean.findDto(CloAttainmentReport.class, sql)
                 .setParameter("lecturerId", lecturerId)
