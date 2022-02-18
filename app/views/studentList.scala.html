@@ -1,6 +1,6 @@
 @(userId: Long, username: String, image: String, studentList: List[models.Student],
 form: Form[forms.StudentInfoFormData],
-subjectStateList: List[viewModels.LecturerSubjectsStateViewModel], courseId: Long, studentWithCourse: Map[Long, List[String]]
+courseId: Long, studentWithCourse: Map[Long, List[String]]
 )(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
 
 @link = @{
@@ -28,17 +28,17 @@ input[type=number] {
     </style>
 </head>
 <body id="body-pd">
-@views.html.common.sideBar(userId, username, image, subjectStateList) {
+@views.html.common.adminSideBar(userId, username) {
 @views.html.common.breadcrumb(link)
 
     <div class="container p-0">
-        @if(courseId >0) {
+        <!--@if(courseId >0) {
             <div class="mb-2 mt-2">
                 <a methods="get" href="/lecturer/@userId/courseInformation/@courseId/details/assessmentInformation/studentCourseMap" type="button" class="link">
                     <i class='bx bx-arrow-back'></i> Go To Recent Marks Entry<br>
                 </a>
             </div>
-        }
+        }-->
         <div class="card">
             <div class="card-header">
                 <div class="row">
@@ -62,14 +62,14 @@ input[type=number] {
 
                 <hr>
 
-                <form method="get" action="/lecturer/@userId/studentList">
+                <form method="get" action="/admin/@userId/studentList">
                     <div class="input-group mb-3">
                         <div class="input-group-prepend">
                             <span class="input-group-text" id="basic-addon1"><i class="fas fa-search"></i></span>
                         </div>
                         <input type="text" name="studentId" class="form-control" placeholder="Search By Student ID" aria-label="Search By Student ID" aria-describedby="basic-addon1">
                         <div class="input-group-append">
-                            <a href="/lecturer/@userId/studentList" class="btn btn-outline-secondary" type="button">Reset</a>
+                            <a href="/admin/@userId/studentList" class="btn btn-outline-secondary" type="button">Reset</a>
                         </div>
                     </div>
                 </form>
@@ -87,6 +87,7 @@ input[type=number] {
                     <th>Full Name</th>
                     <th>Gender</th>
                     <th>Email</th>
+                    <th>Programme</th>
                     <th>Current Semester</th>
                     <th>Current Courses</th>
                     <th></th>
@@ -100,6 +101,7 @@ input[type=number] {
                             <td>@std.firstName @std.lastName</td>
                             <td>@std.gender</td>
                             <td>@std.email</td>
+                            <td>@std.program</td>
                             <td>@std.currentSemester</td>
                             <td>
                                 @if(studentWithCourse.containsKey(std.id)){
@@ -114,7 +116,7 @@ input[type=number] {
 
                             </td>
                             <td>
-                                <a href="/lecturer/@userId/studentList/@std.id/editStudent"
+                                <a href="/admin/@userId/studentList/@std.id/editStudent"
                                    class="btn btn-link" >
                                             <span class="text-secondary">
                                                 <i class="fas fa-pencil-alt"></i>
@@ -123,7 +125,7 @@ input[type=number] {
                             </td>
                             <td>
                                 <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName"
-                                      action="/lecturer/@userId/studentList/@std.id/deleteStudent">
+                                      action="/admin/@userId/studentList/@std.id/deleteStudent">
                                     <button type="submit" class="btn btn-link">
                                                 <span class="text-secondary">
                                                     <i class="fas fa-trash-alt"></i>
@@ -167,7 +169,7 @@ input[type=number] {
 
             <!-- Modal body -->
             <div class="modal-body">
-                <form method="post" id="studentForm" action="/lecturer/@userId/studentList" autocomplete="off">
+                <form method="post" id="studentForm" action="/admin/@userId/studentList" autocomplete="off">
                     <input autocomplete="false" name="hidden" type="text" style="display:none;">
                     <label>Student ID</label>
                     <input type="number" class="form-control" name="codeNumber" id="codeNumber" maxlength="10" required>
@@ -197,6 +199,13 @@ input[type=number] {
                         <option value="6">6</option>
                         <option value="7">7</option>
                         <option value="8">8</option>
+                    </select>
+
+                    <label>Programme</label>
+                    <select name="programme" class="form-control">
+                        <option value="Bachelor of Computer Science (Hons)">Bachelor of Computer Science (Hons)</option>
+                        <option value="Bachelor of Computer Engineering (Hons)">Bachelor of Computer Engineering (Hons)</option>
+                        <option value="Bachelor of Civil Engineering (Hons)">Bachelor of Civil Engineering (Hons)</option>
                     </select>
 
                     <button type="button" id="saveStudentBtn" class="btn btn-secondary mt-3">Save Student</button>

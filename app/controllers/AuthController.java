@@ -36,7 +36,12 @@ public class AuthController extends Controller {
         this.messagesApi = messagesApi;
     }
 
-    public Result showLoginForm(Http.Request request){
+
+    public Result showAccountSelection(Http.Request request) {
+        return ok(views.html.accountSelection.render());
+    }
+
+    public Result showLoginForm(Http.Request request) {
         Form<AuthFormData> form = formFactory.form(AuthFormData.class);
         return ok(views.html.login.render(form));
     }
@@ -62,8 +67,34 @@ public class AuthController extends Controller {
         return ok(views.html.login.render(loginFormWithError));
     }
 
+    public Result showAdminLoginForm(Http.Request request) {
+        Form<AuthFormData> form = formFactory.form(AuthFormData.class);
+        return ok(views.html.login.render(form));
+    }
+
+    public Result handleAdminLoginForm(Http.Request request) {
+        DynamicForm requestData = formFactory.form().bindFromRequest(request);
+        String email = requestData.get("email").trim();
+        String password = requestData.get("password").trim();
+
+        Lecturer lecturer = lecturerService.getLecturerByEmail(email);
+        if(lecturer != null) {
+            boolean isAuthentic = lecturerService.authenticate(email, password);
+            if(isAuthentic) {
+                Map<String, String> sessionValuesMap = new HashMap<>();
+                sessionValuesMap.put("id", String.valueOf(lecturer.id));
+                sessionValuesMap.put("username", lecturer.firstName + " " + lecturer.lastName);
+                return redirect(routes.CourseInformationController.showStudentList(lecturer.id)).addingToSession(request, sessionValuesMap);
+            }
+        }
+
+        Form<AuthFormData> loginFormWithError = formFactory.form(AuthFormData.class).withGlobalError("Something went wrong. Please try again.");
+
+        return ok(views.html.login.render(loginFormWithError));
+    }
+
     public Result logout(){
-        return redirect(routes.AuthController.showLoginForm()).withNewSession();
+        return redirect(routes.AuthController.showAccountSelection()).withNewSession();
     }
 
     public Result resetPassword(Http.Request request) {
@@ -143,6 +174,65 @@ public class AuthController extends Controller {
 
                 lecturerService.updateLecturer(lecturer);
                 return redirect(routes.AuthController.showProfile(lecturerId));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showAdminProfile(Http.Request request, Long id) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == id) {
+                List<Integer> dayList = new ArrayList<>();
+                for(int i=1; i<=31; i++) {
+                    dayList.add(i);
+                }
+
+                List<Integer> monthList = new ArrayList<>();
+                for(int i=1; i<=12; i++) {
+                    monthList.add(i);
+                }
+
+                List<Integer> yearList = new ArrayList<>();
+                for(int i=1940; i<=2005; i++) {
+                    yearList.add(i);
+                }
+
+                Messages messages = messagesApi.preferred(request);
+                Lecturer lecturer = lecturerService.getLecturerById(id);
+
+                return ok(views.html.adminProfile.render(id, optionalUsername.get(), lecturer.image, lecturer, dayList,
+                        monthList, yearList, request, messages));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleAdminProfile(Http.Request request, Long id) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == id) {
+                Lecturer lecturer = lecturerService.getLecturerById(id);
+
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                lecturer.codeNumber = "Admin-" + id;
+                lecturer.firstName = requestData.get("firstName").trim();
+                lecturer.lastName = requestData.get("lastName").trim();
+                lecturer.gender = requestData.get("gender").trim();
+                lecturer.email = requestData.get("email").trim();
+                lecturer.password = requestData.get("phoneNumber").trim();
+                lecturer.birthMonth = Integer.parseInt(requestData.get("month").trim());
+                lecturer.birthDay = Integer.parseInt(requestData.get("day").trim());
+                lecturer.birthYear = Integer.parseInt(requestData.get("year").trim());
+
+                lecturerService.updateLecturer(lecturer);
+                return redirect(routes.CourseInformationController.showStudentList(id));
             }
         }
         return unauthorized("You are unauthorized to access this page!");

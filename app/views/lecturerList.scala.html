@@ -1,0 +1,205 @@
+@(userId: Long, username: String, lecturerList: List[models.Lecturer],
+dayList: List[Integer], monthList: List[Integer],
+yearList: List[Integer]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("Student List", "")
+.toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Details")
+    <style>
+        /* Chrome, Safari, Edge, Opera */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+        }
+
+        /* Firefox */
+        input[type=number] {
+          -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body id="body-pd">
+@views.html.common.adminSideBar(userId, username) {
+@views.html.common.breadcrumb(link)
+
+    <div class="container p-0">
+        <div class="card">
+            <div class="card-header">
+                <div class="row">
+                    <div class="col">
+                        Lecturers
+                    </div>
+                    <div class="col text-end">
+                        <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                            Add New Lecturer
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form method="get" action="/admin/@userId/lecturerList">
+                    <div class="input-group mb-3">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text" id="basic-addon1"><i class="fas fa-search"></i></span>
+                        </div>
+                        <input type="text" name="lecturerId" class="form-control" placeholder="Search By Lecturer ID"
+                               aria-label="Search By Lecturer ID" aria-describedby="basic-addon1">
+                        <div class="input-group-append">
+                            <a href="/admin/@userId/lecturerList" class="btn btn-outline-secondary" type="button">Reset</a>
+                        </div>
+                    </div>
+                </form>
+
+                <table class="table">
+                    <thead>
+                    <th>Lecturer ID</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th></th>
+                    <!--<th></th>-->
+                    </thead>
+                    <tbody>
+                    @if(lecturerList.size() > 0 ){
+                        @for(std <- lecturerList) {
+                        <tr>
+                            <td>@std.codeNumber</td>
+                            <td>@std.firstName @std.lastName</td>
+                            <td>@std.email</td>
+                            <td>
+                                <a href="/admin/@userId/lecturerList/@std.id/editLecturer"
+                                   class="btn btn-link" >
+                                            <span class="text-secondary">
+                                                <i class="fas fa-pencil-alt"></i>
+                                            </span>
+                                </a>
+                            </td>
+                            <!--<td>
+                                <form method="post" class="show-confirm" data-file="@std.firstName @std.lastName"
+                                      action="/admin/@userId/studentList/@std.id/deleteStudent">
+                                    <button type="submit" class="btn btn-link">
+                                                <span class="text-secondary">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                </span>
+                                    </button>
+                                </form>
+                            </td>-->
+                        </tr>
+                        }
+                    } else {
+                    <tr>
+                        <td colspan="8" class="text-center">
+                            <div class="alert alert-secondary" role="alert">
+                                There is no lecturer yet. <br><br>
+                                <button type="button" class="btn btn-sm btn-secondary" data-bs-toggle="modal" data-bs-target="#myModal">
+                                    Add New Lecturer
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<!-- The Modal -->
+<div class="modal fade" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">Lecturer's Information</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <form method="post">
+                    <label>Lecturer ID</label>
+                    <input type="text" name="codeNumber" id="codeNumber" class="form-control" required>
+
+                    <label class="mt-3">First Name</label>
+                    <input type="text" name="firstName" id="firstName" class="form-control" required>
+
+                    <label class="mt-3">Last Name</label>
+                    <input type="text" name="lastName" id="lastName" class="form-control" required>
+
+                    <div class="row mt-3">
+                        <div class="col-2">
+                            <br>
+                            <strong>Birthday</strong>
+                        </div>
+                        <div class="col">
+                            <label>Month</label>
+                            <select name="month" class="form-control mr-2">
+                                @for(m <- monthList){
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Day</label>
+                            <select name="day" class="form-control mr-2">
+                                @for(m <- dayList){
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col">
+                            <label>Year</label>
+                            <select name="year" class="form-control mr-2">
+                                @for(m <- yearList){
+                                    <option value="@m">@m</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+
+                    <label class="mt-3">Gender</label>
+                    <select name="gender" class="form-control mr-2">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+
+                    <label class="mt-3">Phone Number</label>
+                    <input type="text" class="form-control" name="phoneNumber" required>
+
+                    <label class="mt-3">Email</label>
+                    <input type="email" class="form-control" name="email" id="email" required>
+
+                    <label class="mt-3">Password</label>
+                    <input type="text" class="form-control" name="password" required>
+
+                    <button type="submit" class="btn btn-secondary mt-3">Save</button>
+                    <a href="/lecturer/@userId/dashboard" class="btn btn-outline-secondary mt-3">Cancel</a>
+
+                </form>
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src='@routes.Assets.versioned("javascripts/confirm-box.js")'></script>
+<script src='@routes.Assets.versioned("javascripts/student-chart.js")'></script>
+
+</body>
+</html>

@@ -19,6 +19,10 @@ public class LecturerService {
         return lecturer != null;
     }
 
+    public List<Lecturer> getLecturerList() {
+        return Ebean.find(Lecturer.class).findList();
+    }
+
     public Lecturer getLecturerByEmail (String email) {
         return Ebean.find(Lecturer.class).where().eq("email", email).findOne();
     }
@@ -97,5 +101,13 @@ public class LecturerService {
                 .setParameter("birth_year", lecturer.birthYear)
                 .execute();
         Ebean.update(lecturer);
+    }
+
+    public void addNewLecturer(Lecturer lecturer) {
+        Ebean.save(lecturer);
+    }
+
+    public Lecturer getLecturerByCode(String code) {
+        return Ebean.find(Lecturer.class).where().eq("code_number", code).findOne();
     }
 }

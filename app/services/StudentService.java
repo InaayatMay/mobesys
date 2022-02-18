@@ -23,19 +23,19 @@ public class StudentService {
         String sql = "SELECT student.*\n" +
                 "FROM student_course_map\n" +
                 "left join student on student.id = student_course_map.student_id\n" +
-                "where course_information_id = :courseInformationId and student.lecturer_id = :lecturerId\n" +
+                "where course_information_id = :courseInformationId\n" +
                 "order by student_course_map.id desc\n" +
                 "limit :limit;";
 
         return Ebean.findNative(Student.class, sql)
                 .setParameter("courseInformationId", courseInformationId)
-                .setParameter("lecturerId", lecturerId)
+                //.setParameter("lecturerId", lecturerId)
                 .setParameter("limit", limit)
                 .findList();
     }
 
     public Long saveStudent(String codeNumber, String firstName, String lastName, String gender, int currentSemester,
-                            String email, Long lecturerId) {
+                            String email, Long lecturerId, String program) {
 
         Student student = new Student();
         student.codeNumber = codeNumber;
@@ -45,7 +45,7 @@ public class StudentService {
         student.currentSemester = currentSemester;
         student.email = email;
         student.lecturerId = lecturerId;
-
+        student.program = program;
         Ebean.save(student);
         return student.id;
     }
@@ -301,7 +301,8 @@ public class StudentService {
     }
 
     public List<Student> getUnmappedStudentList(Long lecturerId, Long courseId) {
-        List<Student> studentList = getStudentList(lecturerId);
+        CourseInformation courseInformation = Ebean.find(CourseInformation.class, courseId);
+        List<Student> studentList = Ebean.find(Student.class).where().eq("program", courseInformation.programme).findList();
         List<StudentToCourseMap> studentToCourseMapList = getStudentToCourseMapList(courseId);
         List<Long> mappedStudentIdList = studentToCourseMapList.stream().map(std -> std.studentId).collect(Collectors.toList());
 
@@ -312,6 +313,8 @@ public class StudentService {
             }
         }
 
+        logger.debug("Course : " + courseInformation.id);
+        logger.debug("student list size : " + studentList.size());
         return unmappedList;
     }
 
@@ -321,7 +324,7 @@ public class StudentService {
                 "from student_course_map\n" +
                 "left join lecturer_course_map on lecturer_course_map.course_information_id = student_course_map.course_information_id\n" +
                 "left join course_information on course_information.id = student_course_map.course_information_id\n" +
-                "where lecturer_course_map.lecturer_id = :lecturerId\n" +
+                //"where lecturer_course_map.lecturer_id = :lecturerId\n" +
                 "group by student_course_map.course_information_id, course_information.course_code, course_information.course_name," +
                 "course_information.programme;";
 

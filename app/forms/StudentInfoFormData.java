@@ -8,6 +8,7 @@ public class StudentInfoFormData {
     protected String gender;
     protected String currentSemester;
     protected String email;
+    protected String programme;
 
     public Long getId() {
         return studentId;
@@ -59,5 +60,21 @@ public class StudentInfoFormData {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public Long getStudentId() {
+        return studentId;
+    }
+
+    public void setStudentId(Long studentId) {
+        this.studentId = studentId;
+    }
+
+    public String getProgramme() {
+        return programme;
+    }
+
+    public void setProgramme(String programme) {
+        this.programme = programme;
     }
 }

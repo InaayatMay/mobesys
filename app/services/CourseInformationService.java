@@ -429,7 +429,7 @@ public class CourseInformationService {
                 "course_information.course_type, course_information.department_id\n" +
                 "from lecturer_course_map\n" +
                 "left join course_information on course_information.id = lecturer_course_map.course_information_id\n" +
-                "where lecturer_id = :lecturerId;";
+                "where lecturer_course_map.lecturer_id = :lecturerId;";
 
         RawSql rawSql = RawSqlBuilder.parse(sql)
                 .columnMapping("course_information.id", "id")

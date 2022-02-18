@@ -709,8 +709,6 @@ public class CourseInformationController extends Controller {
                     studentList = studentService.getStudentList(lecturerId);
                 }
 
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
                 Map<Long, List<String>> studentWithCourseMap = studentService.getStudentWithCourseList(lecturerId);
                 logger.debug("Map : " + studentWithCourseMap.size());
 
@@ -722,17 +720,9 @@ public class CourseInformationController extends Controller {
                 courseId = optionalSessionCourseIdString.map(Long::parseLong).orElse(0l);
 
                 Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
-                logger.debug("lecturerId : " + lecturerId);
-                logger.debug("studentList : " + studentList.size());
-                logger.debug("form : " + form);
-                logger.debug("state : " + subjectsStateViewModels.size());
-                logger.debug("courseId : " + courseId);
-                logger.debug("studentCourse : " + studentWithCourseMap.values());
-                logger.debug("request : " + request);
-                logger.debug("msg : " + messages);
 
                 return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image, studentList,
-                        form, subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
+                        form, courseId, studentWithCourseMap, request, messages));
             }
         }
         return unauthorized("You are unauthorized to access this page!");
@@ -760,7 +750,7 @@ public class CourseInformationController extends Controller {
                     if (!hasDuplicate) {
                         studentService.saveStudent(formData.getCodeNumber(), formData.getFirstName(),
                                 formData.getLastName(), formData.getGender(), Integer.parseInt(formData.getCurrentSemester()),
-                                formData.getEmail(), lecturerId);
+                                formData.getEmail(), lecturerId, formData.getProgramme());
 
                         return redirect(routes.CourseInformationController.showStudentList(lecturerId));
                     } else {
@@ -778,8 +768,6 @@ public class CourseInformationController extends Controller {
                         }
 
                             List<Student> studentList = studentService.getStudentList(lecturerId);
-                            List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                            List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                             Messages messages = messagesApi.preferred(request);
 
@@ -791,8 +779,7 @@ public class CourseInformationController extends Controller {
 
                             Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                             return ok(views.html.studentList.render(lecturerId, optionalUsername.get(), lecturer.image,
-                                    studentList, form,
-                                    subjectsStateViewModels, courseId, studentWithCourseMap, request, messages));
+                                    studentList, form, courseId, studentWithCourseMap, request, messages));
                     }
                 }
             }
@@ -1055,13 +1042,11 @@ public class CourseInformationController extends Controller {
             if (sessionId == lecturerId) {
                 Form<StudentInfoFormData> form = formFactory.form(StudentInfoFormData.class);
                 Student student = studentService.getStudent(studentId);
-                List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                 Messages messages = messagesApi.preferred(request);
                 Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                 return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), lecturer.image, form, student,
-                        subjectsStateViewModels, request, messages));
+                        request, messages));
             }
         }
 
@@ -1110,14 +1095,11 @@ public class CourseInformationController extends Controller {
                                     .withGlobalError("Student with Email - " + formData.getEmail() + " is already exists. Please try again.");
                         }
 
-                        List<LecturerCurrentSubject> lecturerCurrentSubjectList = lecturerService.getLecturerSubjectsStateList(lecturerId);
-                        List<LecturerSubjectsStateViewModel> subjectsStateViewModels = LecturerSubjectsStateViewModel.to(lecturerCurrentSubjectList);
 
                         Messages messages = messagesApi.preferred(request);
                         Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
                         return ok(views.html.studentInfoEditForm.render(lecturerId, optionalUsername.get(), lecturer.image,
-                                form, student,
-                                subjectsStateViewModels, request, messages));
+                                form, student, request, messages));
                     }
                     else {
                         student.firstName = formData.getFirstName();
@@ -1126,6 +1108,7 @@ public class CourseInformationController extends Controller {
                         student.currentSemester = Integer.parseInt(formData.getCurrentSemester());
                         student.email = formData.getEmail();
                         student.gender = formData.getGender();
+                        student.program = formData.getProgramme();
                         studentService.updateStudent(student);
 
                         return redirect(routes.CourseInformationController.showStudentList(lecturerId));
@@ -1470,5 +1453,144 @@ public class CourseInformationController extends Controller {
         List<CourseWithNumberOfStudentDto> dto = courseWithNumberOfStudents.stream().map(CourseWithNumberOfStudentDto::to)
                 .collect(Collectors.toList());
         return ok(Json.toJson(dto));
+    }
+
+    public Result showLecturerList(Http.Request request, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == lecturerId) {
+                Optional<String> searchByIdOptional = request.queryString("lecturerId");
+                logger.debug("search by id optional : " + searchByIdOptional.isPresent());
+
+                List<Lecturer> lecturers = new ArrayList<>();
+                if(searchByIdOptional.isPresent()) {
+                    logger.debug("search id : " + searchByIdOptional.get());
+                    Lecturer lecturer = lecturerService.getLecturerByCode(searchByIdOptional.get());
+                    if(lecturer == null) {
+                        logger.debug("student is null");
+                        lecturers = lecturerService.getLecturerList();
+                    }
+                    else {
+                        lecturers.add(lecturer);
+                    }
+                }
+                else {
+                    lecturers = lecturerService.getLecturerList();
+                }
+
+                List<Integer> dayList = new ArrayList<>();
+                for(int i=1; i<=31; i++) {
+                    dayList.add(i);
+                }
+
+                List<Integer> monthList = new ArrayList<>();
+                for(int i=1; i<=12; i++) {
+                    monthList.add(i);
+                }
+
+                List<Integer> yearList = new ArrayList<>();
+                for(int i=1940; i<=2005; i++) {
+                    yearList.add(i);
+                }
+
+                Messages messages = messagesApi.preferred(request);
+
+                return ok(views.html.lecturerList.render(lecturerId, optionalUsername.get(), lecturers, dayList,
+                        monthList, yearList, request, messages));
+            }
+        }
+
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleNewLecturer(Http.Request request, Long id) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == id) {
+                Lecturer lecturer = new Lecturer();
+
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                lecturer.codeNumber = requestData.get("codeNumber").trim();
+                lecturer.firstName = requestData.get("firstName").trim();
+                lecturer.lastName = requestData.get("lastName").trim();
+                lecturer.gender = requestData.get("gender").trim();
+                lecturer.email = requestData.get("email").trim();
+                lecturer.phoneNumber = requestData.get("phoneNumber").trim();
+                lecturer.password = requestData.get("password").trim();
+                lecturer.birthMonth = Integer.parseInt(requestData.get("month").trim());
+                lecturer.birthDay = Integer.parseInt(requestData.get("day").trim());
+                lecturer.birthYear = Integer.parseInt(requestData.get("year").trim());
+
+                lecturerService.addNewLecturer(lecturer);
+                return redirect(routes.CourseInformationController.showLecturerList(id));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result showEditLecturer(Http.Request request, Long id, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == id) {
+                List<Integer> dayList = new ArrayList<>();
+                for(int i=1; i<=31; i++) {
+                    dayList.add(i);
+                }
+
+                List<Integer> monthList = new ArrayList<>();
+                for(int i=1; i<=12; i++) {
+                    monthList.add(i);
+                }
+
+                List<Integer> yearList = new ArrayList<>();
+                for(int i=1940; i<=2005; i++) {
+                    yearList.add(i);
+                }
+
+                Messages messages = messagesApi.preferred(request);
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+
+                return ok(views.html.editLecturer.render(id, optionalUsername.get(), lecturer.image, lecturer, dayList,
+                        monthList, yearList, request, messages));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
+    }
+
+    public Result handleEditLecturer(Http.Request request, Long id, Long lecturerId) {
+        Optional<String> optionalSessionIdString = request.session().get("id");
+        Optional<String> optionalUsername = request.session().get("username");
+
+        if(optionalSessionIdString.isPresent() && optionalUsername.isPresent()) {
+            Long sessionId = Long.parseLong(optionalSessionIdString.get());
+            if (sessionId == id) {
+                Lecturer lecturer = lecturerService.getLecturerById(lecturerId);
+
+                DynamicForm requestData = formFactory.form().bindFromRequest(request);
+                lecturer.codeNumber = requestData.get("codeNumber").trim();
+                lecturer.firstName = requestData.get("firstName").trim();
+                lecturer.lastName = requestData.get("lastName").trim();
+                lecturer.gender = requestData.get("gender").trim();
+                lecturer.email = requestData.get("email").trim();
+                lecturer.password = requestData.get("password").trim();
+                lecturer.phoneNumber = requestData.get("phoneNumber").trim();
+                lecturer.birthMonth = Integer.parseInt(requestData.get("month").trim());
+                lecturer.birthDay = Integer.parseInt(requestData.get("day").trim());
+                lecturer.birthYear = Integer.parseInt(requestData.get("year").trim());
+
+                lecturerService.updateLecturer(lecturer);
+                return redirect(routes.CourseInformationController.showLecturerList(id));
+            }
+        }
+        return unauthorized("You are unauthorized to access this page!");
     }
 }

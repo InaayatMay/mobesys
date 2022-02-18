@@ -1,0 +1,147 @@
+@(userId: Long, username: String, image: String, lecturer: models.Lecturer,
+dayList: List[Integer], monthList: List[Integer],
+yearList: List[Integer]
+)(implicit requestHeader: Http.RequestHeader, messages: play.i18n.Messages)
+
+@link = @{
+viewModels.BreadCrumbViewModel.build
+.add("My Profile", "").toList()
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    @views.html.common.headMeta("Course Information Form")
+</head>
+<body id="body-pd">
+
+@views.html.common.adminSideBar(userId, username) {
+@views.html.common.breadcrumb(link)
+
+<div class="container mt-5">
+    <div class="card">
+        <div class="card-header">
+            Edit Lecturer
+        </div>
+        <div class="card-body">
+            <form method="post">
+                <div class="row">
+                    <div class="col">
+                        <label>Lecturer ID</label>
+                        <input type="text" name="codeNumber" id="codeNumber" class="form-control ml-2" value="@lecturer.codeNumber" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>First Name</label>
+                        <input type="text" name="firstName" id="firstName" class="form-control ml-2" value="@lecturer.firstName" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Last Name</label>
+                        <input type="text" name="lastName" id="lastName" class="form-control ml-2" value="@lecturer.lastName" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-2">
+                        <br>
+                        <strong>Birthday</strong>
+                    </div>
+                    <div class="col">
+                        <label>Month</label>
+                        <select name="month" class="form-control ml-2 mr-2">
+                            @for(m <- monthList){
+                            @if(m == lecturer.birthMonth){
+                            <option value="@m" selected>@m</option>
+                            }else{
+                            <option value="@m">@m</option>
+                            }
+                            }
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Day</label>
+                        <select name="day" class="form-control mr-2">
+                            @for(m <- dayList){
+                            @if(m == lecturer.birthDay){
+                            <option value="@m" selected>@m</option>
+                            }else{
+                            <option value="@m">@m</option>
+                            }
+                            }
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label>Year</label>
+                        <select name="year" class="form-control mr-2">
+                            @for(m <- yearList){
+                            @if(m == lecturer.birthYear){
+                            <option value="@m" selected>@m</option>
+                            }else{
+                            <option value="@m">@m</option>
+                            }
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Gender</label>
+                        <select name="gender" class="form-control mr-2">
+                            @if(lecturer.gender.equals("Male")){
+                                <option value="Male" selected>Male</option>
+                                <option value="Female">Female</option>
+                            } else{
+                                <option value="Male">Male</option>
+                                <option value="Female" selected>Female</option>
+                            }
+
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Phone Number</label>
+                        <input type="text" class="form-control" name="phoneNumber" value="@lecturer.phoneNumber" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Email</label>
+                        <input type="email" class="form-control" name="email" id="email" value="@lecturer.email" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <label>Password</label>
+                        <input type="text" class="form-control" name="password" value="@lecturer.password" required>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col">
+                        <button id="saveStudentBtn" class="btn btn-secondary mr-2">Save</button>
+                        <a href="/admin/@userId/lecturerList" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </div>
+            </form>
+            <!--<form method="post" typeof="multipart/form-data">
+                <div class="row">
+                    <div class="col">
+                        <input type="text" name="imageString" id="imageString" hidden>
+                        <input type="file" id="file-upload" name="picture" onchange="imageUploaded()" hidden/>
+                        <label for="file-upload">Edit profile image</label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary mt-3">Save Profile</button>
+            </form>-->
+        </div>
+    </div>
+</div>
+}
+
+<script type="application/javascript" src='@routes.Assets.versioned("javascripts/image-upload.js")'></script>
+<script type="application/javascript" src='@routes.Assets.versioned("javascripts/confirm-box")'></script>
+
+</body>
+</html>
